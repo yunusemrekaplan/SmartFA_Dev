@@ -77,12 +77,6 @@ class TransactionsScreen extends GetView<TransactionsController> {
           }
         }),
       ),
-      // Yeni İşlem Ekle Butonu
-      floatingActionButton: FloatingActionButton(
-        onPressed: controller.goToAddTransaction,
-        tooltip: 'Yeni İşlem Ekle',
-        child: const Icon(Icons.add),
-      ),
     );
   }
 

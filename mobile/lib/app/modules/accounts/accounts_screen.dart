@@ -88,7 +88,7 @@ class AccountsScreen extends GetView<AccountsController> {
                   const Text('Henüz hesap eklenmemiş.', style: TextStyle(color: Colors.grey)),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
-                    icon: const Icon(Icons.add),
+                    icon: const Icon(Icons.add, color: Colors.white),
                     label: const Text('İlk Hesabı Ekle'),
                     onPressed: controller.goToAddAccount,
                   )
@@ -109,14 +109,6 @@ class AccountsScreen extends GetView<AccountsController> {
             );
           }
         }),
-      ),
-      // Yeni Hesap Ekle Butonu
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: controller.goToAddAccount,
-        icon: const Icon(Icons.add),
-        label: const Text('Hesap Ekle'),
-        // backgroundColor: Theme.of(context).colorScheme.primary,
-        // foregroundColor: Theme.of(context).colorScheme.onPrimary,
       ),
     );
   }

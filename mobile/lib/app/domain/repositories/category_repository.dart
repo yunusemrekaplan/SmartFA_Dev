@@ -6,7 +6,8 @@ import 'package:mobile/app/utils/result.dart';
 
 abstract class ICategoryRepository {
   /// Kullanıcının ve ön tanımlı kategorileri tipe göre getirir.
-  Future<Result<List<CategoryModel>, ApiException>> getCategories(CategoryType type);
+  Future<Result<List<CategoryModel>, ApiException>> getCategories(
+      CategoryType type);
 
   /// Yeni bir özel kategori oluşturur.
   Future<Result<CategoryModel, ApiException>> createCategory(
@@ -18,4 +19,7 @@ abstract class ICategoryRepository {
 
   /// Belirli bir özel kategoriyi siler (Soft Delete).
   Future<Result<void, ApiException>> deleteCategory(int categoryId);
+
+  /// Kullanıcının kategorilerini getirir.
+  Future<Result<List<CategoryModel>, ApiException>> getUserCategories();
 }

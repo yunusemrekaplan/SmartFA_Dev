@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile/app/modules/budgets/budgets_controller.dart';
 import 'package:mobile/app/modules/dashboard/dashboard_controller.dart';
 import 'package:mobile/app/modules/transactions/transactions_controller.dart';
 
@@ -10,6 +11,7 @@ import 'home_controller.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../accounts/accounts_screen.dart';
 import '../transactions/transactions_screen.dart';
+import '../budgets/budgets_screen.dart';
 import '../settings/settings_screen.dart';
 
 // Rota importu (FAB için)
@@ -24,7 +26,8 @@ class HomeScreen extends GetView<HomeController> {
     DashboardScreen(), // Index 0
     AccountsScreen(), // Index 1
     TransactionsScreen(), // Index 2
-    SettingsScreen(), // Index 3
+    BudgetsScreen(), // Index 3
+    SettingsScreen(), // Index 4
   ];
 
   @override
@@ -36,37 +39,89 @@ class HomeScreen extends GetView<HomeController> {
     return Scaffold(
       // Seçili sekmeye göre body'yi değiştirmek için Obx ve IndexedStack
       body: Obx(() => IndexedStack(
-            index: controller.selectedIndex.value, // HomeController'daki index'i dinle
+            index: controller
+                .selectedIndex.value, // HomeController'daki index'i dinle
             children: _screens, // Gösterilecek GERÇEK ekranların listesi
           )),
 
       // Floating Action Button (Yeni İşlem Ekle)
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Yeni işlem ekleme ekranına yönlendir
-          Get.toNamed(AppRoutes.ADD_EDIT_TRANSACTION)?.then((result) {
-            // İşlem eklendikten sonra belki Dashboard veya İşlemler listesi yenilenebilir
-            if (result == true) {
-              // İlgili controller'ı bulup yenileme metodunu çağır
-              try {
-                final transactionsController = Get.find<TransactionsController>();
-                transactionsController.fetchTransactions(isInitialLoad: true);
-              } catch (e) {
-                /* Controller henüz oluşturulmamış olabilir */
-              }
-              try {
-                final dashboardController = Get.find<DashboardController>();
-                dashboardController.refreshData();
-              } catch (e) {
-                /* Controller henüz oluşturulmamış olabilir */
-              }
-            }
-          });
-        },
-        tooltip: 'Yeni İşlem',
-        child: const Icon(Icons.add),
-        // Tema renklerini kullanır
-      ),
+      floatingActionButton: Obx(() {
+        switch (controller.selectedIndex.value) {
+          case 0: // Dashboard
+            return FloatingActionButton(
+              onPressed: () {
+                Get.toNamed(AppRoutes.ADD_EDIT_TRANSACTION)?.then((result) {
+                  if (result == true) {
+                    try {
+                      final dashboardController =
+                          Get.find<DashboardController>();
+                      dashboardController.refreshData();
+                    } catch (e) {
+                      /* Controller henüz oluşturulmamış olabilir */
+                    }
+                  }
+                });
+              },
+              tooltip: 'Yeni İşlem',
+              child: const Icon(Icons.add),
+            );
+          case 1: // Hesaplar
+            return FloatingActionButton(
+              onPressed: () {
+                Get.toNamed(
+                    AppRoutes.ADD_EDIT_ACCOUNT); // Hesap ekleme ekranına git
+              },
+              tooltip: 'Yeni Hesap',
+              child: const Icon(Icons.account_balance_wallet),
+            );
+          case 2: // İşlemler
+            return FloatingActionButton(
+              onPressed: () {
+                Get.toNamed(AppRoutes.ADD_EDIT_TRANSACTION)?.then((result) {
+                  if (result == true) {
+                    try {
+                      final transactionsController =
+                          Get.find<TransactionsController>();
+                      transactionsController.fetchTransactions(
+                          isInitialLoad: true);
+                    } catch (e) {
+                      /* Controller henüz oluşturulmamış olabilir */
+                    }
+                  }
+                });
+              },
+              tooltip: 'Yeni İşlem',
+              child: const Icon(Icons.add),
+            );
+          case 3: // Bütçeler
+            return FloatingActionButton(
+              onPressed: () {
+                Get.toNamed(AppRoutes.ADD_EDIT_BUDGET)?.then((result) {
+                  if (result == true) {
+                    try {
+                      final budgetsController = Get.find<BudgetsController>();
+                      budgetsController.refreshBudgets();
+                    } catch (e) {
+                      /* Controller henüz oluşturulmamış olabilir */
+                    }
+                  }
+                });
+              },
+              tooltip: 'Yeni Bütçe',
+              child: const Icon(Icons.add),
+            );
+          case 4: // Ayarlar
+            return const SizedBox.shrink(); // Ayarlar sayfasında FAB gösterme
+          default:
+            return FloatingActionButton(
+              onPressed: () {
+                Get.toNamed(AppRoutes.ADD_EDIT_TRANSACTION);
+              },
+              tooltip: 'Yeni İşlem',
+              child: const Icon(Icons.add),
+            );
+        }
+      }),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       // Ortala
 
@@ -78,12 +133,19 @@ class HomeScreen extends GetView<HomeController> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround, // İkonları yay
           children: <Widget>[
-            _buildBottomNavItem(icon: Icons.dashboard_outlined, index: 0, label: 'Dashboard'),
             _buildBottomNavItem(
-                icon: Icons.account_balance_wallet_outlined, index: 1, label: 'Hesaplar'),
+                icon: Icons.dashboard_outlined, index: 0, label: 'Dashboard'),
+            _buildBottomNavItem(
+                icon: Icons.account_balance_wallet_outlined,
+                index: 1,
+                label: 'Hesaplar'),
             const SizedBox(width: 40), // FAB için boşluk bırak
-            _buildBottomNavItem(icon: Icons.swap_horiz, index: 2, label: 'İşlemler'),
-            _buildBottomNavItem(icon: Icons.settings_outlined, index: 3, label: 'Ayarlar'),
+            _buildBottomNavItem(
+                icon: Icons.swap_horiz, index: 2, label: 'İşlemler'),
+            _buildBottomNavItem(
+                icon: Icons.pie_chart_outline, index: 3, label: 'Bütçeler'),
+            _buildBottomNavItem(
+                icon: Icons.settings_outlined, index: 4, label: 'Ayarlar'),
           ],
         ),
       ),
@@ -91,7 +153,8 @@ class HomeScreen extends GetView<HomeController> {
   }
 
   /// BottomAppBar için tıklanabilir ikon oluşturan yardımcı widget.
-  Widget _buildBottomNavItem({required IconData icon, required int index, required String label}) {
+  Widget _buildBottomNavItem(
+      {required IconData icon, required int index, required String label}) {
     return Obx(() => IconButton(
           tooltip: label,
           icon: Icon(

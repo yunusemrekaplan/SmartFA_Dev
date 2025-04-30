@@ -18,8 +18,9 @@ class SettingsBinding extends Bindings {
     // --- Controller Bağımlılığı ---
     // SettingsController'ı kaydet ve gerekli repository'leri inject et.
     Get.lazyPut<SettingsController>(
-          () => SettingsController(
-        authRepository: Get.find<IAuthRepository>(), // Logout için AuthRepository'yi bul
+      () => SettingsController(
+        authRepository:
+            Get.find<IAuthRepository>(), // Logout için AuthRepository'yi bul
       ),
       fenix: true,
     );

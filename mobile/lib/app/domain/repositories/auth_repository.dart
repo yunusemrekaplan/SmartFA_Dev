@@ -5,7 +5,8 @@ import 'package:mobile/app/utils/result.dart';
 abstract class IAuthRepository {
   /// Kullanıcı girişi yapar.
   /// Başarılı olursa AuthResponseModel, başarısız olursa ApiException içeren Result döner.
-  Future<Result<AuthResponseModel, ApiException>> login(String email, String password);
+  Future<Result<AuthResponseModel, ApiException>> login(
+      String email, String password);
 
   /// Yeni kullanıcı kaydı yapar.
   /// Başarılı olursa AuthResponseModel, başarısız olursa ApiException içeren Result döner.
@@ -14,15 +15,18 @@ abstract class IAuthRepository {
 
   /// Refresh token kullanarak token yeniler.
   /// Başarılı olursa AuthResponseModel, başarısız olursa ApiException içeren Result döner.
-  Future<Result<AuthResponseModel, ApiException>> refreshToken(String refreshToken);
+  Future<Result<AuthResponseModel, ApiException>> refreshToken(
+      String refreshToken);
 
   /// Refresh token'ı iptal eder.
   /// Başarılı olursa void (Result.success), başarısız olursa ApiException içeren Result döner.
   Future<Result<void, ApiException>> revokeToken(String refreshToken);
 
-// Opsiyonel: Kullanıcının mevcut oturum durumunu kontrol etme
-// Future<bool> isLoggedIn();
+  /// Kullanıcının mevcut oturum durumunu kontrol eder.
+  /// Token varsa true, yoksa false döner.
+  Future<bool> isLoggedIn();
 
-// Opsiyonel: Çıkış yapma (tokenları silme)
-// Future<Result<void, ApiException>> logout();
+  /// Kullanıcının oturumunu kapatır (tokenları siler).
+  /// Başarılı olursa void (Result.success), başarısız olursa ApiException içeren Result döner.
+  Future<Result<void, ApiException>> logout();
 }

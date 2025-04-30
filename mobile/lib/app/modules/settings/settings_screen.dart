@@ -36,7 +36,8 @@ class SettingsScreen extends GetView<SettingsController> {
           ),
           const Divider(height: 1, indent: 16),
           ListTile(
-            leading: const Icon(Icons.account_balance_outlined), // Veya fa-receipt ikonu
+            leading: const Icon(
+                Icons.account_balance_outlined), // Veya fa-receipt ikonu
             title: const Text('Borç Yönetimi'),
             trailing: const Icon(Icons.chevron_right),
             onTap: controller.goToDebts, // Borçlar ekranına yönlendir
@@ -53,33 +54,14 @@ class SettingsScreen extends GetView<SettingsController> {
 
           // --- Çıkış Yap Bölümü ---
           const SizedBox(height: 30), // Biraz boşluk
-          ListTile(
-            leading: Icon(Icons.logout, color: Theme.of(context).colorScheme.error),
-            title: Text('Çıkış Yap', style: TextStyle(color: Theme.of(context).colorScheme.error)),
-            onTap: () {
-              // Çıkış yapmadan önce onay al
-              Get.defaultDialog(
-                title: "Çıkış Yap",
-                middleText: "Oturumu kapatmak istediğinizden emin misiniz?",
-                textConfirm: "Çıkış Yap",
-                textCancel: "İptal",
-                confirmTextColor: Colors.white,
-                buttonColor: Theme.of(context).colorScheme.error,
-                // Onay butonu rengi
-                cancelTextColor: Theme.of(context).textTheme.bodyLarge?.color,
-                onConfirm: () {
-                  Get.back(); // Dialogu kapat
-                  controller.logout(); // Controller'daki logout metodunu çağır
-                },
-                onCancel: () => Get.back(), // Sadece dialogu kapat
-              );
-            },
-            // Yüklenme durumunu göster (opsiyonel)
-            trailing: Obx(() => controller.isLoading.value
-                    ? const SizedBox(
-                        width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                    : const SizedBox.shrink() // Yüklenmiyorsa boşluk
-                ),
+          Card(
+            margin: const EdgeInsets.all(8.0),
+            child: ListTile(
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: const Text('Çıkış Yap'),
+              subtitle: const Text('Hesabınızdan çıkış yapın'),
+              onTap: () => _showLogoutConfirmationDialog(context),
+            ),
           ),
           const Divider(height: 1, indent: 16),
 
@@ -89,7 +71,10 @@ class SettingsScreen extends GetView<SettingsController> {
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Text(
               'Uygulama Sürümü: 1.0.0 (MVP)', // TODO: Paket bilgisinden al
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: Colors.grey),
               textAlign: TextAlign.center,
             ),
           ),
@@ -102,13 +87,39 @@ class SettingsScreen extends GetView<SettingsController> {
   /// Ayarlar bölüm başlığını oluşturan yardımcı widget.
   Widget _buildSectionTitle(BuildContext context, String title) {
     return Padding(
-      padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 20.0, bottom: 8.0),
+      padding: const EdgeInsets.only(
+          left: 16.0, right: 16.0, top: 20.0, bottom: 8.0),
       child: Text(
         title.toUpperCase(),
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
             color: Theme.of(context).colorScheme.primary, // Ana renk
             fontWeight: FontWeight.bold,
             letterSpacing: 1.1),
+      ),
+    );
+  }
+
+  /// Çıkış yapmadan önce onay diyaloğu gösterir
+  void _showLogoutConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Çıkış Yap'),
+        content:
+            const Text('Hesabınızdan çıkış yapmak istediğinize emin misiniz?'),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(), // Diyaloğu kapat
+            child: const Text('İptal'),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back(); // Önce diyaloğu kapat
+              controller.logout(); // Sonra çıkış yap
+            },
+            child: const Text('Çıkış Yap', style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }

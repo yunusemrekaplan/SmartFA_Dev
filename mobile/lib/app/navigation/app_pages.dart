@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile/app/modules/accounts/accounts_binding.dart';
+import 'package:mobile/app/modules/accounts/add_edit_account/add_edit_account_binding.dart';
+import 'package:mobile/app/modules/accounts/add_edit_account/add_edit_account_screen.dart';
+import 'package:mobile/app/modules/budgets/budgets_binding.dart';
+import 'package:mobile/app/modules/budgets/budgets_screen.dart';
+import 'package:mobile/app/modules/splash/splash_binding.dart';
+import 'package:mobile/app/modules/splash/splash_screen.dart';
+import 'package:mobile/app/modules/transactions/add_edit_transaction_binding.dart';
+import 'package:mobile/app/modules/transactions/add_edit_transaction_screen.dart';
 import 'package:mobile/app/modules/transactions/transactions_binding.dart';
 
 // Rota isimlerini import et
@@ -16,7 +23,6 @@ import '../modules/home/home_binding.dart'; // HomeBinding (Sadeleşmiş)
 
 // Ekle/Düzenle ekranları için Binding'ler
 // import '../modules/accounts/add_edit_account/add_edit_account_binding.dart';
-// import '../modules/transactions/add_edit_transaction/add_edit_transaction_binding.dart';
 // import '../modules/budgets/add_edit_budget/add_edit_budget_binding.dart';
 // import '../modules/debts/add_edit_debt/add_edit_debt_binding.dart';
 // import '../modules/debts/add_debt_payment/add_debt_payment_binding.dart';
@@ -26,10 +32,21 @@ class AppPages {
   AppPages._(); // Private constructor
 
   // Başlangıç Rotası
-  static const INITIAL_ROUTE = AppRoutes.LOGIN; // Uygulama Login ile başlasın
+  static const INITIAL_ROUTE = AppRoutes.SPLASH; // Uygulama Splash ile başlasın
 
   // Rota listesi
   static final routes = [
+    // --- Splash Screen ---
+    GetPage(
+      name: AppRoutes.SPLASH,
+      page: () => const SplashScreen(),
+      binding: SplashBinding(),
+      transition: Transition.fadeIn,
+      preventDuplicates: true, // Aynı rotaya birden fazla gidilmesini engelle
+      popGesture: false, // Geri gitme hareketini engelle
+      transitionDuration: const Duration(milliseconds: 500),
+    ),
+
     // --- Auth Rotaları ---
     GetPage(
       name: AppRoutes.LOGIN,
@@ -61,23 +78,27 @@ class AppPages {
     // Bu rotalara gidildiğinde ilgili Binding'in çalışması önemlidir.
     GetPage(
       name: AppRoutes.ADD_EDIT_TRANSACTION,
-      page: () => const PlaceholderScreen(routeName: 'İşlem Ekle/Düzenle'),
-      binding: TransactionsBinding(), // İşlemle ilgili bağımlılıklar
-      fullscreenDialog: true,
+      page: () => const AddEditTransactionScreen(),
+      binding: AddEditTransactionBinding(),
     ),
     GetPage(
       name: AppRoutes.ADD_EDIT_ACCOUNT,
-      page: () => const PlaceholderScreen(routeName: 'Hesap Ekle/Düzenle'),
-      binding: AccountsBinding(), // Hesapla ilgili bağımlılıklar
+      page: () => const AddEditAccountScreen(),
+      binding: AddEditAccountBinding(), // Hesapla ilgili bağımlılıklar
       fullscreenDialog: true,
     ),
-    /*GetPage(
+    GetPage(
+      name: AppRoutes.BUDGETS,
+      page: () => const BudgetsScreen(),
+      binding: BudgetsBinding(), // Bütçeyle ilgili bağımlılıklar
+    ),
+    GetPage(
       name: AppRoutes.ADD_EDIT_BUDGET,
       page: () => const PlaceholderScreen(routeName: 'Bütçe Ekle/Düzenle'),
       binding: BudgetsBinding(), // Bütçeyle ilgili bağımlılıklar
       fullscreenDialog: true,
     ),
-    GetPage(
+    /*GetPage(
       name: AppRoutes.ADD_EDIT_DEBT,
       page: () => const PlaceholderScreen(routeName: 'Borç Ekle/Düzenle'),
       binding: DebtsBinding(), // Borçla ilgili bağımlılıklar
@@ -109,9 +130,6 @@ class AppPages {
       page: () => const PlaceholderScreen(routeName: 'Borç Yönetimi'),
       binding: DebtsBinding(),
     ),*/
-
-    // Splash Ekranı (Opsiyonel)
-    // GetPage(name: AppRoutes.SPLASH, page: () => SplashScreen(), binding: SplashBinding()),
   ];
 }
 

@@ -1,19 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile/app/data/datasources/local/auth_local_datasource.dart';
-import 'package:mobile/app/data/network/exceptions.dart';
 import 'package:mobile/app/domain/repositories/auth_repository.dart';
 import 'package:mobile/app/navigation/app_routes.dart';
-import 'package:mobile/app/utils/result.dart';
 
 /// Ayarlar ekranının iş mantığını yöneten GetX controller.
 class SettingsController extends GetxController {
   final IAuthRepository _authRepository;
 
-  SettingsController({required IAuthRepository authRepository}) : _authRepository = authRepository;
+  SettingsController({required IAuthRepository authRepository})
+      : _authRepository = authRepository;
 
   // Yüklenme durumu (örn: çıkış yaparken)
   final RxBool isLoading = false.obs;
+
+  // Tema modu değişkeni (açık/koyu tema)
+  final RxBool isDarkMode = false.obs;
+
+  // Bildirim durumu
+  final RxBool notificationsEnabled = true.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Burada ayarları local storage'dan yükleyebiliriz
+  }
+
+  /// Tema modunu değiştirir
+  void toggleThemeMode() {
+    isDarkMode.value = !isDarkMode.value;
+    // Tema değişikliğini kaydet ve uygula
+  }
+
+  /// Bildirim durumunu değiştirir
+  void toggleNotifications() {
+    notificationsEnabled.value = !notificationsEnabled.value;
+    // Bildirim durumunu kaydet
+  }
 
   /// Kategori Yönetimi ekranına yönlendirir.
   void goToCategories() {
@@ -34,59 +56,41 @@ class SettingsController extends GetxController {
 
   /// Kullanıcının oturumunu kapatır.
   Future<void> logout() async {
-    isLoading.value = true;
     try {
-      // TODO: Yerelde saklanan refresh token'ı alıp API'ye göndermek daha doğru olur.
-      // Şimdilik AuthRepository'de token temizleme olduğunu varsayıyoruz.
-      // Eğer AuthRepository'de logout metodu varsa onu kullan:
-      // final result = await _authRepository.logout();
-
-      // Eğer sadece revoke varsa ve token gerekiyorsa:
-      // final localDataSource = Get.find<IAuthLocalDataSource>(); // LocalDataSource'u bul
-      // final refreshToken = await localDataSource.getRefreshToken();
-      // Result result = Result.success(null); // Varsayılan başarı
-      // if (refreshToken != null) {
-      //    result = await _authRepository.revokeToken(refreshToken);
-      // } else {
-      //    // Refresh token yoksa yerel temizlik yeterli olabilir
-      //    await localDataSource.clearTokens();
-      // }
-
-      // Şimdilik en basit senaryo: Sadece yerel tokenları temizle ve login'e git
-      // (Bu, backend'deki refresh token'ı iptal etmez)
-      final localDataSource = Get.find<IAuthLocalDataSource>(); // LocalDataSource'u bul
-      await localDataSource.clearTokens();
-      final Result<void, ApiException> result = Success(null); // Geçici olarak başarı varsay
+      final result = await _authRepository.logout();
 
       result.when(
         success: (_) {
-          // Başarılı çıkış: Login ekranına yönlendir (tüm geçmişi temizle)
-          Get.offAllNamed(AppRoutes.LOGIN);
+          // Başarılı çıkış
+          Get.offAllNamed(AppRoutes.LOGIN); // Giriş ekranına yönlendir
+          Get.snackbar(
+            'Başarılı',
+            'Çıkış yapıldı',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+          );
         },
         failure: (error) {
-          // Başarısız çıkış (API hatası vb.)
-          print('Logout failed: ${error.message}');
+          // Başarısız çıkış
           Get.snackbar(
-            'Çıkış Yapılamadı',
-            error.message,
+            'Hata',
+            'Çıkış yapılırken bir sorun oluştu: ${error.message}',
             snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.redAccent,
+            backgroundColor: Colors.red,
             colorText: Colors.white,
           );
         },
       );
     } catch (e) {
       // Beklenmedik hata
-      print('Logout unexpected error: $e');
       Get.snackbar(
         'Hata',
-        'Çıkış yapılırken beklenmedik bir hata oluştu.',
+        'Beklenmeyen bir hata oluştu',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,
       );
-    } finally {
-      isLoading.value = false;
     }
   }
 

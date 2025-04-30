@@ -12,9 +12,13 @@ abstract class ICategoryRemoteDataSource {
 
   Future<CategoryModel> createCategory(CreateCategoryRequestModel categoryData);
 
-  Future<void> updateCategory(int categoryId, UpdateCategoryRequestModel categoryData);
+  Future<void> updateCategory(
+      int categoryId, UpdateCategoryRequestModel categoryData);
 
   Future<void> deleteCategory(int categoryId);
+
+  /// Kullanıcının kategorilerini getirir.
+  Future<List<CategoryModel>> getUserCategories();
 }
 
 class CategoryRemoteDataSource implements ICategoryRemoteDataSource {
@@ -25,14 +29,16 @@ class CategoryRemoteDataSource implements ICategoryRemoteDataSource {
   @override
   Future<List<CategoryModel>> getCategories(CategoryType type) async {
     try {
-      // Enum'ı query parametresi olarak gönder (index veya name, backend'e göre)
-      final queryParams = {'type': type.index.toString()}; // Örnek: index (0 veya 1)
+      // Enum'ı query parametresi olarak gönder (backend'deki değerleri kullan)
+      final queryParams = {'type': type == CategoryType.Income ? '1' : '2'};
       final response = await _dioClient.get(
         _categoriesEndpoint,
         queryParameters: queryParams,
       );
       final List<dynamic> data = response.data as List<dynamic>;
-      return data.map((json) => CategoryModel.fromJson(json as Map<String, dynamic>)).toList();
+      return data
+          .map((json) => CategoryModel.fromJson(json as Map<String, dynamic>))
+          .toList();
     } on DioException catch (e) {
       print('CategoryRemoteDataSource GetCategories Error: $e');
       rethrow;
@@ -43,7 +49,8 @@ class CategoryRemoteDataSource implements ICategoryRemoteDataSource {
   }
 
   @override
-  Future<CategoryModel> createCategory(CreateCategoryRequestModel categoryData) async {
+  Future<CategoryModel> createCategory(
+      CreateCategoryRequestModel categoryData) async {
     try {
       final response = await _dioClient.post(
         _categoriesEndpoint,
@@ -60,7 +67,8 @@ class CategoryRemoteDataSource implements ICategoryRemoteDataSource {
   }
 
   @override
-  Future<void> updateCategory(int categoryId, UpdateCategoryRequestModel categoryData) async {
+  Future<void> updateCategory(
+      int categoryId, UpdateCategoryRequestModel categoryData) async {
     try {
       await _dioClient.put(
         '$_categoriesEndpoint/$categoryId',
@@ -85,6 +93,23 @@ class CategoryRemoteDataSource implements ICategoryRemoteDataSource {
     } catch (e) {
       print('CategoryRemoteDataSource DeleteCategory Unexpected Error: $e');
       throw Exception('Kategori silinirken beklenmedik bir hata oluştu.');
+    }
+  }
+
+  @override
+  Future<List<CategoryModel>> getUserCategories() async {
+    try {
+      final response = await _dioClient.get('/categories');
+      final List<dynamic> data = response.data as List<dynamic>;
+      return data
+          .map((json) => CategoryModel.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      print('CategoryRemoteDataSource GetUserCategories Error: $e');
+      rethrow;
+    } catch (e) {
+      print('CategoryRemoteDataSource GetUserCategories Unexpected Error: $e');
+      throw Exception('Kategoriler getirilirken beklenmedik bir hata oluştu.');
     }
   }
 }

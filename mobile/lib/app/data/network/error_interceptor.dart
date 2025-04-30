@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart'; // GetX dependency injection ve yönlendirme için
-import 'dio_client.dart'; // DioClient'a erişim için (veya doğrudan Dio instance'ı)
 import '../../navigation/app_routes.dart'; // Rota isimleri için
 
 // Token'ları saklamak için kullanılacak key'ler
@@ -11,14 +10,23 @@ const String _refreshEndpoint = '/auth/refresh'; // Backend'deki refresh endpoin
 
 class ErrorInterceptor extends Interceptor {
   final Dio _dio; // Token yenileme isteği için Dio instance'ı
-  // final _secureStorage = Get.find<FlutterSecureStorage>(); // GetX örneği
-  final _secureStorage = const FlutterSecureStorage(); // Doğrudan kullanım örneği
+  late final FlutterSecureStorage _secureStorage;
 
   // Token yenileme işlemi sırasında diğer istekleri kilitlemek için
   bool _isRefreshing = false;
   final List<RequestOptions> _pendingRequests = [];
 
-  ErrorInterceptor(this._dio); // Dio instance'ını constructor ile al
+  ErrorInterceptor(this._dio) {
+    try {
+      // GetX ile FlutterSecureStorage'ı bul
+      _secureStorage = Get.find<FlutterSecureStorage>();
+      print('>>> ErrorInterceptor: FlutterSecureStorage injected from GetX');
+    } catch (e) {
+      // Fallback olarak doğrudan oluştur
+      _secureStorage = const FlutterSecureStorage();
+      print('>>> ErrorInterceptor: Using default FlutterSecureStorage, error: $e');
+    }
+  }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
@@ -27,7 +35,7 @@ class ErrorInterceptor extends Interceptor {
     print('>>> ErrorInterceptor: Error Data: ${err.response?.data}');
 
     // Eğer hata 401 Unauthorized ise ve refresh endpoint'i değilse token yenilemeyi dene
-    if (err.response?.statusCode == 401 && err.requestOptions.path != _refreshEndpoint) {
+    if (err.response?.statusCode == 401 && !err.requestOptions.path.contains(_refreshEndpoint)) {
       print('>>> ErrorInterceptor: 401 detected, attempting token refresh...');
 
       // Eğer zaten bir yenileme işlemi devam ediyorsa, bu isteği beklemeye al
@@ -43,19 +51,25 @@ class ErrorInterceptor extends Interceptor {
 
       // Refresh token'ı güvenli depolamadan oku
       final String? refreshToken = await _secureStorage.read(key: _refreshTokenKey);
+      print(
+          '>>> ErrorInterceptor: Refresh token: ${refreshToken != null ? "mevcut" : "bulunamadı"}');
 
       if (refreshToken != null && refreshToken.isNotEmpty) {
         try {
           print('>>> ErrorInterceptor: Sending refresh token request...');
+
           // Yeni token almak için refresh endpoint'ine istek yap
-          // ÖNEMLİ: Bu istek için kullanılan Dio instance'ında interceptor'lar
-          // döngüye neden olmaması için dikkatli yönetilmeli.
-          // Yeni bir Dio instance kullanmak veya mevcut instance'ı klonlamak daha güvenli olabilir.
-          // Şimdilik mevcut instance ile deniyoruz.
           final response = await _dio.post(
             _refreshEndpoint,
             data: {'refreshToken': refreshToken},
+            options: Options(
+              headers: {}, // Önceki Authorization header'ını temizle
+              validateStatus: (status) => true, // Tüm statusları kabul et
+            ),
           );
+
+          print('>>> ErrorInterceptor: Refresh response status: ${response.statusCode}');
+          print('>>> ErrorInterceptor: Refresh response data: ${response.data}');
 
           if (response.statusCode == 200) {
             print('>>> ErrorInterceptor: Token refresh successful.');
@@ -94,6 +108,7 @@ class ErrorInterceptor extends Interceptor {
 
               // Bekleyen istekleri de yeni token ile tekrar dene
               await _retryPendingRequests(newAccessToken);
+              return; // Handler işlendi, erken çık
             } else {
               print('>>> ErrorInterceptor: Invalid token data received from refresh endpoint.');
               await _handleRefreshError(handler, err, 'Yenileme yanıtı geçersiz.');
@@ -122,7 +137,7 @@ class ErrorInterceptor extends Interceptor {
       }
     } else {
       // 401 olmayan diğer hatalar için direkt devam et
-      print('>>> ErrorInterceptor: Non-401 error, passing through.');
+      print('>>> ErrorInterceptor: Non-401 error or refresh endpoint error, passing through.');
       super.onError(err, handler); // veya handler.next(err);
     }
   }
@@ -163,7 +178,14 @@ class ErrorInterceptor extends Interceptor {
       ErrorInterceptorHandler handler, DioException originalError, String message) async {
     print('>>> ErrorInterceptor: Handling refresh error: $message');
     // Tokenları temizle
-    await _secureStorage.deleteAll();
+    try {
+      await _secureStorage.delete(key: _accessTokenKey);
+      await _secureStorage.delete(key: _refreshTokenKey);
+      print('>>> ErrorInterceptor: Tokens deleted.');
+    } catch (e) {
+      print('>>> ErrorInterceptor: Error deleting tokens: $e');
+    }
+
     // Kullanıcıyı login ekranına yönlendir (GetX ile)
     Get.offAllNamed(AppRoutes.LOGIN); // Tüm geçmişi temizleyerek Login'e git
     // Orijinal hatayı reddet (isteği sonlandır)

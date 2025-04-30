@@ -15,20 +15,32 @@ class AuthRepositoryImpl implements IAuthRepository {
   AuthRepositoryImpl(this._remoteDataSource, this._localDataSource);
 
   @override
-  Future<Result<AuthResponseModel, ApiException>> login(String email, String password) async {
+  Future<Result<AuthResponseModel, ApiException>> login(
+      String email, String password) async {
+    print('>>> AuthRepository: Login attempt for email: $email');
     final requestModel = LoginRequestModel(email: email, password: password);
     try {
+      print('>>> AuthRepository: Sending login request to remote data source');
       final responseModel = await _remoteDataSource.login(requestModel);
+      print('>>> AuthRepository: Login successful, access token received');
+
       // Başarılı olursa tokenları sakla
+      print('>>> AuthRepository: Saving tokens to secure storage');
       await _localDataSource.saveTokens(
         accessToken: responseModel.accessToken,
         refreshToken: responseModel.refreshToken,
       );
+      print('>>> AuthRepository: Tokens saved successfully');
+
       return Success(responseModel); // Başarılı Result döndür
     } on DioException catch (e) {
-      return Failure(ApiException.fromDioError(e)); // Dio hatasını ApiException'a çevir
+      print('>>> AuthRepository: DioException during login: ${e.message}');
+      print('>>> AuthRepository: Status code: ${e.response?.statusCode}');
+      return Failure(
+          ApiException.fromDioError(e)); // Dio hatasını ApiException'a çevir
     } catch (e) {
       // Diğer beklenmedik hatalar
+      print('>>> AuthRepository: Unexpected error during login: $e');
       return Failure(ApiException.fromException(e as Exception));
     }
   }
@@ -57,7 +69,8 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
-  Future<Result<AuthResponseModel, ApiException>> refreshToken(String refreshToken) async {
+  Future<Result<AuthResponseModel, ApiException>> refreshToken(
+      String refreshToken) async {
     final requestModel = RefreshTokenRequestModel(refreshToken: refreshToken);
     try {
       final responseModel = await _remoteDataSource.refreshToken(requestModel);
@@ -73,7 +86,8 @@ class AuthRepositoryImpl implements IAuthRepository {
       await _localDataSource.clearTokens(); // Hata durumunda tokenları temizle
       return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      await _localDataSource.clearTokens(); // Güvenlik için beklenmedik hatada da temizle
+      await _localDataSource
+          .clearTokens(); // Güvenlik için beklenmedik hatada da temizle
       return Failure(ApiException.fromException(e as Exception));
     }
   }
@@ -98,27 +112,33 @@ class AuthRepositoryImpl implements IAuthRepository {
     }
   }
 
-// Opsiyonel: isLoggedIn ve logout metotları eklenebilir
-/*
   @override
   Future<bool> isLoggedIn() async {
-    // Access veya Refresh token var mı diye kontrol et
+    // Access token varlığını kontrol et
     final accessToken = await _localDataSource.getAccessToken();
-    // final refreshToken = await _localDataSource.getRefreshToken(); // Refresh token kontrolü de eklenebilir
     return accessToken != null && accessToken.isNotEmpty;
   }
 
   @override
   Future<Result<void, ApiException>> logout() async {
-    // Yerel tokenları temizle ve API'ye revoke isteği gönder (opsiyonel)
-    final refreshToken = await _localDataSource.getRefreshToken();
-    await _localDataSource.clearTokens();
-    if (refreshToken != null) {
-      // API'deki revoke işleminin sonucunu çok önemsemeyebiliriz,
-      // çünkü yerelden zaten sildik. Ama yine de çağırmak iyi olabilir.
-      return await revokeToken(refreshToken);
+    try {
+      // Yerel tokenları temizle
+      final refreshToken = await _localDataSource.getRefreshToken();
+      await _localDataSource.clearTokens();
+
+      // Eğer refresh token varsa API'de de geçersiz kıl
+      if (refreshToken != null && refreshToken.isNotEmpty) {
+        // API sonucunu çok önemsemiyoruz, yerel olarak çıkış yapıldı
+        await _remoteDataSource
+            .revokeToken(RefreshTokenRequestModel(refreshToken: refreshToken))
+            .catchError((_) => null); // Hataları görmezden gel
+      }
+
+      // Başarılı sonuç döndür
+      return Success(null);
+    } catch (e) {
+      // Hatayı sarmala ve döndür
+      return Failure(ApiException.fromException(e as Exception));
     }
-    return Result.success(null);
   }
-  */
 }

@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile/app/data/network/exceptions.dart';
@@ -8,7 +6,11 @@ import 'package:mobile/app/navigation/app_routes.dart';
 
 /// Register ekranının state'ini ve iş mantığını yöneten GetX controller.
 class RegisterController extends GetxController {
-  final IAuthRepository _authRepository = Get.find<IAuthRepository>();
+  final IAuthRepository _authRepository;
+
+  // Dependency Injection kullanarak constructor injection yap
+  RegisterController({required IAuthRepository authRepository})
+      : _authRepository = authRepository;
 
   // Form anahtarı
   final GlobalKey<FormState> registerFormKey = GlobalKey<FormState>();
@@ -16,7 +18,8 @@ class RegisterController extends GetxController {
   // Text Editing Controller'lar
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
   // State Değişkenleri
   final RxBool isLoading = false.obs;
@@ -82,7 +85,8 @@ class RegisterController extends GetxController {
     } catch (e) {
       // Beklenmedik genel hatalar
       print('Registration unexpected error in Controller: $e');
-      errorMessage.value = (e is ApiException) ? e.message : 'Beklenmedik bir hata oluştu.';
+      errorMessage.value =
+          (e is ApiException) ? e.message : 'Beklenmedik bir hata oluştu.';
       Get.snackbar(
         'Hata',
         errorMessage.value,
