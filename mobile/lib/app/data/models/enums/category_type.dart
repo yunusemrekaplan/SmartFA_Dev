@@ -7,14 +7,14 @@ enum CategoryType {
   Expense,
 }
 
-CategoryType categoryTypeFromString(String typeString) {
-  switch (typeString.toLowerCase()) {
-    case 'income':
+CategoryType categoryTypeFromJson(int type) {
+  switch (type) {
+    case 1:
       return CategoryType.Income;
-    case 'expense':
+    case 2:
       return CategoryType.Expense;
     default:
-      print("Uyarı: Bilinmeyen Kategori Türü String'i: $typeString");
+      print("Uyarı: Bilinmeyen Kategori Türü String'i: $type");
       return CategoryType.Expense; // Veya başka bir varsayılan
   }
 }

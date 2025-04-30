@@ -16,11 +16,11 @@ class CategoryRepositoryImpl implements ICategoryRepository {
   Future<Result<List<CategoryModel>, ApiException>> getCategories(CategoryType type) async {
     try {
       final categories = await _remoteDataSource.getCategories(type);
-      return Result.success(categories);
+      return Success(categories);
     } on DioException catch (e) {
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 
@@ -29,15 +29,15 @@ class CategoryRepositoryImpl implements ICategoryRepository {
       CreateCategoryRequestModel categoryData) async {
     try {
       final newCategory = await _remoteDataSource.createCategory(categoryData);
-      return Result.success(newCategory);
+      return Success(newCategory);
     } on DioException catch (e) {
       // İsim çakışması (400 Bad Request) gibi durumları özel ele alabiliriz
       if (e.response?.statusCode == 400) {
-        return Result.failure(ApiException.fromDioError(e)); // Backend'den gelen mesajı kullan
+        return Failure(ApiException.fromDioError(e)); // Backend'den gelen mesajı kullan
       }
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 
@@ -46,19 +46,19 @@ class CategoryRepositoryImpl implements ICategoryRepository {
       int categoryId, UpdateCategoryRequestModel categoryData) async {
     try {
       await _remoteDataSource.updateCategory(categoryId, categoryData);
-      return Result.success(null);
+      return Success(null);
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        return Result.failure(
+        return Failure(
             ApiException(message: 'Güncellenecek kategori bulunamadı.', statusCode: 404));
       }
       if (e.response?.statusCode == 400) {
         // İsim çakışması vb.
-        return Result.failure(ApiException.fromDioError(e));
+        return Failure(ApiException.fromDioError(e));
       }
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 
@@ -66,19 +66,18 @@ class CategoryRepositoryImpl implements ICategoryRepository {
   Future<Result<void, ApiException>> deleteCategory(int categoryId) async {
     try {
       await _remoteDataSource.deleteCategory(categoryId);
-      return Result.success(null);
+      return Success(null);
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        return Result.failure(
-            ApiException(message: 'Silinecek kategori bulunamadı.', statusCode: 404));
+        return Failure(ApiException(message: 'Silinecek kategori bulunamadı.', statusCode: 404));
       }
       if (e.response?.statusCode == 400) {
         // İlişkili veri hatası
-        return Result.failure(ApiException.fromDioError(e));
+        return Failure(ApiException.fromDioError(e));
       }
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 }

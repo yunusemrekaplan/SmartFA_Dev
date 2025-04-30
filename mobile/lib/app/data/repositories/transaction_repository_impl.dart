@@ -16,11 +16,11 @@ class TransactionRepositoryImpl implements ITransactionRepository {
       TransactionFilterDto filter) async {
     try {
       final transactions = await _remoteDataSource.getUserTransactions(filter);
-      return Result.success(transactions);
+      return Success(transactions);
     } on DioException catch (e) {
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 
@@ -28,14 +28,14 @@ class TransactionRepositoryImpl implements ITransactionRepository {
   Future<Result<TransactionModel, ApiException>> getTransactionById(int transactionId) async {
     try {
       final transaction = await _remoteDataSource.getTransactionById(transactionId);
-      return Result.success(transaction);
+      return Success(transaction);
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        return Result.failure(ApiException(message: 'İşlem bulunamadı.', statusCode: 404));
+        return Failure(ApiException(message: 'İşlem bulunamadı.', statusCode: 404));
       }
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 
@@ -44,11 +44,11 @@ class TransactionRepositoryImpl implements ITransactionRepository {
       CreateTransactionRequestModel transactionData) async {
     try {
       final newTransaction = await _remoteDataSource.createTransaction(transactionData);
-      return Result.success(newTransaction);
+      return Success(newTransaction);
     } on DioException catch (e) {
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 
@@ -57,15 +57,14 @@ class TransactionRepositoryImpl implements ITransactionRepository {
       int transactionId, UpdateTransactionRequestModel transactionData) async {
     try {
       await _remoteDataSource.updateTransaction(transactionId, transactionData);
-      return Result.success(null);
+      return Success(null);
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        return Result.failure(
-            ApiException(message: 'Güncellenecek işlem bulunamadı.', statusCode: 404));
+        return Failure(ApiException(message: 'Güncellenecek işlem bulunamadı.', statusCode: 404));
       }
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 
@@ -73,15 +72,14 @@ class TransactionRepositoryImpl implements ITransactionRepository {
   Future<Result<void, ApiException>> deleteTransaction(int transactionId) async {
     try {
       await _remoteDataSource.deleteTransaction(transactionId);
-      return Result.success(null);
+      return Success(null);
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        return Result.failure(
-            ApiException(message: 'Silinecek işlem bulunamadı.', statusCode: 404));
+        return Failure(ApiException(message: 'Silinecek işlem bulunamadı.', statusCode: 404));
       }
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 }

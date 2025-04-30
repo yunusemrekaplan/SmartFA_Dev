@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:mobile/app/data/models/enums/category_type.dart';
 
 part 'transaction_request_models.g.dart'; // json_serializable için
 
@@ -57,9 +58,8 @@ class TransactionFilterDto {
   final int? categoryId;
   final DateTime? startDate;
   final DateTime? endDate;
-  // Backend'deki CategoryType enum'ına karşılık gelen enum
-  // import '../enums/category_type.dart';
-  // final CategoryType? type;
+  @JsonKey(fromJson: categoryTypeFromJson)
+  final CategoryType? type;
   final int pageNumber;
   final int pageSize;
 
@@ -68,7 +68,7 @@ class TransactionFilterDto {
     this.categoryId,
     this.startDate,
     this.endDate,
-    // this.type,
+    this.type,
     this.pageNumber = 1,
     this.pageSize = 20,
   });
@@ -83,7 +83,7 @@ class TransactionFilterDto {
     if (categoryId != null) params['categoryId'] = categoryId.toString();
     if (startDate != null) params['startDate'] = startDate!.toIso8601String();
     if (endDate != null) params['endDate'] = endDate!.toIso8601String();
-    // if (type != null) params['type'] = type!.index.toString(); // Enum index'ini gönder
+    if (type != null) params['type'] = type!.index.toString(); // Enum index'ini gönder
     return params;
   }
 }

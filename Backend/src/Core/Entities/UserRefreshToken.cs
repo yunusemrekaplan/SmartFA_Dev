@@ -1,17 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Core.Entities.Core;
 
 namespace Core.Entities;
 
 /// <summary>
 /// Kullanıcıların JWT Refresh Token'larını saklamak için entity.
 /// </summary>
-public class UserRefreshToken
+public class UserRefreshToken : BaseEntity
 {
-    [Key]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // Otomatik artan ID
-    public int Id { get; set; }
-
     [Required] public int UserId { get; set; } // Hangi kullanıcıya ait olduğu
     [ForeignKey("UserId")] public virtual User User { get; set; } = null!; // Navigation property
 
@@ -20,8 +17,6 @@ public class UserRefreshToken
     public string Token { get; set; } = null!; // Refresh token değeri
 
     [Required] public DateTime ExpiresAt { get; set; } // Token'ın son kullanma tarihi
-
-    [Required] public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Token'ın oluşturulma tarihi
 
     public DateTime? RevokedAt { get; set; } // Token'ın iptal edilme tarihi (varsa)
 

@@ -16,11 +16,11 @@ class BudgetRepositoryImpl implements IBudgetRepository {
       int year, int month) async {
     try {
       final budgets = await _remoteDataSource.getUserBudgetsByPeriod(year, month);
-      return Result.success(budgets);
+      return Success(budgets);
     } on DioException catch (e) {
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 
@@ -29,15 +29,15 @@ class BudgetRepositoryImpl implements IBudgetRepository {
       CreateBudgetRequestModel budgetData) async {
     try {
       final newBudget = await _remoteDataSource.createBudget(budgetData);
-      return Result.success(newBudget);
+      return Success(newBudget);
     } on DioException catch (e) {
       // Kategori bulunamadı, zaten bütçe var gibi 400 hataları
       if (e.response?.statusCode == 400) {
-        return Result.failure(ApiException.fromDioError(e));
+        return Failure(ApiException.fromDioError(e));
       }
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 
@@ -46,15 +46,14 @@ class BudgetRepositoryImpl implements IBudgetRepository {
       int budgetId, UpdateBudgetRequestModel budgetData) async {
     try {
       await _remoteDataSource.updateBudget(budgetId, budgetData);
-      return Result.success(null);
+      return Success(null);
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        return Result.failure(
-            ApiException(message: 'Güncellenecek bütçe bulunamadı.', statusCode: 404));
+        return Failure(ApiException(message: 'Güncellenecek bütçe bulunamadı.', statusCode: 404));
       }
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 
@@ -62,15 +61,14 @@ class BudgetRepositoryImpl implements IBudgetRepository {
   Future<Result<void, ApiException>> deleteBudget(int budgetId) async {
     try {
       await _remoteDataSource.deleteBudget(budgetId);
-      return Result.success(null);
+      return Success(null);
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        return Result.failure(
-            ApiException(message: 'Silinecek bütçe bulunamadı.', statusCode: 404));
+        return Failure(ApiException(message: 'Silinecek bütçe bulunamadı.', statusCode: 404));
       }
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 }

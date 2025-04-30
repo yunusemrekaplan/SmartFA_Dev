@@ -15,15 +15,15 @@ class DebtPaymentRepositoryImpl implements IDebtPaymentRepository {
   Future<Result<List<DebtPaymentModel>, ApiException>> getDebtPayments(int debtId) async {
     try {
       final payments = await _remoteDataSource.getDebtPayments(debtId);
-      return Result.success(payments);
+      return Success(payments);
     } on DioException catch (e) {
       // Borç bulunamadı hatası (404)
       if (e.response?.statusCode == 404) {
-        return Result.failure(ApiException(message: 'İlgili borç bulunamadı.', statusCode: 404));
+        return Failure(ApiException(message: 'İlgili borç bulunamadı.', statusCode: 404));
       }
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 
@@ -32,20 +32,19 @@ class DebtPaymentRepositoryImpl implements IDebtPaymentRepository {
       CreateDebtPaymentRequestModel paymentData) async {
     try {
       final newPayment = await _remoteDataSource.addDebtPayment(paymentData);
-      return Result.success(newPayment);
+      return Success(newPayment);
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
         // Borç bulunamadı
-        return Result.failure(
-            ApiException(message: 'Ödeme yapılacak borç bulunamadı.', statusCode: 404));
+        return Failure(ApiException(message: 'Ödeme yapılacak borç bulunamadı.', statusCode: 404));
       }
       if (e.response?.statusCode == 400) {
         // Fazla ödeme, zaten ödenmiş vb.
-        return Result.failure(ApiException.fromDioError(e)); // Backend'in mesajını kullan
+        return Failure(ApiException.fromDioError(e)); // Backend'in mesajını kullan
       }
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 }

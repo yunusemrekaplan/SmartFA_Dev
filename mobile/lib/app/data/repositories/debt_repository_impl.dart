@@ -15,11 +15,11 @@ class DebtRepositoryImpl implements IDebtRepository {
   Future<Result<List<DebtModel>, ApiException>> getUserActiveDebts() async {
     try {
       final debts = await _remoteDataSource.getUserActiveDebts();
-      return Result.success(debts);
+      return Success(debts);
     } on DioException catch (e) {
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 
@@ -27,14 +27,14 @@ class DebtRepositoryImpl implements IDebtRepository {
   Future<Result<DebtModel, ApiException>> getDebtById(int debtId) async {
     try {
       final debt = await _remoteDataSource.getDebtById(debtId);
-      return Result.success(debt);
+      return Success(debt);
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        return Result.failure(ApiException(message: 'Borç bulunamadı.', statusCode: 404));
+        return Failure(ApiException(message: 'Borç bulunamadı.', statusCode: 404));
       }
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 
@@ -42,11 +42,11 @@ class DebtRepositoryImpl implements IDebtRepository {
   Future<Result<DebtModel, ApiException>> createDebt(CreateDebtRequestModel debtData) async {
     try {
       final newDebt = await _remoteDataSource.createDebt(debtData);
-      return Result.success(newDebt);
+      return Success(newDebt);
     } on DioException catch (e) {
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 
@@ -54,15 +54,14 @@ class DebtRepositoryImpl implements IDebtRepository {
   Future<Result<void, ApiException>> updateDebt(int debtId, UpdateDebtRequestModel debtData) async {
     try {
       await _remoteDataSource.updateDebt(debtId, debtData);
-      return Result.success(null);
+      return Success(null);
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        return Result.failure(
-            ApiException(message: 'Güncellenecek borç bulunamadı.', statusCode: 404));
+        return Failure(ApiException(message: 'Güncellenecek borç bulunamadı.', statusCode: 404));
       }
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 
@@ -70,18 +69,18 @@ class DebtRepositoryImpl implements IDebtRepository {
   Future<Result<void, ApiException>> deleteDebt(int debtId) async {
     try {
       await _remoteDataSource.deleteDebt(debtId);
-      return Result.success(null);
+      return Success(null);
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        return Result.failure(ApiException(message: 'Silinecek borç bulunamadı.', statusCode: 404));
+        return Failure(ApiException(message: 'Silinecek borç bulunamadı.', statusCode: 404));
       }
       if (e.response?.statusCode == 400) {
         // İlişkili ödeme hatası
-        return Result.failure(ApiException.fromDioError(e));
+        return Failure(ApiException.fromDioError(e));
       }
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 }

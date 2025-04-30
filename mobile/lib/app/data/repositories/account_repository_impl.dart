@@ -17,11 +17,11 @@ class AccountRepositoryImpl implements IAccountRepository {
   Future<Result<List<AccountModel>, ApiException>> getUserAccounts() async {
     try {
       final accounts = await _remoteDataSource.getUserAccounts();
-      return Result.success(accounts);
+      return Success(accounts);
     } on DioException catch (e) {
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 
@@ -29,15 +29,15 @@ class AccountRepositoryImpl implements IAccountRepository {
   Future<Result<AccountModel, ApiException>> getAccountById(int accountId) async {
     try {
       final account = await _remoteDataSource.getAccountById(accountId);
-      return Result.success(account);
+      return Success(account);
     } on DioException catch (e) {
       // 404 Not Found durumunu özel olarak ele alabiliriz
       if (e.response?.statusCode == 404) {
-        return Result.failure(ApiException(message: 'Hesap bulunamadı.', statusCode: 404));
+        return Failure(ApiException(message: 'Hesap bulunamadı.', statusCode: 404));
       }
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 
@@ -46,11 +46,11 @@ class AccountRepositoryImpl implements IAccountRepository {
       CreateAccountRequestModel accountData) async {
     try {
       final newAccount = await _remoteDataSource.createAccount(accountData);
-      return Result.success(newAccount);
+      return Success(newAccount);
     } on DioException catch (e) {
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 
@@ -59,15 +59,14 @@ class AccountRepositoryImpl implements IAccountRepository {
       int accountId, UpdateAccountRequestModel accountData) async {
     try {
       await _remoteDataSource.updateAccount(accountId, accountData);
-      return Result.success(null); // Başarılı ama veri yok
+      return Success(null); // Başarılı ama veri yok
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        return Result.failure(
-            ApiException(message: 'Güncellenecek hesap bulunamadı.', statusCode: 404));
+        return Failure(ApiException(message: 'Güncellenecek hesap bulunamadı.', statusCode: 404));
       }
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 
@@ -75,19 +74,18 @@ class AccountRepositoryImpl implements IAccountRepository {
   Future<Result<void, ApiException>> deleteAccount(int accountId) async {
     try {
       await _remoteDataSource.deleteAccount(accountId);
-      return Result.success(null); // Başarılı ama veri yok
+      return Success(null); // Başarılı ama veri yok
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        return Result.failure(
-            ApiException(message: 'Silinecek hesap bulunamadı.', statusCode: 404));
+        return Failure(ApiException(message: 'Silinecek hesap bulunamadı.', statusCode: 404));
       }
       // Backend'den gelen 400 Bad Request (örn: ilişkili işlem var) hatasını yakala
       if (e.response?.statusCode == 400) {
-        return Result.failure(ApiException.fromDioError(e)); // Backend'in mesajını kullan
+        return Failure(ApiException.fromDioError(e)); // Backend'in mesajını kullan
       }
-      return Result.failure(ApiException.fromDioError(e));
+      return Failure(ApiException.fromDioError(e));
     } catch (e) {
-      return Result.failure(ApiException.fromException(e as Exception));
+      return Failure(ApiException.fromException(e as Exception));
     }
   }
 }

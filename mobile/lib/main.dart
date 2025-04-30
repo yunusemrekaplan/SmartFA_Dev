@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile/app/bindings/initial_binding.dart';
 import 'package:mobile/app/navigation/app_pages.dart';
 import 'package:mobile/app/theme/app_theme.dart';
 
@@ -31,7 +32,7 @@ class MyApp extends StatelessWidget {
       getPages: AppPages.routes, // Rota listesi
 
       // Başlangıç Binding'i (Genel bağımlılıklar için - Opsiyonel)
-      // initialBinding: InitialBinding(),
+      initialBinding: InitialBinding(),
     );
   }
 }
