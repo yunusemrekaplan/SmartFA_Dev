@@ -11,7 +11,7 @@ public class CreateBudgetDtoValidator : AbstractValidator<CreateBudgetDto>
     public CreateBudgetDtoValidator()
     {
         RuleFor(x => x.CategoryId)
-            .GreaterThan(0).WithMessage("Geçerli bir kategori ID'si belirtilmelidir.");
+            .NotNull().WithMessage("Geçerli bir kategori ID'si belirtilmelidir.");
 
         RuleFor(x => x.Amount)
             .GreaterThan(0).WithMessage("Bütçe tutarı sıfırdan büyük olmalıdır.");
