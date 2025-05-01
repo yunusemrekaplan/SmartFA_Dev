@@ -35,6 +35,6 @@ Map<String, dynamic> _$TransactionModelToJson(TransactionModel instance) =>
     };
 
 const _$CategoryTypeEnumMap = {
-  CategoryType.Income: 1,
-  CategoryType.Expense: 2,
+  CategoryType.Expense: 1,
+  CategoryType.Income: 2,
 };

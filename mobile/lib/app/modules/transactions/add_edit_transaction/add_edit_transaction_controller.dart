@@ -33,7 +33,7 @@ class AddEditTransactionController extends GetxController {
   // State değişkenleri
   final RxBool isLoading = false.obs;
   final RxString errorMessage = ''.obs;
-  final Rx<CategoryType> selectedType = CategoryType.Expense.obs;
+  final Rx<CategoryType> selectedType = CategoryType.Income.obs;
   final Rx<AccountModel?> selectedAccount = Rx<AccountModel?>(null);
   final Rx<CategoryModel?> selectedCategory = Rx<CategoryModel?>(null);
   final Rx<DateTime> selectedDate = DateTime.now().obs;
@@ -89,21 +89,24 @@ class AddEditTransactionController extends GetxController {
       );
 
       // Kategorileri yükle
-      final categoriesResult = await _categoryRepository.getUserCategories();
+      final categoriesResult = await _categoryRepository.getCategories(selectedType.value);
       categoriesResult.when(
-        success: (loadedCategories) => categories.value = loadedCategories,
+        success: (loadedCategories) {
+          categories.value = loadedCategories;
+          // İlk kategoriyi seç
+          if (categories.isNotEmpty) {
+            selectedCategory.value = categories.firstWhere(
+              (category) => category.type == selectedType.value,
+              orElse: () => categories.first,
+            );
+          }
+        },
         failure: (error) => errorMessage.value = error.message,
       );
 
-      // İlk hesap ve kategoriyi seç
+      // İlk hesabı seç
       if (accounts.isNotEmpty) {
         selectedAccount.value = accounts.first;
-      }
-      if (categories.isNotEmpty) {
-        selectedCategory.value = categories.firstWhere(
-          (category) => category.type == selectedType.value,
-          orElse: () => categories.first,
-        );
       }
     } catch (e) {
       errorMessage.value = 'Veriler yüklenirken bir hata oluştu.';
@@ -112,13 +115,37 @@ class AddEditTransactionController extends GetxController {
     }
   }
 
-  void selectType(CategoryType type) {
+  void selectType(CategoryType type) async {
     selectedType.value = type;
-    // Kategori seçimini sıfırla ve yeni türe göre ilk kategoriyi seç
-    selectedCategory.value = categories.firstWhere(
+
+    if (categories.isEmpty) {
+      selectedCategory.value = null;
+      return;
+    }
+
+    // Kategorileri güncelle
+    final categoriesResult = await _categoryRepository.getCategories(type);
+    categoriesResult.when(
+      success: (loadedCategories) {
+        categories.value = loadedCategories;
+        // İlk kategoriyi seç
+        if (categories.isNotEmpty) {
+          selectedCategory.value = categories.firstWhere(
+            (category) => category.type == type,
+            orElse: () => categories.first,
+          );
+        }
+      },
+      failure: (error) => errorMessage.value = error.message,
+    );
+
+    // Seçilen tipe göre ilk kategoriyi bul
+    final matchingCategory = categories.firstWhere(
       (category) => category.type == type,
       orElse: () => categories.first,
     );
+
+    selectedCategory.value = matchingCategory;
   }
 
   void selectAccount(AccountModel account) {

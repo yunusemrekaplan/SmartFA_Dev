@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile/app/data/models/enums/account_type.dart';
 import 'package:mobile/app/data/models/response/account_response_model.dart';
 import 'package:mobile/app/modules/accounts/accounts_controller.dart';
 import 'package:mobile/app/theme/app_colors.dart'; // Para formatlama için
@@ -14,18 +15,16 @@ class AccountsScreen extends GetView<AccountsController> {
       NumberFormat.currency(locale: 'tr_TR', symbol: '₺');
 
   // Hesap türüne göre ikon döndüren yardımcı fonksiyon
-  IconData _getAccountIcon(String accountTypeString) {
+  IconData _getAccountIcon(AccountType accountType) {
     // AccountModel'deki type string'ine göre ikon döndür
     // Bu eşleştirme backend DTO'sundaki enum string'ine göre yapılmalı
-    switch (accountTypeString.toLowerCase()) {
-      case 'nakit':
+    switch (accountType) {
+      case AccountType.Cash:
         return Icons.wallet_outlined;
-      case 'bankahesabi': // Backend'den gelen değere göre düzelt
+      case AccountType.Bank: // Backend'den gelen değere göre düzelt
         return Icons.account_balance_outlined;
-      case 'kredikarti': // Backend'den gelen değere göre düzelt
+      case AccountType.CreditCard: // Backend'den gelen değere göre düzelt
         return Icons.credit_card_outlined;
-      default:
-        return Icons.help_outline; // Bilinmeyen tür için
     }
   }
 
@@ -132,7 +131,7 @@ class AccountsScreen extends GetView<AccountsController> {
           style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         subtitle: Text(
-          account.type, // Hesap türünü göster
+          accountTypeToString(account.type),
           style: Theme.of(context).textTheme.bodySmall,
         ),
         trailing: Text(

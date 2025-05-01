@@ -37,17 +37,17 @@ class BudgetModel {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-          other is BudgetModel &&
-              runtimeType == other.runtimeType &&
-              id == other.id &&
-              categoryId == other.categoryId &&
-              categoryName == other.categoryName &&
-              categoryIcon == other.categoryIcon &&
-              amount == other.amount &&
-              month == other.month &&
-              year == other.year &&
-              spentAmount == other.spentAmount &&
-              remainingAmount == other.remainingAmount;
+      other is BudgetModel &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          categoryId == other.categoryId &&
+          categoryName == other.categoryName &&
+          categoryIcon == other.categoryIcon &&
+          amount == other.amount &&
+          month == other.month &&
+          year == other.year &&
+          spentAmount == other.spentAmount &&
+          remainingAmount == other.remainingAmount;
 
   @override
   int get hashCode =>

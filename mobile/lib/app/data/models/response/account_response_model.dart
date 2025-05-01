@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:mobile/app/data/models/enums/account_type.dart';
 
 part 'account_response_model.g.dart'; // json_serializable için
 
@@ -6,10 +7,8 @@ part 'account_response_model.g.dart'; // json_serializable için
 class AccountModel {
   final int id;
   final String name;
-  // Backend'den 'Type' string olarak geliyor (AccountDto'da öyle tanımladık)
-  final String type;
+  final AccountType type;
   final String currency;
-  // Backend'den 'CurrentBalance' olarak geliyor (AccountDto'da öyle tanımladık)
   final double currentBalance; // Dart'ta genellikle double kullanılır
 
   AccountModel({

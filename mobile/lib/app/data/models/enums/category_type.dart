@@ -2,17 +2,17 @@ import 'package:json_annotation/json_annotation.dart';
 
 enum CategoryType {
   @JsonValue(1)
-  Income,
-  @JsonValue(2)
   Expense,
+  @JsonValue(2)
+  Income,
 }
 
 CategoryType categoryTypeFromJson(int type) {
   switch (type) {
     case 1:
-      return CategoryType.Income;
-    case 2:
       return CategoryType.Expense;
+    case 2:
+      return CategoryType.Income;
     default:
       print("Uyarı: Bilinmeyen Kategori Türü String'i: $type");
       return CategoryType.Expense; // Veya başka bir varsayılan
@@ -21,9 +21,20 @@ CategoryType categoryTypeFromJson(int type) {
 
 int categoryTypeToJson(CategoryType type) {
   switch (type) {
-    case CategoryType.Income:
-      return 1;
     case CategoryType.Expense:
+      return 1;
+    case CategoryType.Income:
       return 2;
+  }
+}
+
+extension CategoryTypeExtension on CategoryType {
+  String get name {
+    switch (this) {
+      case CategoryType.Expense:
+        return 'Gider';
+      case CategoryType.Income:
+        return 'Gelir';
+    }
   }
 }

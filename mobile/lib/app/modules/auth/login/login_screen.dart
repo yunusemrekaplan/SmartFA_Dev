@@ -104,12 +104,14 @@ class LoginScreen extends GetView<LoginController> {
                       padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
                       child: Text(
                         controller.errorMessage.value,
-                        style: TextStyle(color: Theme.of(context).colorScheme.error),
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.error),
                         textAlign: TextAlign.center,
                       ),
                     );
                   } else {
-                    return const SizedBox.shrink(); // Hata yoksa boşluk gösterme
+                    return const SizedBox
+                        .shrink(); // Hata yoksa boşluk gösterme
                   }
                 }),
 
@@ -118,7 +120,8 @@ class LoginScreen extends GetView<LoginController> {
                 // Giriş Yap Butonu
                 // Obx ile isLoading state'ini dinle
                 Obx(() => ElevatedButton(
-                      onPressed: controller.isLoading.value ? null : controller.login,
+                      onPressed:
+                          controller.isLoading.value ? null : controller.login,
                       // Yükleniyorsa butonu deaktif et
                       style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16)),
@@ -129,7 +132,8 @@ class LoginScreen extends GetView<LoginController> {
                               width: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
                           : const Text('Giriş Yap'),

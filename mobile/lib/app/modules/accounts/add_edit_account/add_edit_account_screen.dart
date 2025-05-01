@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile/app/data/models/enums/account_type.dart';
 import 'package:mobile/app/data/models/response/account_response_model.dart';
 import 'package:mobile/app/widgets/custom_app_bar.dart';
 import 'add_edit_account_controller.dart';
@@ -47,31 +48,23 @@ class AddEditAccountScreen extends GetView<AddEditAccountController> {
                 const SizedBox(height: 16),
 
                 // Hesap Türü
-                DropdownButtonFormField<String>(
-                  value: controller.selectedAccountType.value,
-                  decoration: const InputDecoration(
-                    labelText: 'Hesap Türü',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.category),
-                  ),
-                  items: controller.accountTypes.map((type) {
-                    return DropdownMenuItem<String>(
-                      value: type,
-                      child: Text(type),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      controller.selectedAccountType.value = value;
-                    }
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Hesap türü seçiniz';
-                    }
-                    return null;
-                  },
-                ),
+                Obx(() => DropdownButtonFormField<AccountType>(
+                      value: controller.selectedAccountType.value,
+                      decoration: const InputDecoration(
+                        labelText: 'Hesap Türü',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.category),
+                      ),
+                      items: controller.accountTypes
+                          .map((type) => DropdownMenuItem(
+                                value: type,
+                                child: Text(
+                                    controller.getAccountTypeDisplayName(type)),
+                              ))
+                          .toList(),
+                      onChanged: (value) =>
+                          controller.selectAccountType(value!),
+                    )),
                 const SizedBox(height: 16),
 
                 // Mevcut Bakiye

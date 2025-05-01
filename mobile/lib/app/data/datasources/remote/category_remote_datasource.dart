@@ -30,7 +30,7 @@ class CategoryRemoteDataSource implements ICategoryRemoteDataSource {
   Future<List<CategoryModel>> getCategories(CategoryType type) async {
     try {
       // Enum'ı query parametresi olarak gönder (backend'deki değerleri kullan)
-      final queryParams = {'type': type == CategoryType.Income ? '1' : '2'};
+      final queryParams = {'type': categoryTypeToJson(type)};
       final response = await _dioClient.get(
         _categoriesEndpoint,
         queryParameters: queryParams,

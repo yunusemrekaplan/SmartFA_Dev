@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile/app/bindings/initial_binding.dart';
 import 'package:mobile/app/navigation/app_pages.dart';
-import 'package:mobile/app/navigation/app_routes.dart';
 import 'package:mobile/app/theme/app_theme.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   // Uygulama başlamadan önce yapılması gerekenler
   WidgetsFlutterBinding.ensureInitialized();
+
+  await initializeDateFormatting('tr', null);
 
   // Hata ayıklama için Flutter hata işleyicisini özelleştir
   FlutterError.onError = (FlutterErrorDetails details) {

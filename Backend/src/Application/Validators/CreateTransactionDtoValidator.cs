@@ -14,7 +14,7 @@ public class CreateTransactionDtoValidator : AbstractValidator<CreateTransaction
             .GreaterThan(0).WithMessage("Geçerli bir hesap ID'si belirtilmelidir.");
 
         RuleFor(x => x.CategoryId)
-            .GreaterThan(0).WithMessage("Geçerli bir kategori ID'si belirtilmelidir.");
+            .NotNull().WithMessage("Geçerli bir kategori ID'si belirtilmelidir.");
 
         RuleFor(x => x.Amount)
             .NotEqual(0).WithMessage("İşlem tutarı sıfır olamaz."); // Pozitif veya negatif olabilir

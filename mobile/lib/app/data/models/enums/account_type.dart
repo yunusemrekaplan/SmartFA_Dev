@@ -11,17 +11,37 @@ enum AccountType {
   CreditCard
 }
 
-AccountType accountTypeFromString(String typeString) {
-  switch (typeString.toLowerCase()) {
-    case 'cash':
+AccountType accountTypeToEnum(int value) {
+  switch (value) {
+    case 1:
       return AccountType.Cash;
-    case 'bank': // Backend'den gelen string'e göre ayarla
+    case 2:
       return AccountType.Bank;
-    case 'creditcard':
+    case 3:
       return AccountType.CreditCard;
     default:
-    // Varsayılan bir değer veya hata fırlatma
-      print("Uyarı: Bilinmeyen Hesap Türü String'i: $typeString");
-      return AccountType.Cash; // Veya başka bir varsayılan
+      throw Exception('Unknown account type value: $value');
+  }
+}
+
+int accountTypeToInt(AccountType type) {
+  switch (type) {
+    case AccountType.Cash:
+      return 1;
+    case AccountType.Bank:
+      return 2;
+    case AccountType.CreditCard:
+      return 3;
+  }
+}
+
+String accountTypeToString(AccountType accountType) {
+  switch (accountType) {
+    case AccountType.Cash:
+      return 'Nakit';
+    case AccountType.Bank:
+      return 'Banka';
+    case AccountType.CreditCard:
+      return 'Kredi Kartı';
   }
 }

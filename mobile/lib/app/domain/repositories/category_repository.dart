@@ -6,8 +6,7 @@ import 'package:mobile/app/utils/result.dart';
 
 abstract class ICategoryRepository {
   /// Kullanıcının ve ön tanımlı kategorileri tipe göre getirir.
-  Future<Result<List<CategoryModel>, ApiException>> getCategories(
-      CategoryType type);
+  Future<Result<List<CategoryModel>, ApiException>> getCategories(CategoryType type);
 
   /// Yeni bir özel kategori oluşturur.
   Future<Result<CategoryModel, ApiException>> createCategory(

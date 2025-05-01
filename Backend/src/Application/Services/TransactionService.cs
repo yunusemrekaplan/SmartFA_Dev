@@ -174,6 +174,10 @@ public class TransactionService : ITransactionService
             {
                 return Result.Failure($"İşlem için belirtilen yeni kategori bulunamadı (ID: {updateTransactionDto.CategoryId}).");
             }
+            
+            // Hesap ve kategori ID'lerini güncelle
+            existingTransaction.AccountId = newAccount.Id;
+            existingTransaction.CategoryId = newCategory.Id;
 
             _mapper.Map(updateTransactionDto, existingTransaction);
             if (newCategory.Type == CategoryType.Expense && existingTransaction.Amount > 0) existingTransaction.Amount *= -1;

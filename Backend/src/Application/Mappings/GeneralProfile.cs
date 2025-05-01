@@ -21,7 +21,7 @@ public class GeneralProfile : Profile
             // AccountDto'daki CurrentBalance, servis katmanında hesaplandığı için burada map edilmez.
             // Eğer Account entity'sinde CurrentBalance olsaydı: .ForMember(dest => dest.CurrentBalance, opt => opt.MapFrom(src => src.CurrentBalance))
             // Enum'dan string'e dönüşüm (AccountType -> string)
-            .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type.ToString()));
+            .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Type));
         CreateMap<CreateAccountDto, Account>(); // InitialBalance map edilir.
         CreateMap<UpdateAccountDto, Account>()
             // Sadece map edilmesi gereken alanları belirtmek için (opsiyonel ama güvenli)

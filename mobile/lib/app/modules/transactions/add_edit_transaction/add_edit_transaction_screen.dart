@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile/app/data/models/enums/category_type.dart';
-import 'package:mobile/app/data/models/request/transaction_request_models.dart';
 import 'package:mobile/app/data/models/response/account_response_model.dart';
 import 'package:mobile/app/data/models/response/category_response_model.dart';
-import 'package:mobile/app/data/models/response/transaction_response_model.dart';
-import 'package:mobile/app/modules/transactions/add_edit_transaction_controller.dart';
+import 'package:mobile/app/modules/transactions/add_edit_transaction/add_edit_transaction_controller.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 
 class AddEditTransactionScreen extends GetView<AddEditTransactionController> {
@@ -16,7 +14,8 @@ class AddEditTransactionScreen extends GetView<AddEditTransactionController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(controller.isEditing.value ? 'İşlem Düzenle' : 'Yeni İşlem'),
+        title:
+            Text(controller.isEditing.value ? 'İşlem Düzenle' : 'Yeni İşlem'),
         actions: [
           if (controller.isEditing.value)
             IconButton(
@@ -40,9 +39,7 @@ class AddEditTransactionScreen extends GetView<AddEditTransactionController> {
                   items: CategoryType.values
                       .map((type) => DropdownMenuItem(
                             value: type,
-                            child: Text(type == CategoryType.Income
-                                ? 'Gelir'
-                                : 'Gider'),
+                            child: Text(type.name),
                           ))
                       .toList(),
                   onChanged: (value) => controller.selectType(value!),

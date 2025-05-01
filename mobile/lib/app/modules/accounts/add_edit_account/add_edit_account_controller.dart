@@ -21,17 +21,10 @@ class AddEditAccountController extends GetxController {
   final RxBool isSubmitting = false.obs;
   final RxBool isEditing = false.obs;
   final Rx<AccountModel?> editingAccount = Rx<AccountModel?>(null);
-  final RxString selectedAccountType = ''.obs;
+  final Rx<AccountType> selectedAccountType = AccountType.Cash.obs;
 
   // Hesap türleri listesi
-  final List<String> accountTypes = [
-    'Banka Hesabı',
-    'Nakit',
-    'Kredi Kartı',
-    'Birikim Hesabı',
-    'Yatırım Hesabı',
-    'Diğer',
-  ];
+  final List<AccountType> accountTypes = AccountType.values;
 
   @override
   void onInit() {
@@ -62,8 +55,7 @@ class AddEditAccountController extends GetxController {
       } else {
         // Ekleme modu
         isEditing.value = false;
-        selectedAccountType.value =
-            accountTypes[0]; // Varsayılan olarak ilk türü seç
+        selectedAccountType.value = AccountType.Cash;
         balanceController.text = '0.00'; // Varsayılan bakiye
       }
     } catch (e) {
@@ -80,10 +72,7 @@ class AddEditAccountController extends GetxController {
     balanceController.text = account.currency.toString();
 
     // Hesap türünü seç, eşleşen yoksa ilk seçenek
-    selectedAccountType.value = accountTypes.firstWhere(
-      (type) => type.toLowerCase().contains(account.type.toLowerCase()),
-      orElse: () => accountTypes[0],
-    );
+    selectedAccountType.value = account.type;
   }
 
   /// Hesap verilerini kaydeder (ekle veya güncelle)
@@ -123,7 +112,7 @@ class AddEditAccountController extends GetxController {
           name: nameController.text.trim(),
           initialBalance:
               double.parse(balanceController.text.replaceAll(',', '.')),
-          type: accountTypeFromString(selectedAccountType.value),
+          type: selectedAccountType.value,
           currency: 'TRY',
         );
 
@@ -200,6 +189,23 @@ class AddEditAccountController extends GetxController {
       Get.snackbar('Hata', 'Beklenmeyen bir hata oluştu');
     } finally {
       isSubmitting.value = false;
+    }
+  }
+
+  /// Hesap türünü seçer
+  void selectAccountType(AccountType type) {
+    selectedAccountType.value = type;
+  }
+
+  /// Hesap türünün görünen adını döndürür
+  String getAccountTypeDisplayName(AccountType type) {
+    switch (type) {
+      case AccountType.Cash:
+        return 'Nakit';
+      case AccountType.Bank:
+        return 'Banka Hesabı';
+      case AccountType.CreditCard:
+        return 'Kredi Kartı';
     }
   }
 }

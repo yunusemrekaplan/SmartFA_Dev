@@ -13,8 +13,7 @@ class CategoryRepositoryImpl implements ICategoryRepository {
   CategoryRepositoryImpl(this._remoteDataSource);
 
   @override
-  Future<Result<List<CategoryModel>, ApiException>> getCategories(
-      CategoryType type) async {
+  Future<Result<List<CategoryModel>, ApiException>> getCategories(CategoryType type) async {
     try {
       final categories = await _remoteDataSource.getCategories(type);
       return Success(categories);
@@ -34,8 +33,7 @@ class CategoryRepositoryImpl implements ICategoryRepository {
     } on DioException catch (e) {
       // İsim çakışması (400 Bad Request) gibi durumları özel ele alabiliriz
       if (e.response?.statusCode == 400) {
-        return Failure(
-            ApiException.fromDioError(e)); // Backend'den gelen mesajı kullan
+        return Failure(ApiException.fromDioError(e)); // Backend'den gelen mesajı kullan
       }
       return Failure(ApiException.fromDioError(e));
     } catch (e) {
@@ -51,8 +49,8 @@ class CategoryRepositoryImpl implements ICategoryRepository {
       return Success(null);
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        return Failure(ApiException(
-            message: 'Güncellenecek kategori bulunamadı.', statusCode: 404));
+        return Failure(
+            ApiException(message: 'Güncellenecek kategori bulunamadı.', statusCode: 404));
       }
       if (e.response?.statusCode == 400) {
         // İsim çakışması vb.
@@ -71,8 +69,7 @@ class CategoryRepositoryImpl implements ICategoryRepository {
       return Success(null);
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
-        return Failure(ApiException(
-            message: 'Silinecek kategori bulunamadı.', statusCode: 404));
+        return Failure(ApiException(message: 'Silinecek kategori bulunamadı.', statusCode: 404));
       }
       if (e.response?.statusCode == 400) {
         // İlişkili veri hatası

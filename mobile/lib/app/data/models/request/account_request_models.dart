@@ -9,7 +9,7 @@ class CreateAccountRequestModel {
   final String name;
   // JSON'a gönderirken enum'ın değerini (int) veya adını (string) gönderebiliriz.
   // Backend'in ne beklediğine göre ayarlanmalı. Genellikle int daha güvenilirdir.
-  @JsonKey(toJson: _accountTypeToJson) // Enum'ı int'e çevir
+  @JsonKey(toJson: accountTypeToInt) // Enum'ı int'e çevir
   final AccountType type;
   final String currency;
   final double initialBalance; // Dart'ta double
@@ -37,7 +37,7 @@ class UpdateAccountRequestModel {
 }
 
 // AccountType enum'ını JSON'a gönderirken int değerine çeviren yardımcı fonksiyon
-int _accountTypeToJson(AccountType type) => type.index; // Enum'ın index'ini (0, 1, 2) kullanır
+int _accountTypeToJson(AccountType type) => accountTypeToInt(type);
 
 // Veya string olarak göndermek isterseniz:
 // String _accountTypeToJsonString(AccountType type) => type.name; // Enum'ın adını kullanır

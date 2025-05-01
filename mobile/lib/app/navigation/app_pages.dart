@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile/app/modules/accounts/add_edit_account/add_edit_account_binding.dart';
 import 'package:mobile/app/modules/accounts/add_edit_account/add_edit_account_screen.dart';
+import 'package:mobile/app/modules/budgets/add_edit_budget/add_edit_budget_binding.dart';
+import 'package:mobile/app/modules/budgets/add_edit_budget/add_edit_budget_screen.dart';
 import 'package:mobile/app/modules/budgets/budgets_binding.dart';
 import 'package:mobile/app/modules/budgets/budgets_screen.dart';
 import 'package:mobile/app/modules/splash/splash_binding.dart';
 import 'package:mobile/app/modules/splash/splash_screen.dart';
-import 'package:mobile/app/modules/transactions/add_edit_transaction_binding.dart';
-import 'package:mobile/app/modules/transactions/add_edit_transaction_screen.dart';
-import 'package:mobile/app/modules/transactions/transactions_binding.dart';
+import 'package:mobile/app/modules/transactions/add_edit_transaction/add_edit_transaction_binding.dart';
+import 'package:mobile/app/modules/transactions/add_edit_transaction/add_edit_transaction_screen.dart';
 
 // Rota isimlerini import et
 import 'app_routes.dart';
@@ -42,8 +43,10 @@ class AppPages {
       page: () => const SplashScreen(),
       binding: SplashBinding(),
       transition: Transition.fadeIn,
-      preventDuplicates: true, // Aynı rotaya birden fazla gidilmesini engelle
-      popGesture: false, // Geri gitme hareketini engelle
+      preventDuplicates: true,
+      // Aynı rotaya birden fazla gidilmesini engelle
+      popGesture: false,
+      // Geri gitme hareketini engelle
       transitionDuration: const Duration(milliseconds: 500),
     ),
 
@@ -94,8 +97,8 @@ class AppPages {
     ),
     GetPage(
       name: AppRoutes.ADD_EDIT_BUDGET,
-      page: () => const PlaceholderScreen(routeName: 'Bütçe Ekle/Düzenle'),
-      binding: BudgetsBinding(), // Bütçeyle ilgili bağımlılıklar
+      page: () => const AddEditBudgetScreen(),
+      binding: AddEditBudgetBinding(), // Bütçe ekleme/düzenleme bağımlılıkları
       fullscreenDialog: true,
     ),
     /*GetPage(
