@@ -1,0 +1,122 @@
+import 'package:flutter/foundation.dart';
+import 'package:get/get.dart';
+import 'package:mobile/app/data/models/enums/category_type.dart';
+import 'package:mobile/app/data/models/request/transaction_request_models.dart';
+import 'package:mobile/app/data/models/response/transaction_response_model.dart';
+import 'package:mobile/app/domain/repositories/transaction_repository.dart';
+import 'package:mobile/app/utils/exceptions.dart';
+import 'package:mobile/app/utils/result.dart';
+
+/// Finansal genel bakış servis sınıfı.
+/// Gelir, gider ve işlem özetlerini yönetir.
+class FinancialOverviewService {
+  // Repository'ler
+  final ITransactionRepository _transactionRepository;
+
+  // State değişkenleri
+  final RxDouble totalIncome = 0.0.obs;
+  final RxDouble totalExpense = 0.0.obs;
+  final RxList<TransactionModel> recentTransactions = <TransactionModel>[].obs;
+
+  // Constructor - Dependency Injection
+  FinancialOverviewService({
+    required ITransactionRepository transactionRepository,
+  }) : _transactionRepository = transactionRepository;
+
+  /// Son işlemleri çeker
+  Future<Result<List<TransactionModel>, AppException>>
+      fetchRecentTransactions() async {
+    final filter = _createRecentTransactionsFilter();
+    return await _transactionRepository.getUserTransactions(filter);
+  }
+
+  /// Son işlemler için filtre oluşturur
+  TransactionFilterDto _createRecentTransactionsFilter() {
+    return TransactionFilterDto(pageNumber: 1, pageSize: 5);
+  }
+
+  /// Aylık gelir ve giderleri çeker
+  Future<Result<Map<String, double>, AppException>>
+      fetchMonthlyIncomeExpense() async {
+    try {
+      final dateRange = _getCurrentMonthDateRange();
+      final filter = _createMonthlyTransactionsFilter(dateRange);
+      final result = await _transactionRepository.getUserTransactions(filter);
+
+      return result.when(
+        success: (transactions) =>
+            Success(_calculateIncomeAndExpense(transactions)),
+        failure: (error) => Failure(error),
+      );
+    } catch (e) {
+      return Failure(_createUnexpectedException(e));
+    }
+  }
+
+  /// Geçerli ayın tarih aralığını döndürür
+  Map<String, DateTime> _getCurrentMonthDateRange() {
+    final now = DateTime.now();
+    return {
+      'start': DateTime(now.year, now.month, 1),
+      'end': DateTime(now.year, now.month + 1, 0),
+    };
+  }
+
+  /// Aylık işlemler için filtre oluşturur
+  TransactionFilterDto _createMonthlyTransactionsFilter(
+      Map<String, DateTime> dateRange) {
+    return TransactionFilterDto(
+      pageSize: 100,
+      startDate: dateRange['start'],
+      endDate: dateRange['end'],
+    );
+  }
+
+  /// İşlemlerden gelir ve gider toplamlarını hesaplar
+  Map<String, double> _calculateIncomeAndExpense(
+      List<TransactionModel> transactions) {
+    double income = 0;
+    double expense = 0;
+
+    for (var transaction in transactions) {
+      if (transaction.categoryType == CategoryType.Income) {
+        income += transaction.amount;
+      } else {
+        expense += transaction.amount;
+      }
+    }
+
+    return {'income': income, 'expense': expense};
+  }
+
+  /// Beklenmedik bir hata oluştuğunda AppException oluşturur
+  UnexpectedException _createUnexpectedException(dynamic error) {
+    return UnexpectedException(
+      message: 'Finansal özet alınırken beklenmedik bir hata oluştu: $error',
+      code: 'FINANCIAL_OVERVIEW_ERROR',
+    );
+  }
+
+  /// İşlemleri işler
+  void processTransactions(Result<List<TransactionModel>, AppException> result,
+      Function(AppException, String, VoidCallback) errorHandler) {
+    result.when(
+      success: (transactions) => recentTransactions.assignAll(transactions),
+      failure: (error) => errorHandler(
+          error, 'Son İşlemler Yüklenemedi', () => fetchRecentTransactions()),
+    );
+  }
+
+  /// Gelir-gider bilgilerini işler
+  void processIncomeExpense(Result<Map<String, double>, AppException> result,
+      Function(AppException, String, VoidCallback) errorHandler) {
+    result.when(
+      success: (data) {
+        totalIncome.value = data['income'] ?? 0;
+        totalExpense.value = data['expense'] ?? 0;
+      },
+      failure: (error) => errorHandler(error, 'Gelir-Gider Özeti Yüklenemedi',
+          () => fetchMonthlyIncomeExpense()),
+    );
+  }
+}
