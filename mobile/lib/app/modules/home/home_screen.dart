@@ -17,7 +17,6 @@ import '../../navigation/app_routes.dart';
 // Özelleştirilmiş bileşenler
 import '../../widgets/app_drawer.dart';
 import '../../widgets/custom_bottom_bar.dart';
-import '../../widgets/custom_home_app_bar.dart';
 
 /// Ana ekran widget'ı, alt navigasyon çubuğunu ve sekmeleri içerir.
 class HomeScreen extends GetView<HomeController> {
@@ -26,13 +25,10 @@ class HomeScreen extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Özelleştirilmiş AppBar
-      appBar: CustomHomeAppBar(controller: controller),
-
       // Seçili sekmeye göre body'yi değiştirmek için Obx ve PageView
       body: PageView(
         physics:
-        const NeverScrollableScrollPhysics(), // Sayfa kaydırmayı devre dışı bırak
+            const NeverScrollableScrollPhysics(), // Sayfa kaydırmayı devre dışı bırak
         controller: controller.pageController,
         onPageChanged: controller.changeTabIndex,
         children: const [

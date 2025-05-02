@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile/app/modules/dashboard/dashboard_controller.dart';
-import 'package:mobile/app/modules/dashboard/widgets/balance_card.dart';
 import 'package:mobile/app/modules/dashboard/widgets/budget_summary_card.dart';
 import 'package:mobile/app/modules/dashboard/widgets/income_expense_chart.dart';
 import 'package:mobile/app/modules/dashboard/widgets/info_panel.dart';
@@ -10,6 +9,7 @@ import 'package:mobile/app/modules/dashboard/widgets/section_header.dart';
 import 'package:mobile/app/modules/dashboard/widgets/transaction_summary_card.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/app/widgets/error_view.dart';
+import 'package:mobile/app/widgets/custom_home_app_bar.dart';
 
 /// Modern dashboard ekranı, finans özetini görsel öğelerle gösterir
 class DashboardScreen extends GetView<DashboardController> {
@@ -23,6 +23,45 @@ class DashboardScreen extends GetView<DashboardController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: CustomHomeAppBar(
+        title: 'Özet',
+        leading: IconButton(
+          icon: const Icon(Icons.menu_rounded),
+          onPressed: () {
+            Scaffold.of(context).openDrawer();
+          },
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            tooltip: 'Bildirimler',
+            onPressed: () {
+              // TODO: Bildirimler sayfasına yönlendir
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Bildirimler henüz yapım aşamasında'),
+                  duration: Duration(seconds: 2),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'Yenile',
+            onPressed: () {
+              controller.refreshData();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Veriler yenileniyor...'),
+                  duration: Duration(seconds: 1),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         color: AppColors.primary,
         onRefresh: controller.refreshData,
@@ -77,13 +116,13 @@ class DashboardScreen extends GetView<DashboardController> {
           ),
 
         // --- Bakiye Kartı ---
-        Obx(() => BalanceCard(
+        /*Obx(() => BalanceCard(
               totalBalance: controller.totalBalance.value,
               onRefresh: controller.refreshData,
               onViewDetails: controller.navigateToAccounts,
             )),
 
-        const SizedBox(height: 24),
+        const SizedBox(height: 24),*/
 
         // --- Gelir-Gider Özeti Grafik ---
         Obx(() => IncomeExpenseChart(

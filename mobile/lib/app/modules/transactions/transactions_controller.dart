@@ -10,8 +10,6 @@ import 'package:mobile/app/domain/repositories/category_repository.dart';
 import 'package:mobile/app/domain/repositories/transaction_repository.dart';
 import 'package:mobile/app/navigation/app_routes.dart';
 import 'package:mobile/app/theme/app_colors.dart';
-import 'package:mobile/app/utils/error_handler.dart';
-import 'package:mobile/app/utils/exceptions.dart';
 
 /// İşlemler ekranının state'ini ve iş mantığını yöneten GetX controller.
 class TransactionsController extends GetxController {
@@ -19,7 +17,7 @@ class TransactionsController extends GetxController {
   final ITransactionRepository _transactionRepository;
   final IAccountRepository _accountRepository;
   final ICategoryRepository _categoryRepository;
-  final ErrorHandler _errorHandler = ErrorHandler();
+  //final ErrorHandler _errorHandler = ErrorHandler();
 
   TransactionsController({
     required ITransactionRepository transactionRepository,
@@ -61,6 +59,13 @@ class TransactionsController extends GetxController {
   // Scroll Controller (sonsuz kaydırma için)
   final ScrollController scrollController = ScrollController();
 
+  // Toplam gelir ve gider değerleri için observable değişkenler
+  final RxDouble totalIncome = 0.0.obs;
+  final RxDouble totalExpense = 0.0.obs;
+
+  // Sıralama kriteri
+  final RxString sortCriteria = 'date_desc'.obs;
+
   // --- Lifecycle Metotları ---
 
   @override
@@ -71,6 +76,7 @@ class TransactionsController extends GetxController {
     _initializeData();
     // Scroll listener'ı ekle
     scrollController.addListener(_scrollListener);
+    fetchTransactions(isInitialLoad: true);
   }
 
   @override
@@ -208,6 +214,9 @@ class TransactionsController extends GetxController {
               : 1; // Hata olursa sayfayı geri al
         },
       );
+
+      // Toplam gelir ve gider hesapla
+      _calculateTotals();
     } catch (e) {
       print('>>> Fetch transactions unexpected error: $e');
       errorMessage.value = 'İşlemler yüklenirken beklenmedik bir hata oluştu.';
@@ -231,9 +240,12 @@ class TransactionsController extends GetxController {
   }
 
   /// Seçilen filtreleri uygular ve işlemleri yeniden yükler.
-  Future<void> applyFilters() async {
-    // Filtreler değiştiğinde ilk sayfayı yükle
-    await fetchTransactions(isInitialLoad: true);
+  void applyFilters() {
+    isLoading.value = true;
+    transactionList.clear();
+    _currentPage.value = 1;
+    hasMoreData.value = true;
+    fetchTransactions(isInitialLoad: false);
   }
 
   /// Tüm filtreleri temizler ve işlemleri yeniden yükler.
@@ -386,5 +398,81 @@ class TransactionsController extends GetxController {
       }
     });
     print('Edit transaction tıklandı: ${transaction.id}');
+  }
+
+  // Sıralama kriterini ayarla
+  void setSortingCriteria(String criteria) {
+    sortCriteria.value = criteria;
+    applyFilters();
+  }
+
+  // Hızlı tarih filtresi ayarla
+  void setQuickDateFilter(String period) {
+    final now = DateTime.now();
+
+    switch (period) {
+      case 'today':
+        selectedStartDate.value = DateTime(now.year, now.month, now.day);
+        selectedEndDate.value =
+            DateTime(now.year, now.month, now.day, 23, 59, 59);
+        break;
+
+      case 'yesterday':
+        final yesterday = now.subtract(const Duration(days: 1));
+        selectedStartDate.value =
+            DateTime(yesterday.year, yesterday.month, yesterday.day);
+        selectedEndDate.value = DateTime(
+            yesterday.year, yesterday.month, yesterday.day, 23, 59, 59);
+        break;
+
+      case 'thisWeek':
+        // Haftanın ilk günü (Pazartesi) olarak ayarla
+        final firstDayOfWeek = now.subtract(Duration(days: now.weekday - 1));
+        selectedStartDate.value = DateTime(
+            firstDayOfWeek.year, firstDayOfWeek.month, firstDayOfWeek.day);
+        selectedEndDate.value =
+            DateTime(now.year, now.month, now.day, 23, 59, 59);
+        break;
+
+      case 'thisMonth':
+        selectedStartDate.value = DateTime(now.year, now.month, 1);
+        selectedEndDate.value =
+            DateTime(now.year, now.month, now.day, 23, 59, 59);
+        break;
+
+      case 'lastMonth':
+        final lastMonth = DateTime(now.year, now.month - 1, 1);
+        selectedStartDate.value = DateTime(lastMonth.year, lastMonth.month, 1);
+        selectedEndDate.value =
+            DateTime(lastMonth.year, lastMonth.month + 1, 0, 23, 59, 59);
+        break;
+
+      case 'last3Months':
+        final threeMonthsAgo = DateTime(now.year, now.month - 3, 1);
+        selectedStartDate.value =
+            DateTime(threeMonthsAgo.year, threeMonthsAgo.month, 1);
+        selectedEndDate.value =
+            DateTime(now.year, now.month, now.day, 23, 59, 59);
+        break;
+    }
+
+    applyFilters();
+  }
+
+  // Verileri işlerken toplam gelir ve giderleri hesapla
+  void _calculateTotals() {
+    double income = 0;
+    double expense = 0;
+
+    for (final transaction in transactionList) {
+      if (transaction.categoryType == CategoryType.Income) {
+        income += transaction.amount;
+      } else {
+        expense += transaction.amount;
+      }
+    }
+
+    totalIncome.value = income;
+    totalExpense.value = expense;
   }
 }

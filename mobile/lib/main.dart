@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:mobile/app/bindings/initial_binding.dart';
 import 'package:mobile/app/navigation/app_pages.dart';
@@ -65,6 +66,16 @@ class MyApp extends StatelessWidget {
       }),
 
       defaultTransition: Transition.fadeIn,
+      locale: Locale('tr', 'TR'), // Yerelleştirme için dil ve bölge
+      supportedLocales: [
+        Locale('en', 'US'),
+        Locale('tr', 'TR'),
+      ],
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
     );
   }
 }

@@ -120,7 +120,7 @@ class AuthRepositoryImpl implements IAuthRepository {
         refreshToken: responseModel.refreshToken,
       );
       return Success(responseModel);
-    } on DioException catch (e) {
+    } on DioException {
       // Refresh token geçersizse veya başka bir API hatası varsa
       // Tokenları temizle ve hata döndür
       await _localDataSource.clearTokens(); // Hata durumunda tokenları temizle

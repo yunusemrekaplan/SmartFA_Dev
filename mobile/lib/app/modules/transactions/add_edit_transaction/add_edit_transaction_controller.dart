@@ -8,7 +8,6 @@ import 'package:mobile/app/data/models/response/transaction_response_model.dart'
 import 'package:mobile/app/domain/repositories/account_repository.dart';
 import 'package:mobile/app/domain/repositories/category_repository.dart';
 import 'package:mobile/app/domain/repositories/transaction_repository.dart';
-import 'package:mobile/app/utils/result.dart';
 
 class AddEditTransactionController extends GetxController {
   final ITransactionRepository _transactionRepository;
@@ -32,6 +31,7 @@ class AddEditTransactionController extends GetxController {
 
   // State değişkenleri
   final RxBool isLoading = false.obs;
+  final RxBool isSubmitting = false.obs;
   final RxString errorMessage = ''.obs;
   final Rx<CategoryType> selectedType = CategoryType.Income.obs;
   final Rx<AccountModel?> selectedAccount = Rx<AccountModel?>(null);
@@ -89,7 +89,8 @@ class AddEditTransactionController extends GetxController {
       );
 
       // Kategorileri yükle
-      final categoriesResult = await _categoryRepository.getCategories(selectedType.value);
+      final categoriesResult =
+          await _categoryRepository.getCategories(selectedType.value);
       categoriesResult.when(
         success: (loadedCategories) {
           categories.value = loadedCategories;
@@ -182,6 +183,7 @@ class AddEditTransactionController extends GetxController {
     }
 
     isLoading.value = true;
+    isSubmitting.value = true;
     errorMessage.value = '';
 
     try {
@@ -237,6 +239,7 @@ class AddEditTransactionController extends GetxController {
       errorMessage.value = 'İşlem kaydedilirken bir hata oluştu.';
     } finally {
       isLoading.value = false;
+      isSubmitting.value = false;
     }
   }
 
@@ -263,6 +266,7 @@ class AddEditTransactionController extends GetxController {
     if (confirm != true) return;
 
     isLoading.value = true;
+    isSubmitting.value = true;
     errorMessage.value = '';
 
     try {
@@ -285,6 +289,7 @@ class AddEditTransactionController extends GetxController {
       errorMessage.value = 'İşlem silinirken bir hata oluştu.';
     } finally {
       isLoading.value = false;
+      isSubmitting.value = false;
     }
   }
 }

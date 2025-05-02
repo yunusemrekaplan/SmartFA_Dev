@@ -152,8 +152,6 @@ class TransactionListItem extends StatelessWidget {
         return Icons.arrow_upward;
       case TransactionType.transfer:
         return Icons.swap_horiz;
-      default:
-        return Icons.monetization_on;
     }
   }
 
@@ -171,8 +169,6 @@ class TransactionListItem extends StatelessWidget {
       case TransactionType.expense:
         return -amount.abs(); // Gider negatif
       case TransactionType.transfer:
-        return amount; // Transfer işareti korunur
-      default:
         return amount;
     }
   }

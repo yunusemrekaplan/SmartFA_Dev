@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile/app/data/models/response/account_response_model.dart';
 import 'package:mobile/app/domain/repositories/account_repository.dart';

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile/app/modules/budgets/add_edit_budget/add_edit_budget_controller.dart';
-import 'package:mobile/app/theme/app_colors.dart';
 
 /// Bütçe ekleme/düzenleme ekranı.
 class AddEditBudgetScreen extends GetView<AddEditBudgetController> {

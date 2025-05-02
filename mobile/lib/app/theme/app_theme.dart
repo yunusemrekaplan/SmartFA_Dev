@@ -5,7 +5,7 @@ import 'package:mobile/app/theme/app_colors.dart';
 class AppTheme {
   // Açık Tema Ayarları
   static ThemeData get lightTheme {
-    final TextTheme _baseTextTheme = GoogleFonts.interTextTheme();
+    //final TextTheme _baseTextTheme = GoogleFonts.interTextTheme();
 
     return ThemeData(
       useMaterial3: true, // Material 3 kullan

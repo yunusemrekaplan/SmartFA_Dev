@@ -1,8 +1,4 @@
 import 'package:get/get.dart';
-import 'package:mobile/app/data/datasources/remote/budget_remote_datasource.dart';
-import 'package:mobile/app/data/datasources/remote/category_remote_datasource.dart';
-import 'package:mobile/app/data/repositories/budget_repository_impl.dart';
-import 'package:mobile/app/data/repositories/category_repository_impl.dart';
 import 'package:mobile/app/domain/repositories/budget_repository.dart';
 import 'package:mobile/app/domain/repositories/category_repository.dart';
 import 'package:mobile/app/modules/budgets/add_edit_budget/add_edit_budget_controller.dart';
