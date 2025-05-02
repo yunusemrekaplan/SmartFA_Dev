@@ -10,69 +10,31 @@ import 'package:mobile/app/modules/transactions/transactions_binding.dart';
 class HomeBinding extends Bindings {
   @override
   void dependencies() {
-    print('>>> HomeBinding dependencies() called');
-
-    // Ana Home Controller (BottomNavBar yönetimi, genel home state'i vb. için)
-    // Bu controller, diğer sekmelerin controller'larına erişebilir veya
-    // sekme değişimini yönetebilir.
+    // Ana Home Controller
     Get.lazyPut<HomeController>(() => HomeController(), fenix: true);
 
-    // Her bir alt sekmenin binding'ini çalıştır
-    // Bu sayede tüm modüller tek seferde yüklenir
-    _initDashboardBinding();
-    _initAccountsBinding();
-    _initTransactionsBinding();
-    _initBudgetsBinding();
-    _initSettingsBinding();
+    // Alt modüllerin binding'lerini yükle
+    _initModuleBindings();
   }
 
-  /// Dashboard modülü için bağımlılıkları yükler
-  void _initDashboardBinding() {
-    try {
-      DashboardBinding().dependencies();
-      print('>>> Dashboard dependencies loaded');
-    } catch (e) {
-      print('>>> Error loading dashboard dependencies: $e');
-    }
-  }
+  /// Tüm alt modüllerin binding'lerini yükler
+  void _initModuleBindings() {
+    final modules = [
+      DashboardBinding(),
+      AccountsBinding(),
+      TransactionsBinding(),
+      BudgetsBinding(),
+      SettingsBinding(),
+    ];
 
-  /// Accounts modülü için bağımlılıkları yükler
-  void _initAccountsBinding() {
-    try {
-      AccountsBinding().dependencies();
-      print('>>> Accounts dependencies loaded');
-    } catch (e) {
-      print('>>> Error loading accounts dependencies: $e');
-    }
-  }
-
-  /// Transactions modülü için bağımlılıkları yükler
-  void _initTransactionsBinding() {
-    try {
-      TransactionsBinding().dependencies();
-      print('>>> Transactions dependencies loaded');
-    } catch (e) {
-      print('>>> Error loading transactions dependencies: $e');
-    }
-  }
-
-  /// Budgets modülü için bağımlılıkları yükler
-  void _initBudgetsBinding() {
-    try {
-      BudgetsBinding().dependencies();
-      print('>>> Budgets dependencies loaded');
-    } catch (e) {
-      print('>>> Error loading budgets dependencies: $e');
-    }
-  }
-
-  /// Settings modülü için bağımlılıkları yükler
-  void _initSettingsBinding() {
-    try {
-      SettingsBinding().dependencies();
-      print('>>> Settings dependencies loaded');
-    } catch (e) {
-      print('>>> Error loading settings dependencies: $e');
+    // Her bir modülün binding'ini çalıştır
+    for (final binding in modules) {
+      try {
+        binding.dependencies();
+      } catch (e) {
+        printError(
+            info: 'Error loading dependencies for ${binding.runtimeType}: $e');
+      }
     }
   }
 }

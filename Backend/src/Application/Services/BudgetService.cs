@@ -46,7 +46,6 @@ public class BudgetService : IBudgetService
                  t.CategoryId == categoryId &&
                  t.TransactionDate.Date >= startDate.Date &&
                  t.TransactionDate.Date <= endDate.Date &&
-                 t.Amount < 0 &&
                  !t.IsDeleted);
         return Math.Abs(transactions.Sum(t => t.Amount));
     }

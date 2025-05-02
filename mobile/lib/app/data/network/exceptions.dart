@@ -1,3 +1,4 @@
+/*
 import 'package:dio/dio.dart'; // DioException için
 
 /// API veya diğer veri katmanı hatalarını temsil eden temel istisna sınıfı.
@@ -65,3 +66,4 @@ class ApiException implements Exception {
 // class NetworkException extends ApiException { NetworkException(String message) : super(message: message); }
 // class AuthenticationException extends ApiException { AuthenticationException(String message) : super(message: message); }
 // class NotFoundException extends ApiException { NotFoundException(String resource) : super(message: '$resource bulunamadı.'); }
+*/

@@ -4,14 +4,14 @@ import 'package:intl/intl.dart';
 import 'package:mobile/app/data/models/response/budget_response_model.dart';
 import 'package:mobile/app/modules/budgets/budgets_controller.dart';
 import 'package:mobile/app/theme/app_colors.dart';
+import 'package:mobile/app/widgets/error_view.dart';
 
 /// Kullanıcının bütçelerini listeleyen ekran.
 class BudgetsScreen extends GetView<BudgetsController> {
   const BudgetsScreen({super.key});
 
   // Para formatlayıcı
-  NumberFormat get currencyFormatter =>
-      NumberFormat.currency(locale: 'tr_TR', symbol: '₺');
+  NumberFormat get currencyFormatter => NumberFormat.currency(locale: 'tr_TR', symbol: '₺');
 
   // Ay adını formatlayıcı
   String _formatMonth(DateTime date) {
@@ -36,18 +36,6 @@ class BudgetsScreen extends GetView<BudgetsController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Bütçelerim'),
-        centerTitle: true,
-        actions: [
-          // Yenileme butonu
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: controller.refreshBudgets,
-            tooltip: 'Yenile',
-          ),
-        ],
-      ),
       body: Column(
         children: [
           // Ay/Yıl seçici
@@ -66,10 +54,9 @@ class BudgetsScreen extends GetView<BudgetsController> {
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: Text(
                           _formatMonth(controller.selectedPeriod.value),
-                          style:
-                              Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                         ),
                       ),
                     )),
@@ -87,60 +74,25 @@ class BudgetsScreen extends GetView<BudgetsController> {
               child: Obx(() {
                 // State değişikliklerini dinle
                 // 1. Yüklenme Durumu
-                if (controller.isLoading.value &&
-                    controller.budgetList.isEmpty) {
+                if (controller.isLoading.value && controller.budgetList.isEmpty) {
                   return const Center(child: CircularProgressIndicator());
                 }
                 // 2. Hata Durumu
                 else if (controller.errorMessage.isNotEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.error_outline,
-                              color: Colors.red, size: 48),
-                          const SizedBox(height: 16),
-                          Text(
-                            controller.errorMessage.value,
-                            textAlign: TextAlign.center,
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(color: Colors.red),
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton.icon(
-                            icon: const Icon(Icons.refresh),
-                            label: const Text('Tekrar Dene'),
-                            onPressed: controller.refreshBudgets,
-                          )
-                        ],
-                      ),
-                    ),
+                  // ErrorView widget'ını kullan
+                  return ErrorView(
+                    message: controller.errorMessage.value,
+                    onRetry: controller.refreshBudgets,
+                    isLarge: true,
                   );
                 }
                 // 3. Boş Liste Durumu
-                else if (controller.budgetList.isEmpty &&
-                    !controller.isLoading.value) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.account_balance_wallet_outlined,
-                            size: 60, color: Colors.grey.shade400),
-                        const SizedBox(height: 16),
-                        const Text('Bu dönem için bütçe bulunmuyor.',
-                            style: TextStyle(color: Colors.grey)),
-                        const SizedBox(height: 16),
-                        ElevatedButton.icon(
-                          icon: const Icon(Icons.add, color: Colors.white),
-                          label: const Text('Bütçe Ekle'),
-                          onPressed: controller.goToAddBudget,
-                        )
-                      ],
-                    ),
+                else if (controller.budgetList.isEmpty && !controller.isLoading.value) {
+                  // ErrorView.noData widget'ını kullan
+                  return ErrorView.noData(
+                    message: 'Bu dönem için bütçe bulunmuyor.',
+                    onRetry: controller.refreshBudgets,
+                    onAdd: controller.goToAddBudget,
                   );
                 }
                 // 4. Bütçe Listesi
@@ -178,8 +130,7 @@ class BudgetsScreen extends GetView<BudgetsController> {
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
-              Text("Dönem Seçin",
-                  style: Theme.of(context).textTheme.titleLarge),
+              Text("Dönem Seçin", style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 16),
               Expanded(
                 child: ListView.builder(
@@ -187,17 +138,15 @@ class BudgetsScreen extends GetView<BudgetsController> {
                   itemBuilder: (context, index) {
                     // 6 ay öncesi ve 5 ay sonrası
                     final month = DateTime(
-                      currentPeriod.year +
-                          ((currentPeriod.month + index - 6) ~/ 12),
+                      currentPeriod.year + ((currentPeriod.month + index - 6) ~/ 12),
                       ((currentPeriod.month + index - 6) % 12) + 1,
                     );
 
                     return ListTile(
                       title: Text(_formatMonth(month)),
-                      selected: month.month == currentPeriod.month &&
-                          month.year == currentPeriod.year,
-                      selectedTileColor:
-                          Theme.of(context).colorScheme.primaryContainer,
+                      selected:
+                          month.month == currentPeriod.month && month.year == currentPeriod.year,
+                      selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
                       onTap: () {
                         controller.changePeriod(month);
                         Navigator.pop(context);
@@ -216,8 +165,7 @@ class BudgetsScreen extends GetView<BudgetsController> {
   /// Tek bir bütçe öğesini gösteren kart widget'ını oluşturur.
   Widget _buildBudgetTile(BuildContext context, BudgetModel budget) {
     // İlerleme çubuğu için yüzdelik değer (0.0-1.0 arasında)
-    final double spentPercentage =
-        budget.amount > 0 ? budget.spentAmount / budget.amount : 0;
+    final double spentPercentage = budget.amount > 0 ? budget.spentAmount / budget.amount : 0;
 
     // İlerleme çubuğu rengi (kırmızı: aşım, yeşilden turuncuya: normal)
     Color progressColor;
@@ -245,12 +193,9 @@ class BudgetsScreen extends GetView<BudgetsController> {
                   child: Row(
                     children: [
                       CircleAvatar(
-                        backgroundColor: Theme.of(context)
-                            .colorScheme
-                            .primaryContainer
-                            .withOpacity(0.3),
-                        child: budget.categoryIcon != null &&
-                                budget.categoryIcon!.isNotEmpty
+                        backgroundColor:
+                            Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                        child: budget.categoryIcon != null && budget.categoryIcon!.isNotEmpty
                             ? Icon(
                                 IconData(int.parse(budget.categoryIcon!),
                                     fontFamily: 'MaterialIcons'),
@@ -262,10 +207,9 @@ class BudgetsScreen extends GetView<BudgetsController> {
                       Expanded(
                         child: Text(
                           budget.categoryName,
-                          style:
-                              Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -291,21 +235,16 @@ class BudgetsScreen extends GetView<BudgetsController> {
                           });
                     }
                   },
-                  itemBuilder: (BuildContext context) =>
-                      <PopupMenuEntry<String>>[
+                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                     const PopupMenuItem<String>(
                       value: 'edit',
-                      child: ListTile(
-                          leading: Icon(Icons.edit_outlined),
-                          title: Text('Düzenle')),
+                      child: ListTile(leading: Icon(Icons.edit_outlined), title: Text('Düzenle')),
                     ),
                     const PopupMenuItem<String>(
                       value: 'delete',
                       child: ListTile(
-                          leading:
-                              Icon(Icons.delete_outline, color: Colors.red),
-                          title:
-                              Text('Sil', style: TextStyle(color: Colors.red))),
+                          leading: Icon(Icons.delete_outline, color: Colors.red),
+                          title: Text('Sil', style: TextStyle(color: Colors.red))),
                     ),
                   ],
                   icon: const Icon(Icons.more_vert),
@@ -317,8 +256,8 @@ class BudgetsScreen extends GetView<BudgetsController> {
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: LinearProgressIndicator(
-                value: spentPercentage.clamp(0.0,
-                    1.0), // 1.0'dan büyük olsa bile gösterge 1.0'da sabit kalır
+                value: spentPercentage.clamp(
+                    0.0, 1.0), // 1.0'dan büyük olsa bile gösterge 1.0'da sabit kalır
                 backgroundColor: Colors.grey.shade200,
                 color: progressColor,
                 minHeight: 10,
@@ -335,19 +274,14 @@ class BudgetsScreen extends GetView<BudgetsController> {
                   children: [
                     Text(
                       'Harcanan',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: Colors.grey),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       currencyFormatter.format(budget.spentAmount),
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: spentPercentage >= 1.0
-                                ? AppColors.error
-                                : Colors.black87,
+                            color: spentPercentage >= 1.0 ? AppColors.error : Colors.black87,
                           ),
                     ),
                   ],
@@ -358,19 +292,14 @@ class BudgetsScreen extends GetView<BudgetsController> {
                   children: [
                     Text(
                       'Kalan / Toplam',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: Colors.grey),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${currencyFormatter.format(budget.remainingAmount)} / ${currencyFormatter.format(budget.amount)}',
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: budget.remainingAmount < 0
-                                ? AppColors.error
-                                : Colors.black87,
+                            color: budget.remainingAmount < 0 ? AppColors.error : Colors.black87,
                           ),
                     ),
                   ],

@@ -111,7 +111,7 @@ public class TransactionService : ITransactionService
 
             var transaction = _mapper.Map<Transaction>(createTransactionDto);
             transaction.UserId = userId;
-            if (category.Type == CategoryType.Expense && transaction.Amount > 0) transaction.Amount *= -1;
+            if (category.Type == CategoryType.Expense && transaction.Amount < 0) transaction.Amount *= -1;
             else if (category.Type == CategoryType.Income && transaction.Amount < 0) transaction.Amount *= -1;
 
             // Repository'ye UoW üzerinden erişim
@@ -174,13 +174,13 @@ public class TransactionService : ITransactionService
             {
                 return Result.Failure($"İşlem için belirtilen yeni kategori bulunamadı (ID: {updateTransactionDto.CategoryId}).");
             }
-            
+
             // Hesap ve kategori ID'lerini güncelle
             existingTransaction.AccountId = newAccount.Id;
             existingTransaction.CategoryId = newCategory.Id;
 
             _mapper.Map(updateTransactionDto, existingTransaction);
-            if (newCategory.Type == CategoryType.Expense && existingTransaction.Amount > 0) existingTransaction.Amount *= -1;
+            if (newCategory.Type == CategoryType.Expense && existingTransaction.Amount < 0) existingTransaction.Amount *= -1;
             else if (newCategory.Type == CategoryType.Income && existingTransaction.Amount < 0) existingTransaction.Amount *= -1;
 
             // Repository'ye UoW üzerinden erişim

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile/app/modules/accounts/accounts_controller.dart';
 import 'package:mobile/app/modules/budgets/budgets_controller.dart';
@@ -7,9 +8,9 @@ import 'package:mobile/app/modules/transactions/transactions_controller.dart';
 
 /// HomeScreen'in state'ini (özellikle aktif sekme index'ini) yönetir.
 class HomeController extends GetxController {
-  // BottomNavigationBar'daki seçili sekmenin index'ini tutan reaktif değişken.
-  // Başlangıçta ilk sekme (Dashboard) seçili olsun (index 0).
+  // Alt navigasyon ve sayfa görünümü için kullanılan kontrolcüler
   final RxInt selectedIndex = 0.obs;
+  late final PageController pageController;
 
   // Alt sekmelerin controller'larını saklamak için değişkenler
   late final DashboardController _dashboardController;
@@ -28,10 +29,19 @@ class HomeController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    // PageController'ı başlat
+    pageController = PageController(initialPage: selectedIndex.value);
     _initControllers();
 
     // Sekme değişimlerini dinleyerek gerekli işlemleri yap
     ever(selectedIndex, _handleTabChange);
+  }
+
+  @override
+  void onClose() {
+    // Controller'ları dispose et
+    pageController.dispose();
+    super.onClose();
   }
 
   /// Alt modül controller'larına erişim için onları bulur ve saklar
@@ -42,9 +52,8 @@ class HomeController extends GetxController {
       _transactionsController = Get.find<TransactionsController>();
       _budgetsController = Get.find<BudgetsController>();
       _settingsController = Get.find<SettingsController>();
-      print('>>> All tab controllers loaded successfully');
     } catch (e) {
-      print('>>> Error finding tab controllers: $e');
+      printError(info: 'Tab controllers could not be loaded: $e');
       // Hata durumunda binding'leri kontrol et
     }
   }
@@ -52,12 +61,19 @@ class HomeController extends GetxController {
   /// Sekme değiştirildiğinde çağrılacak metot.
   void changeTabIndex(int index) {
     selectedIndex.value = index;
+
+    // PageView'i de güncelle (eğer dışarıdan değiştirilmişse)
+    if (pageController.hasClients && pageController.positions.length == 1) {
+      if (pageController.page?.round() != index) {
+        pageController.jumpToPage(index);
+      }
+    } else {
+      printError(info: 'Multiple PageViews are attached to the same PageController.');
+    }
   }
 
   /// Sekme değiştiğinde yapılacak işlemleri yönetir
   void _handleTabChange(int index) {
-    print('Selected Tab Index: $index');
-
     // Sekmeye göre yenileme veya veri getirme işlemleri
     switch (index) {
       case 0: // Dashboard
@@ -72,9 +88,6 @@ class HomeController extends GetxController {
       case 3: // Budgets
         _refreshBudgets();
         break;
-      case 4: // Settings
-        // Ayarlar için özel bir yenileme gerekmeyebilir
-        break;
     }
   }
 
@@ -83,7 +96,7 @@ class HomeController extends GetxController {
     try {
       _dashboardController.refreshData();
     } catch (e) {
-      print('>>> Error refreshing dashboard: $e');
+      printError(info: 'Error refreshing dashboard: $e');
     }
   }
 
@@ -92,7 +105,7 @@ class HomeController extends GetxController {
     try {
       _accountsController.fetchAccounts();
     } catch (e) {
-      print('>>> Error refreshing accounts: $e');
+      printError(info: 'Error refreshing accounts: $e');
     }
   }
 
@@ -101,7 +114,7 @@ class HomeController extends GetxController {
     try {
       _transactionsController.fetchTransactions(isInitialLoad: false);
     } catch (e) {
-      print('>>> Error refreshing transactions: $e');
+      printError(info: 'Error refreshing transactions: $e');
     }
   }
 
@@ -110,7 +123,7 @@ class HomeController extends GetxController {
     try {
       _budgetsController.refreshBudgets();
     } catch (e) {
-      print('>>> Error refreshing budgets: $e');
+      printError(info: 'Error refreshing budgets: $e');
     }
   }
 

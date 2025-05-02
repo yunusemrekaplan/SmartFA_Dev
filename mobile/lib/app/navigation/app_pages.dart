@@ -15,8 +15,8 @@ import 'package:mobile/app/modules/transactions/add_edit_transaction/add_edit_tr
 import 'app_routes.dart';
 
 // Oluşturulan Ekran ve Binding Importları
-import '../modules/auth/login/login_screen.dart';
-import '../modules/auth/register/register_screen.dart';
+import '../modules/auth/views/login_screen.dart';
+import '../modules/auth/views/register_screen.dart';
 import '../modules/auth/auth_bindings.dart'; // AuthBinding
 
 import '../modules/home/home_screen.dart'; // HomeScreen

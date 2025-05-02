@@ -3,11 +3,13 @@ import 'package:get/get.dart';
 import 'package:mobile/app/data/models/response/account_response_model.dart';
 import 'package:mobile/app/domain/repositories/account_repository.dart';
 import 'package:mobile/app/navigation/app_routes.dart';
+import 'package:mobile/app/utils/error_handler.dart';
 
 /// Hesaplar ekranının state'ini ve iş mantığını yöneten GetX controller.
 class AccountsController extends GetxController {
   // Repository'yi inject et (Binding üzerinden)
   final IAccountRepository _accountRepository;
+  final ErrorHandler _errorHandler = ErrorHandler();
 
   AccountsController(this._accountRepository);
 
@@ -46,20 +48,27 @@ class AccountsController extends GetxController {
         success: (accounts) {
           // Başarılı: Hesap listesini güncelle
           accountList.assignAll(accounts);
-          print('>>> Accounts fetched successfully: ${accounts.length} accounts.');
+          print(
+              '>>> Accounts fetched successfully: ${accounts.length} accounts.');
         },
         failure: (error) {
           // Başarısız: Hata mesajını state'e ata
           print('>>> Failed to fetch accounts: ${error.message}');
           errorMessage.value = error.message;
-          // Kullanıcıya hata mesajı gösterilebilir (Snackbar vb.)
-          // Get.snackbar('Hata', error.message);
+
+          _errorHandler.handleError(
+            error,
+            onRetry: () => fetchAccounts(),
+            customTitle: 'Hesaplar Yüklenemedi',
+          );
         },
       );
     } catch (e) {
       // Beklenmedik genel hatalar
       print('>>> Fetch accounts unexpected error: $e');
       errorMessage.value = 'Hesaplar yüklenirken beklenmedik bir hata oluştu.';
+
+      _errorHandler.handleUnexpectedError(e);
     } finally {
       isLoading.value = false;
     }
@@ -85,38 +94,27 @@ class AccountsController extends GetxController {
           // Başarılı: Listeden hesabı kaldır ve başarı mesajı göster
           accountList.removeWhere((account) => account.id == accountId);
           print('>>> Account deleted successfully: ID $accountId');
-          Get.snackbar(
-            'Başarılı',
-            'Hesap başarıyla silindi.',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-          );
+
+          _errorHandler.showSuccessMessage('Hesap başarıyla silindi.');
+
           // Hesap silindikten sonra toplam bakiye vb. güncellenebilir (DashboardController'a haber verilebilir)
         },
         failure: (error) {
           // Başarısız: Hata mesajını göster
           print('>>> Failed to delete account: ${error.message}');
           errorMessage.value = error.message;
-          Get.snackbar(
-            'Hata',
-            'Hesap silinirken bir sorun oluştu: ${error.message}',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.redAccent,
-            colorText: Colors.white,
+
+          _errorHandler.handleError(
+            error,
+            customTitle: 'Hesap Silinemedi',
           );
         },
       );
     } catch (e) {
       print('>>> Delete account unexpected error: $e');
       errorMessage.value = 'Hesap silinirken beklenmedik bir hata oluştu.';
-      Get.snackbar(
-        'Hata',
-        errorMessage.value,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+
+      _errorHandler.handleUnexpectedError(e);
     } finally {
       isLoading.value = false;
     }

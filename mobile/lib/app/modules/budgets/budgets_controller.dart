@@ -1,13 +1,14 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile/app/data/models/response/budget_response_model.dart';
 import 'package:mobile/app/domain/repositories/budget_repository.dart';
 import 'package:mobile/app/navigation/app_routes.dart';
+import 'package:mobile/app/utils/error_handler.dart';
 
 /// Bütçeler ekranının state'ini ve iş mantığını yöneten GetX controller.
 class BudgetsController extends GetxController {
   // Repository'yi inject et (Binding üzerinden)
   final IBudgetRepository _budgetRepository;
+  final ErrorHandler _errorHandler = ErrorHandler();
 
   BudgetsController(this._budgetRepository);
 
@@ -46,8 +47,7 @@ class BudgetsController extends GetxController {
     final int month = selectedPeriod.value.month;
 
     try {
-      final result =
-          await _budgetRepository.getUserBudgetsByPeriod(year, month);
+      final result = await _budgetRepository.getUserBudgetsByPeriod(year, month);
 
       result.when(
         success: (budgets) {
@@ -59,14 +59,22 @@ class BudgetsController extends GetxController {
           // Başarısız: Hata mesajını state'e ata
           print('>>> Failed to fetch budgets: ${error.message}');
           errorMessage.value = error.message;
-          // Kullanıcıya hata mesajı gösterilebilir (Snackbar vb.)
-          // Get.snackbar('Hata', error.message);
+
+          // ErrorHandler ile hata yönetimi
+          _errorHandler.handleError(
+            error,
+            onRetry: fetchBudgets,
+            customTitle: 'Bütçeler Yüklenemedi',
+          );
         },
       );
     } catch (e) {
       // Beklenmedik genel hatalar
       print('>>> Fetch budgets unexpected error: $e');
       errorMessage.value = 'Bütçeler yüklenirken beklenmedik bir hata oluştu.';
+
+      // ErrorHandler ile beklenmeyen hata yönetimi
+      _errorHandler.handleUnexpectedError(e);
     } finally {
       isLoading.value = false;
     }
@@ -118,37 +126,28 @@ class BudgetsController extends GetxController {
           // Başarılı: Listeden bütçeyi kaldır ve başarı mesajı göster
           budgetList.removeWhere((budget) => budget.id == budgetId);
           print('>>> Budget deleted successfully: ID $budgetId');
-          Get.snackbar(
-            'Başarılı',
-            'Bütçe başarıyla silindi.',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-          );
+
+          // ErrorHandler ile başarı mesajı göster
+          _errorHandler.showSuccessMessage('Bütçe başarıyla silindi.');
         },
         failure: (error) {
           // Başarısız: Hata mesajını göster
           print('>>> Failed to delete budget: ${error.message}');
           errorMessage.value = error.message;
-          Get.snackbar(
-            'Hata',
-            'Bütçe silinirken bir sorun oluştu: ${error.message}',
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.redAccent,
-            colorText: Colors.white,
+
+          // ErrorHandler ile hata yönetimi
+          _errorHandler.handleError(
+            error,
+            customTitle: 'Bütçe Silinemedi',
           );
         },
       );
     } catch (e) {
       print('>>> Delete budget unexpected error: $e');
       errorMessage.value = 'Bütçe silinirken beklenmedik bir hata oluştu.';
-      Get.snackbar(
-        'Hata',
-        errorMessage.value,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+
+      // ErrorHandler ile beklenmeyen hata yönetimi
+      _errorHandler.handleUnexpectedError(e);
     } finally {
       isLoading.value = false;
     }

@@ -10,6 +10,8 @@ import 'package:mobile/app/domain/repositories/category_repository.dart';
 import 'package:mobile/app/domain/repositories/transaction_repository.dart';
 import 'package:mobile/app/navigation/app_routes.dart';
 import 'package:mobile/app/theme/app_colors.dart';
+import 'package:mobile/app/utils/error_handler.dart';
+import 'package:mobile/app/utils/exceptions.dart';
 
 /// İşlemler ekranının state'ini ve iş mantığını yöneten GetX controller.
 class TransactionsController extends GetxController {
@@ -17,6 +19,7 @@ class TransactionsController extends GetxController {
   final ITransactionRepository _transactionRepository;
   final IAccountRepository _accountRepository;
   final ICategoryRepository _categoryRepository;
+  final ErrorHandler _errorHandler = ErrorHandler();
 
   TransactionsController({
     required ITransactionRepository transactionRepository,
@@ -111,22 +114,26 @@ class TransactionsController extends GetxController {
       final accountsResult = await _accountRepository.getUserAccounts();
       accountsResult.when(
         success: (accounts) => filterAccounts.assignAll(accounts),
-        failure: (error) =>
-            print("Error loading filter accounts: ${error.message}"), // Hata loglanabilir
+        failure: (error) => print(
+            "Error loading filter accounts: ${error.message}"), // Hata loglanabilir
       );
 
       // Kategorileri yükle (hem gelir hem gider)
-      final expenseCategoriesResult = await _categoryRepository.getCategories(CategoryType.Expense);
-      final incomeCategoriesResult = await _categoryRepository.getCategories(CategoryType.Income);
+      final expenseCategoriesResult =
+          await _categoryRepository.getCategories(CategoryType.Expense);
+      final incomeCategoriesResult =
+          await _categoryRepository.getCategories(CategoryType.Income);
 
       final List<CategoryModel> allCategories = [];
       expenseCategoriesResult.when(
         success: (cats) => allCategories.addAll(cats),
-        failure: (error) => print("Error loading expense categories: ${error.message}"),
+        failure: (error) =>
+            print("Error loading expense categories: ${error.message}"),
       );
       incomeCategoriesResult.when(
         success: (cats) => allCategories.addAll(cats),
-        failure: (error) => print("Error loading income categories: ${error.message}"),
+        failure: (error) =>
+            print("Error loading income categories: ${error.message}"),
       );
       // Ada göre sırala
       allCategories.sort((a, b) => a.name.compareTo(b.name));
@@ -140,7 +147,8 @@ class TransactionsController extends GetxController {
   /// İşlemleri API'den çeker (sayfalama ve filtreleme ile).
   /// [isInitialLoad] true ise mevcut listeyi temizler ve sayfayı sıfırlar.
   /// [loadMore] true ise sonraki sayfayı yükler.
-  Future<void> fetchTransactions({bool isInitialLoad = false, bool loadMore = false}) async {
+  Future<void> fetchTransactions(
+      {bool isInitialLoad = false, bool loadMore = false}) async {
     // Zaten yükleniyorsa veya daha fazla veri yoksa (loadMore için) işlemi durdur
     if ((isLoading.value && isInitialLoad) ||
         (isLoadingMore.value && loadMore) ||
@@ -179,11 +187,13 @@ class TransactionsController extends GetxController {
       result.when(
         success: (newTransactions) {
           if (newTransactions.isEmpty) {
-            hasMoreData.value = false; // Yeni veri gelmediyse daha fazla veri yoktur
-          } else {
-            transactionList.addAll(newTransactions); // Yeni işlemleri listeye ekle
             hasMoreData.value =
-                newTransactions.length == _pageSize; // Tam sayfa geldiyse daha fazla olabilir
+                false; // Yeni veri gelmediyse daha fazla veri yoktur
+          } else {
+            transactionList
+                .addAll(newTransactions); // Yeni işlemleri listeye ekle
+            hasMoreData.value = newTransactions.length ==
+                _pageSize; // Tam sayfa geldiyse daha fazla olabilir
           }
           print(
               '>>> Transactions fetched: ${newTransactions.length} items, Page: ${_currentPage.value}, HasMore: ${hasMoreData.value}');
@@ -191,9 +201,11 @@ class TransactionsController extends GetxController {
         failure: (error) {
           print('>>> Failed to fetch transactions: ${error.message}');
           errorMessage.value = error.message;
-          hasMoreData.value = false; // Hata durumunda daha fazla veri olmadığını varsay
-          _currentPage.value =
-              _currentPage.value > 1 ? _currentPage.value - 1 : 1; // Hata olursa sayfayı geri al
+          hasMoreData.value =
+              false; // Hata durumunda daha fazla veri olmadığını varsay
+          _currentPage.value = _currentPage.value > 1
+              ? _currentPage.value - 1
+              : 1; // Hata olursa sayfayı geri al
         },
       );
     } catch (e) {
@@ -243,9 +255,11 @@ class TransactionsController extends GetxController {
       // 5 yıl öncesine kadar
       lastDate: DateTime.now().add(const Duration(days: 1)),
       // Yarına kadar
-      initialDateRange: selectedStartDate.value != null && selectedEndDate.value != null
-          ? DateTimeRange(start: selectedStartDate.value!, end: selectedEndDate.value!)
-          : null,
+      initialDateRange:
+          selectedStartDate.value != null && selectedEndDate.value != null
+              ? DateTimeRange(
+                  start: selectedStartDate.value!, end: selectedEndDate.value!)
+              : null,
       locale: const Locale('tr', 'TR'),
       // Türkçe locale
       builder: (context, child) {
@@ -268,8 +282,8 @@ class TransactionsController extends GetxController {
     if (picked != null) {
       selectedStartDate.value = picked.start;
       // Bitiş tarihine günün sonunu ekleyerek tüm günü kapsamasını sağla (opsiyonel)
-      selectedEndDate.value =
-          DateTime(picked.end.year, picked.end.month, picked.end.day, 23, 59, 59);
+      selectedEndDate.value = DateTime(
+          picked.end.year, picked.end.month, picked.end.day, 23, 59, 59);
       applyFilters(); // Filtreyi uygula
     }
   }
@@ -297,7 +311,8 @@ class TransactionsController extends GetxController {
     // Onay dialogu
     final confirm = await Get.defaultDialog<bool>(
       title: "İşlemi Sil",
-      middleText: "Bu işlemi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+      middleText:
+          "Bu işlemi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
       textConfirm: "Sil",
       textCancel: "İptal",
       confirmTextColor: Colors.white,
@@ -312,7 +327,8 @@ class TransactionsController extends GetxController {
     errorMessage.value = '';
 
     try {
-      final result = await _transactionRepository.deleteTransaction(transactionId);
+      final result =
+          await _transactionRepository.deleteTransaction(transactionId);
 
       result.when(
         success: (_) {
@@ -362,7 +378,8 @@ class TransactionsController extends GetxController {
   /// İşlem düzenleme ekranına yönlendirir.
   void goToEditTransaction(TransactionModel transaction) {
     // TODO: İşlem düzenleme ekranına git (Get.toNamed ile transaction ID veya nesnesini gönder)
-    Get.toNamed(AppRoutes.ADD_EDIT_TRANSACTION, arguments: transaction)?.then((result) {
+    Get.toNamed(AppRoutes.ADD_EDIT_TRANSACTION, arguments: transaction)
+        ?.then((result) {
       if (result == true) {
         // Düzenleme başarılıysa listeyi yenile
         fetchTransactions(isInitialLoad: true); // Veya sadece o öğeyi güncelle

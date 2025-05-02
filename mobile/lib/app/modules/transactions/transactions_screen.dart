@@ -7,13 +7,15 @@ import 'package:mobile/app/data/models/response/category_response_model.dart';
 import 'package:mobile/app/data/models/response/transaction_response_model.dart';
 import 'package:mobile/app/modules/transactions/transactions_controller.dart';
 import 'package:mobile/app/theme/app_colors.dart'; // Sayı ve tarih formatlama için
+import 'package:mobile/app/widgets/error_view.dart'; // ErrorView widget'ını import et
 
 /// İşlemleri listeleyen ve filtreleyen ekran.
 class TransactionsScreen extends GetView<TransactionsController> {
   const TransactionsScreen({super.key});
 
   // Para formatlayıcı
-  NumberFormat get currencyFormatter => NumberFormat.currency(locale: 'tr_TR', symbol: '₺');
+  NumberFormat get currencyFormatter =>
+      NumberFormat.currency(locale: 'tr_TR', symbol: '₺');
 
   // Kategori ikonunu döndüren yardımcı fonksiyon (Geliştirilmeli)
   IconData _getCategoryIcon(String? iconName) {
@@ -37,29 +39,25 @@ class TransactionsScreen extends GetView<TransactionsController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('İşlemler'),
-        centerTitle: true,
-        actions: [
-          // Filtreleme Butonu
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            tooltip: 'Filtrele',
-            onPressed: () => _showFilterBottomSheet(context),
-          ),
-        ],
-      ),
       body: RefreshIndicator(
-        onRefresh: controller.fetchTransactions, // Controller'da refreshTransactions olmalı
+        onRefresh: controller
+            .fetchTransactions, // Controller'da refreshTransactions olmalı
         child: Obx(() {
           // Controller'daki state değişikliklerini dinle
           // --- Yüklenme Durumu ---
-          if (controller.isLoading.value && controller.transactionList.isEmpty) {
+          if (controller.isLoading.value &&
+              controller.transactionList.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
           // --- Hata Durumu ---
-          else if (controller.errorMessage.isNotEmpty && controller.transactionList.isEmpty) {
-            return _buildErrorWidget(context); // Hata widget'ını göster
+          else if (controller.errorMessage.isNotEmpty &&
+              controller.transactionList.isEmpty) {
+            // ErrorView widget'ını kullan
+            return ErrorView(
+              message: controller.errorMessage.value,
+              onRetry: () => controller.fetchTransactions(isInitialLoad: true),
+              isLarge: true,
+            );
           }
           // --- Boş Liste veya Veri Durumu ---
           else {
@@ -87,7 +85,8 @@ class TransactionsScreen extends GetView<TransactionsController> {
       if (controller.selectedAccount.value != null) {
         chips.add(Chip(
           label: Text('Hesap: ${controller.selectedAccount.value!.name}'),
-          onDeleted: () => controller.selectAccountFilter(null), // Filtreyi kaldır
+          onDeleted: () =>
+              controller.selectAccountFilter(null), // Filtreyi kaldır
           deleteIconColor: Colors.black54,
           backgroundColor: Colors.grey.shade200,
         ));
@@ -102,8 +101,9 @@ class TransactionsScreen extends GetView<TransactionsController> {
       }
       if (controller.selectedType.value != null) {
         chips.add(Chip(
-          label: Text(
-              controller.selectedType.value == CategoryType.Expense ? 'Tip: Gider' : 'Tip: Gelir'),
+          label: Text(controller.selectedType.value == CategoryType.Expense
+              ? 'Tip: Gider'
+              : 'Tip: Gelir'),
           onDeleted: () => controller.selectTypeFilter(null),
           deleteIconColor: Colors.black54,
           backgroundColor: Colors.grey.shade200,
@@ -147,7 +147,12 @@ class TransactionsScreen extends GetView<TransactionsController> {
       // Listenin kendisini de Obx ile sarmak güncellemeler için iyi olabilir
       // --- Boş Liste Durumu (Filtre uygulandıktan sonra) ---
       if (controller.transactionList.isEmpty && !controller.isLoading.value) {
-        return _buildEmptyListWidget(Get.context!); // Get.context! kullanıldı
+        // ErrorView.noData widget'ını kullan
+        return ErrorView.noData(
+          message: 'Gösterilecek işlem bulunamadı.',
+          onRetry: () => controller.fetchTransactions(isInitialLoad: true),
+          onAdd: controller.goToAddTransaction,
+        );
       }
       // --- Liste Gösterimi ---
       else {
@@ -156,7 +161,8 @@ class TransactionsScreen extends GetView<TransactionsController> {
           // ScrollController eklendi
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           // Listenin uzunluğu + yükleme indicator'ı için 1 (eğer daha fazla veri varsa)
-          itemCount: controller.transactionList.length + (controller.hasMoreData.value ? 1 : 0),
+          itemCount: controller.transactionList.length +
+              (controller.hasMoreData.value ? 1 : 0),
           itemBuilder: (context, index) {
             // Listenin sonuna geldik mi ve daha fazla veri var mı?
             if (index == controller.transactionList.length) {
@@ -164,7 +170,8 @@ class TransactionsScreen extends GetView<TransactionsController> {
               return controller.isLoadingMore.value
                   ? const Padding(
                       padding: EdgeInsets.symmetric(vertical: 16.0),
-                      child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                      child: Center(
+                          child: CircularProgressIndicator(strokeWidth: 2)),
                     )
                   : const SizedBox.shrink(); // Yüklenmiyorsa boşluk
             }
@@ -173,16 +180,20 @@ class TransactionsScreen extends GetView<TransactionsController> {
             return _buildTransactionTile(context, transaction);
           },
           separatorBuilder: (context, index) => Divider(
-              height: 1, indent: 72, color: Colors.grey.shade200), // Leading ikon hizasından başlar
+              height: 1,
+              indent: 72,
+              color: Colors.grey.shade200), // Leading ikon hizasından başlar
         );
       }
     });
   }
 
   /// Tek bir işlem öğesini (ListTile) oluşturur.
-  Widget _buildTransactionTile(BuildContext context, TransactionModel transaction) {
+  Widget _buildTransactionTile(
+      BuildContext context, TransactionModel transaction) {
     final bool isIncome = transaction.categoryType == CategoryType.Income;
-    final Color amountColor = isIncome ? AppColors.success : Theme.of(context).colorScheme.error;
+    final Color amountColor =
+        isIncome ? AppColors.success : Theme.of(context).colorScheme.error;
     final IconData categoryIcon = _getCategoryIcon(transaction.categoryIcon);
 
     return ListTile(
@@ -193,10 +204,8 @@ class TransactionsScreen extends GetView<TransactionsController> {
       ),
       title: Text(
         transaction.categoryName,
-        style: Theme.of(context)
-            .textTheme
-            .titleMedium
-            ?.copyWith(fontWeight: FontWeight.w500), // titleMedium daha uygun olabilir
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w500), // titleMedium daha uygun olabilir
       ),
       subtitle: Text(
         transaction.accountName,
@@ -215,7 +224,8 @@ class TransactionsScreen extends GetView<TransactionsController> {
                 ),
           ),
           Text(
-            DateFormat('dd MMM yy', 'tr_TR').format(transaction.transactionDate),
+            DateFormat('dd MMM yy', 'tr_TR')
+                .format(transaction.transactionDate),
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
@@ -226,57 +236,6 @@ class TransactionsScreen extends GetView<TransactionsController> {
       onLongPress: () {
         controller.deleteTransaction(transaction.id);
       },
-    );
-  }
-
-  /// Hata durumunda gösterilecek widget.
-  Widget _buildErrorWidget(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.cloud_off, color: Colors.grey, size: 48),
-            const SizedBox(height: 16),
-            Text(
-              controller.errorMessage.value,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              icon: const Icon(Icons.refresh),
-              label: const Text('Tekrar Dene'),
-              onPressed: () => controller.fetchTransactions(isInitialLoad: true),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// İşlem listesi boş olduğunda gösterilecek widget.
-  Widget _buildEmptyListWidget(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.receipt_long_outlined, size: 60, color: Colors.grey.shade400),
-          const SizedBox(height: 16),
-          const Text('Gösterilecek işlem bulunamadı.', style: TextStyle(color: Colors.grey)),
-          const SizedBox(height: 8),
-          // Eğer filtre aktifse filtreleri temizle butonu göster
-          if (controller.selectedAccount.value != null ||
-              controller.selectedCategory.value != null ||
-              controller.selectedStartDate.value != null ||
-              controller.selectedType.value != null)
-            TextButton(
-              onPressed: controller.clearFilters,
-              child: const Text('Filtreleri Temizle'),
-            ),
-        ],
-      ),
     );
   }
 
@@ -300,7 +259,8 @@ class TransactionsScreen extends GetView<TransactionsController> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min, // İçeriğe göre boyutlan
             children: [
-              Text('Filtrele', style: Theme.of(context).textTheme.headlineSmall),
+              Text('Filtrele',
+                  style: Theme.of(context).textTheme.headlineSmall),
               const Divider(height: 24),
 
               // --- Filtre Seçenekleri ---
@@ -309,13 +269,15 @@ class TransactionsScreen extends GetView<TransactionsController> {
               ListTile(
                   leading: const Icon(Icons.date_range_outlined),
                   title: const Text('Tarih Aralığı'),
-                  subtitle: Obx(() => Text(controller.selectedStartDate.value == null
+                  subtitle: Obx(() => Text(controller.selectedStartDate.value ==
+                          null
                       ? 'Seçilmedi'
                       : '${DateFormat('dd/MM/yy', 'tr_TR').format(controller.selectedStartDate.value!)} - ${DateFormat('dd/MM/yy', 'tr_TR').format(controller.selectedEndDate.value!)}')),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
                     Get.back(); // Önce bottom sheet'i kapat
-                    controller.selectDateRange(context); // Sonra date picker'ı aç
+                    controller
+                        .selectDateRange(context); // Sonra date picker'ı aç
                   }),
               const Divider(height: 1, indent: 16),
 
@@ -338,11 +300,13 @@ class TransactionsScreen extends GetView<TransactionsController> {
                       ...controller.filterAccounts.map((account) {
                         return DropdownMenuItem<AccountModel>(
                           value: account,
-                          child: Text(account.name, overflow: TextOverflow.ellipsis),
+                          child: Text(account.name,
+                              overflow: TextOverflow.ellipsis),
                         );
                       }).toList(),
                     ],
-                    onChanged: controller.selectAccountFilter, // Değişiklikte controller'ı çağır
+                    onChanged: controller
+                        .selectAccountFilter, // Değişiklikte controller'ı çağır
                   )),
               const Divider(height: 1, indent: 16),
 
@@ -365,7 +329,8 @@ class TransactionsScreen extends GetView<TransactionsController> {
                       ...controller.filterCategories.map((category) {
                         return DropdownMenuItem<CategoryModel>(
                           value: category,
-                          child: Text(category.name, overflow: TextOverflow.ellipsis),
+                          child: Text(category.name,
+                              overflow: TextOverflow.ellipsis),
                         );
                       }).toList(),
                     ],
@@ -379,7 +344,9 @@ class TransactionsScreen extends GetView<TransactionsController> {
                 child: Obx(() => SegmentedButton<CategoryType?>(
                       segments: const [
                         ButtonSegment<CategoryType?>(
-                            value: null, label: Text('Tümü'), icon: Icon(Icons.clear_all)),
+                            value: null,
+                            label: Text('Tümü'),
+                            icon: Icon(Icons.clear_all)),
                         ButtonSegment<CategoryType?>(
                             value: CategoryType.Expense,
                             label: Text('Gider'),

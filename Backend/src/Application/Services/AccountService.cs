@@ -4,6 +4,7 @@ using Application.Interfaces.Services;
 using Application.Wrappers;
 using AutoMapper;
 using Core.Entities;
+using Core.Enums;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -39,9 +40,13 @@ public class AccountService : IAccountService
     private async Task<decimal> CalculateAccountBalance(int accountId, decimal initialBalance)
     {
         // Repository'ye UoW üzerinden erişim
-        var transactions = await _unitOfWork.Transactions.GetAsync(t => t.AccountId == accountId && !t.IsDeleted);
-        decimal transactionSum = transactions.Sum(t => t.Amount);
-        return initialBalance + transactionSum;
+        var transactions = await _unitOfWork.Transactions.GetAsync(t => t.AccountId == accountId,
+            orderBy: null,
+            includeString: "Category",
+            disableTracking: true); // Tracking kapalı
+        var totalIncome = transactions.Where(t => t.Category.Type == CategoryType.Income).Sum(t => t.Amount);
+        var totalExpense = transactions.Where(t => t.Category.Type == CategoryType.Expense).Sum(t => t.Amount);
+        return initialBalance + totalIncome - totalExpense;
     }
 
     public async Task<Result<IReadOnlyList<AccountDto>>> GetUserAccountsAsync(int userId)

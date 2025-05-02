@@ -5,6 +5,7 @@ import 'package:mobile/app/data/models/enums/account_type.dart';
 import 'package:mobile/app/data/models/response/account_response_model.dart';
 import 'package:mobile/app/modules/accounts/accounts_controller.dart';
 import 'package:mobile/app/theme/app_colors.dart'; // Para formatlama için
+import 'package:mobile/app/widgets/error_view.dart'; // ErrorView widget'ını import et
 
 /// Kullanıcının hesaplarını listeleyen ekran.
 class AccountsScreen extends GetView<AccountsController> {
@@ -31,68 +32,31 @@ class AccountsScreen extends GetView<AccountsController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Hesaplarım'),
-        centerTitle: true,
-        actions: [
-          // Yenileme butonu
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: controller.refreshAccounts,
-            tooltip: 'Yenile',
-          ),
-        ],
-      ),
       body: RefreshIndicator(
         onRefresh: controller.refreshAccounts,
-        child: Obx(() { // State değişikliklerini dinle
+        child: Obx(() {
+          // State değişikliklerini dinle
           // 1. Yüklenme Durumu
           if (controller.isLoading.value && controller.accountList.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
           // 2. Hata Durumu
           else if (controller.errorMessage.isNotEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                    const SizedBox(height: 16),
-                    Text(
-                      controller.errorMessage.value,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton.icon(
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Tekrar Dene'),
-                      onPressed: controller.refreshAccounts,
-                    )
-                  ],
-                ),
-              ),
+            // Yeni ErrorView widget'ını kullan
+            return ErrorView(
+              message: controller.errorMessage.value,
+              onRetry: controller.refreshAccounts,
+              isLarge: true,
             );
           }
           // 3. Boş Liste Durumu
-          else if (controller.accountList.isEmpty && !controller.isLoading.value) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.account_balance_wallet_outlined, size: 60, color: Colors.grey.shade400),
-                  const SizedBox(height: 16),
-                  const Text('Henüz hesap eklenmemiş.', style: TextStyle(color: Colors.grey)),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.add, color: Colors.white),
-                    label: const Text('İlk Hesabı Ekle'),
-                    onPressed: controller.goToAddAccount,
-                  )
-                ],
-              ),
+          else if (controller.accountList.isEmpty &&
+              !controller.isLoading.value) {
+            // Veri bulunamadı durumu için ErrorView widget'ını kullan
+            return ErrorView.noData(
+              message: 'Henüz hesap eklenmemiş.',
+              onRetry: controller.refreshAccounts,
+              onAdd: controller.goToAddAccount,
             );
           }
           // 4. Hesap Listesi
@@ -104,7 +68,8 @@ class AccountsScreen extends GetView<AccountsController> {
                 final account = controller.accountList[index];
                 return _buildAccountTile(context, account);
               },
-              separatorBuilder: (context, index) => const SizedBox(height: 10), // Kartlar arası boşluk
+              separatorBuilder: (context, index) =>
+                  const SizedBox(height: 10), // Kartlar arası boşluk
             );
           }
         }),
@@ -114,21 +79,28 @@ class AccountsScreen extends GetView<AccountsController> {
 
   /// Tek bir hesap öğesini gösteren kart widget'ını oluşturur.
   Widget _buildAccountTile(BuildContext context, AccountModel account) {
-    final Color balanceColor = account.currentBalance >= 0 ? AppColors.textPrimary : AppColors.error;
+    final Color balanceColor =
+        account.currentBalance >= 0 ? AppColors.textPrimary : AppColors.error;
     final IconData accountIcon = _getAccountIcon(account.type);
 
     return Card(
       elevation: 2.0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
         leading: CircleAvatar(
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
-          child: Icon(accountIcon, color: Theme.of(context).colorScheme.primary),
+          backgroundColor:
+              Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+          child:
+              Icon(accountIcon, color: Theme.of(context).colorScheme.primary),
         ),
         title: Text(
           account.name,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          style: Theme.of(context)
+              .textTheme
+              .titleMedium
+              ?.copyWith(fontWeight: FontWeight.w600),
         ),
         subtitle: Text(
           accountTypeToString(account.type),
@@ -137,9 +109,9 @@ class AccountsScreen extends GetView<AccountsController> {
         trailing: Text(
           currencyFormatter.format(account.currentBalance),
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: balanceColor,
-            fontWeight: FontWeight.bold,
-          ),
+                color: balanceColor,
+                fontWeight: FontWeight.bold,
+              ),
         ),
         onTap: () {
           // TODO: Hesap detayına gitme veya düzenleme seçeneği
