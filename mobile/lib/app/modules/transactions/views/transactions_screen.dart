@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile/app/modules/transactions/controllers/transactions_controller.dart';
 import 'package:mobile/app/modules/transactions/widgets/active_filters_row.dart';
-import 'package:mobile/app/modules/transactions/widgets/filter_bottom_sheet.dart';
+import 'package:mobile/app/modules/transactions/widgets/filter_bottom_sheet/filter_bottom_sheet.dart';
 import 'package:mobile/app/modules/transactions/widgets/transaction_list_view.dart';
 import 'package:mobile/app/modules/transactions/widgets/transaction_summary.dart';
 import 'package:mobile/app/theme/app_colors.dart'; // Sayı ve tarih formatlama için

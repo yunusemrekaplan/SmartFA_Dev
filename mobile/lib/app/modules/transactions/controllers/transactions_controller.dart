@@ -469,6 +469,13 @@ class TransactionsController extends GetxController {
     applyFilters();
   }
 
+  /// Takvimden seçilen tarih aralığını ayarlar.
+  void selectDateRangeFromCalendar(DateTime startDate, DateTime endDate) {
+    selectedStartDate.value = startDate;
+    selectedEndDate.value = endDate;
+    applyFilters();
+  }
+
   // Verileri işlerken toplam gelir ve giderleri hesapla
   void _calculateTotals() {
     double income = 0;
