@@ -3,7 +3,7 @@ import 'package:mobile/app/data/datasources/remote/budget_remote_datasource.dart
 import 'package:mobile/app/data/network/dio_client.dart';
 import 'package:mobile/app/data/repositories/budget_repository_impl.dart';
 import 'package:mobile/app/domain/repositories/budget_repository.dart';
-import 'package:mobile/app/modules/budgets/budgets_controller.dart';
+import 'package:mobile/app/modules/budgets/controllers/budgets_controller.dart';
 
 /// Budgets modülü için bağımlılıkları yönetir.
 class BudgetsBinding extends Bindings {

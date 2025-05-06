@@ -78,10 +78,11 @@ class BalanceCard extends StatelessWidget {
                     children: [
                       Text(
                         'Toplam Bakiye',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: Colors.white.withOpacity(0.85),
-                              fontWeight: FontWeight.w500,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: Colors.white.withOpacity(0.85),
+                                  fontWeight: FontWeight.w500,
+                                ),
                       ),
                       Row(
                         children: [
@@ -98,7 +99,8 @@ class BalanceCard extends StatelessWidget {
                             Padding(
                               padding: const EdgeInsets.only(left: 16.0),
                               child: IconButton(
-                                icon: const Icon(Icons.visibility_rounded, size: 20),
+                                icon: const Icon(Icons.visibility_rounded,
+                                    size: 20),
                                 color: Colors.white.withOpacity(0.85),
                                 tooltip: 'Detayları Gör',
                                 onPressed: onViewDetails,
@@ -119,11 +121,12 @@ class BalanceCard extends StatelessWidget {
                     alignment: Alignment.centerLeft,
                     child: Text(
                       currencyFormatter.format(totalBalance),
-                      style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
-                          ),
+                      style:
+                          Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
                     ),
                   ),
 
@@ -137,7 +140,8 @@ class BalanceCard extends StatelessWidget {
                         onPressed: onViewDetails,
                         style: TextButton.styleFrom(
                           backgroundColor: Colors.white.withOpacity(0.15),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),
@@ -147,11 +151,15 @@ class BalanceCard extends StatelessWidget {
                           children: [
                             Text(
                               'Hesapları Görüntüle',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 13,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    fontSize:
+                                        13, // bodyMedium 14, 13'e çekiyoruz
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white, // Rengi override
+                                  ),
                             ),
                             const SizedBox(width: 4),
                             const Icon(

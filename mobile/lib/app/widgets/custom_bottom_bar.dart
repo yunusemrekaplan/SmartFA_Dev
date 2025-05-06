@@ -82,12 +82,16 @@ class CustomBottomBar extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                  color:
-                      isSelected ? AppColors.primary : AppColors.textSecondary,
-                ),
+                style: (isSelected
+                        ? Theme.of(context)
+                            .bottomNavigationBarTheme
+                            .selectedLabelStyle
+                        : Theme.of(context)
+                            .bottomNavigationBarTheme
+                            .unselectedLabelStyle)
+                    ?.copyWith(
+                        fontSize:
+                            12), // Temadan alıp font boyutunu 12 yapıyoruz (tema 13)
               ),
             ],
           ),

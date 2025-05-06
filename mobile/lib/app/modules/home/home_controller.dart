@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile/app/modules/accounts/accounts_controller.dart';
-import 'package:mobile/app/modules/budgets/budgets_controller.dart';
+import 'package:mobile/app/modules/accounts/controllers/accounts_controller.dart';
+import 'package:mobile/app/modules/budgets/controllers/budgets_controller.dart';
 import 'package:mobile/app/modules/dashboard/dashboard_controller.dart';
 import 'package:mobile/app/modules/settings/settings_controller.dart';
-import 'package:mobile/app/modules/transactions/transactions_controller.dart';
+import 'package:mobile/app/modules/transactions/controllers/transactions_controller.dart';
 
 /// HomeScreen'in state'ini (özellikle aktif sekme index'ini) yönetir.
 class HomeController extends GetxController {

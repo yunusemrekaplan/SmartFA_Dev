@@ -20,8 +20,9 @@ class AuthFooter extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
+          // Removed const
           question,
-          style: const TextStyle(color: AppColors.textSecondary),
+          style: Theme.of(context).textTheme.bodyMedium,
         ),
         TextButton(
           onPressed: onActionPressed,

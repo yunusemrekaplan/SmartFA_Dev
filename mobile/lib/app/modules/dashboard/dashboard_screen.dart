@@ -4,8 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:mobile/app/modules/dashboard/dashboard_controller.dart';
 import 'package:mobile/app/modules/dashboard/widgets/budget_summary_card.dart';
 import 'package:mobile/app/modules/dashboard/widgets/income_expense_chart.dart';
-import 'package:mobile/app/modules/dashboard/widgets/info_panel.dart';
-import 'package:mobile/app/modules/dashboard/widgets/section_header.dart';
+import 'package:mobile/app/widgets/info_panel.dart'; // Güncellenmiş yol
+import 'package:mobile/app/widgets/section_header.dart'; // Güncellenmiş yol
 import 'package:mobile/app/modules/dashboard/widgets/transaction_summary_card.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/app/widgets/error_view.dart';
@@ -176,8 +176,29 @@ class DashboardScreen extends GetView<DashboardController> {
     );
   }
 
-  /// Bütçe özet bölümünü oluşturur
+  // --- Dashboard İçerik Oluşturma Metotları ---
+
+  /// Bütçe özet bölümünü oluşturur (Widget'a taşındı)
   Widget _buildBudgetSection(BuildContext context) {
+    return _BudgetSectionWidget(controller: controller);
+  }
+
+  /// Son işlemler bölümünü oluşturur (Widget'a taşındı)
+  Widget _buildRecentTransactionsSection(BuildContext context) {
+    return _RecentTransactionsSectionWidget(controller: controller);
+  }
+}
+
+// --- Ayrılmış Widget Sınıfları ---
+
+/// Bütçe Özetleri Bölümü Widget'ı
+class _BudgetSectionWidget extends StatelessWidget {
+  final DashboardController controller;
+
+  const _BudgetSectionWidget({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       children: [
         // Bölüm başlığı
@@ -207,15 +228,13 @@ class DashboardScreen extends GetView<DashboardController> {
                     const SizedBox(height: 16),
                     Text(
                       'Henüz bütçe tanımlanmamış',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 16,
-                      ),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
                     ),
                     const SizedBox(height: 8),
                     ElevatedButton(
                       onPressed: () {
-                        // Bütçe ekleme sayfasına yönlendir
                         Get.toNamed('/budgets/add');
                       },
                       child: const Text('Bütçe Oluştur'),
@@ -255,9 +274,16 @@ class DashboardScreen extends GetView<DashboardController> {
       ],
     );
   }
+}
 
-  /// Son işlemler bölümünü oluşturur
-  Widget _buildRecentTransactionsSection(BuildContext context) {
+/// Son İşlemler Bölümü Widget'ı
+class _RecentTransactionsSectionWidget extends StatelessWidget {
+  final DashboardController controller;
+
+  const _RecentTransactionsSectionWidget({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       children: [
         // Bölüm başlığı
@@ -287,15 +313,13 @@ class DashboardScreen extends GetView<DashboardController> {
                     const SizedBox(height: 16),
                     Text(
                       'Henüz işlem kaydedilmemiş',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 16,
-                      ),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
                     ),
                     const SizedBox(height: 8),
                     ElevatedButton(
                       onPressed: () {
-                        // İşlem ekleme sayfasına yönlendir
                         Get.toNamed('/transactions/add');
                       },
                       child: const Text('İşlem Ekle'),

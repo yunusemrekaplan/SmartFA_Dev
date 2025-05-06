@@ -27,8 +27,9 @@ class TransactionSummaryCard extends StatelessWidget {
     final dateFormatter = DateFormat('d MMM', 'tr_TR');
 
     // İşlem türüne göre renk belirle
-    final Color amountColor =
-        transaction.categoryType == CategoryType.Income ? AppColors.success : AppColors.textPrimary;
+    final Color amountColor = transaction.categoryType == CategoryType.Income
+        ? AppColors.success
+        : AppColors.textPrimary;
 
     // Kategori icon
     final IconData categoryIcon = _getCategoryIcon(transaction.categoryIcon);
@@ -94,10 +95,11 @@ class TransactionSummaryCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           transaction.accountName,
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 12,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    // fontSize: 12, // bodySmall zaten 12
+                                    color: AppColors.textSecondary,
+                                  ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -110,10 +112,11 @@ class TransactionSummaryCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           dateFormatter.format(transaction.transactionDate),
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 12,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    // fontSize: 12, // bodySmall zaten 12
+                                    color: AppColors.textSecondary,
+                                  ),
                         ),
                       ],
                     ),

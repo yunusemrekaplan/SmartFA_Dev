@@ -7,9 +7,9 @@ import 'home_controller.dart';
 
 // Sekmelerde gösterilecek ekranları import et
 import '../dashboard/dashboard_screen.dart';
-import '../accounts/accounts_screen.dart';
-import '../transactions/transactions_screen.dart';
-import '../budgets/budgets_screen.dart';
+import '../accounts/views/accounts_screen.dart';
+import '../transactions/views/transactions_screen.dart';
+import '../budgets/views/budgets_screen.dart';
 
 // Rota importu (FAB için)
 import '../../navigation/app_routes.dart';

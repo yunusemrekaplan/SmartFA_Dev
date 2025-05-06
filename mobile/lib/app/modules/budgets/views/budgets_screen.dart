@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile/app/data/models/response/budget_response_model.dart';
-import 'package:mobile/app/modules/budgets/budgets_controller.dart';
+import 'package:mobile/app/modules/budgets/controllers/budgets_controller.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/app/widgets/error_view.dart';
 import 'package:mobile/app/widgets/custom_home_app_bar.dart';
@@ -80,35 +80,8 @@ class BudgetsScreen extends GetView<BudgetsController> {
       body: Column(
         children: [
           // Ay/Yıl seçici
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.chevron_left),
-                  onPressed: controller.goToPreviousMonth,
-                ),
-                Obx(() => GestureDetector(
-                      onTap: () => _showMonthPicker(context),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        child: Text(
-                          _formatMonth(controller.selectedPeriod.value),
-                          style:
-                              Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                        ),
-                      ),
-                    )),
-                IconButton(
-                  icon: const Icon(Icons.chevron_right),
-                  onPressed: controller.goToNextMonth,
-                ),
-              ],
-            ),
-          ),
+          _MonthSelector(
+              controller: controller, formatMonth: _formatMonth), // Yeni widget
           // Bütçe listesi
           Expanded(
             child: RefreshIndicator(
@@ -146,10 +119,15 @@ class BudgetsScreen extends GetView<BudgetsController> {
                     itemCount: controller.budgetList.length,
                     itemBuilder: (context, index) {
                       final budget = controller.budgetList[index];
-                      return _buildBudgetTile(context, budget);
+                      return _BudgetCard(
+                        // Yeni widget çağrısı
+                        budget: budget,
+                        currencyFormatter: currencyFormatter,
+                        controller: controller, // Controller eklendi
+                      );
                     },
                     separatorBuilder: (context, index) =>
-                        const SizedBox(height: 10), // Kartlar arası boşluk
+                        const SizedBox(height: 10),
                   );
                 }
               }),
@@ -160,57 +138,27 @@ class BudgetsScreen extends GetView<BudgetsController> {
     );
   }
 
-  /// Ay seçici diyalog
-  void _showMonthPicker(BuildContext context) async {
-    final DateTime currentPeriod = controller.selectedPeriod.value;
+  // _showMonthPicker metodu _MonthSelector widget'ına taşındı.
 
-    // Ay seçici, burada basit bir diyalog kullanılıyor
-    // Gerçek uygulamada date_picker veya özel bir widget kullanılabilir
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return Container(
-          height: 300,
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Text("Dönem Seçin",
-                  style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: 12,
-                  itemBuilder: (context, index) {
-                    // 6 ay öncesi ve 5 ay sonrası
-                    final month = DateTime(
-                      currentPeriod.year +
-                          ((currentPeriod.month + index - 6) ~/ 12),
-                      ((currentPeriod.month + index - 6) % 12) + 1,
-                    );
+  // _buildBudgetTile metodu _BudgetCard widget'ına taşındı.
+}
 
-                    return ListTile(
-                      title: Text(_formatMonth(month)),
-                      selected: month.month == currentPeriod.month &&
-                          month.year == currentPeriod.year,
-                      selectedTileColor:
-                          Theme.of(context).colorScheme.primaryContainer,
-                      onTap: () {
-                        controller.changePeriod(month);
-                        Navigator.pop(context);
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
+// --- Ayrılmış Widget Sınıfları ---
 
-  /// Tek bir bütçe öğesini gösteren kart widget'ını oluşturur.
-  Widget _buildBudgetTile(BuildContext context, BudgetModel budget) {
+/// Tek bir bütçe öğesini gösteren kart widget'ı.
+class _BudgetCard extends StatelessWidget {
+  final BudgetModel budget;
+  final NumberFormat currencyFormatter;
+  final BudgetsController controller; // Controller eklendi
+
+  const _BudgetCard({
+    required this.budget,
+    required this.currencyFormatter,
+    required this.controller, // Controller eklendi
+  });
+
+  @override
+  Widget build(BuildContext context) {
     // İlerleme çubuğu için yüzdelik değer (0.0-1.0 arasında)
     final double spentPercentage =
         budget.amount > 0 ? budget.spentAmount / budget.amount : 0;
@@ -271,7 +219,8 @@ class BudgetsScreen extends GetView<BudgetsController> {
                 PopupMenuButton<String>(
                   onSelected: (String result) {
                     if (result == 'edit') {
-                      controller.goToEditBudget(budget);
+                      controller
+                          .goToEditBudget(budget); // Controller kullanıldı
                     } else if (result == 'delete') {
                       // Onay dialogu göster
                       Get.defaultDialog(
@@ -283,7 +232,8 @@ class BudgetsScreen extends GetView<BudgetsController> {
                           confirmTextColor: Colors.white,
                           onConfirm: () {
                             Get.back(); // Dialogu kapat
-                            controller.deleteBudget(budget.id);
+                            controller.deleteBudget(
+                                budget.id); // Controller kullanıldı
                           });
                     }
                   },
@@ -295,13 +245,16 @@ class BudgetsScreen extends GetView<BudgetsController> {
                           leading: Icon(Icons.edit_outlined),
                           title: Text('Düzenle')),
                     ),
-                    const PopupMenuItem<String>(
+                    PopupMenuItem<String>(
                       value: 'delete',
                       child: ListTile(
-                          leading:
-                              Icon(Icons.delete_outline, color: Colors.red),
-                          title:
-                              Text('Sil', style: TextStyle(color: Colors.red))),
+                          leading: const Icon(Icons.delete_outline,
+                              color: Colors.red),
+                          title: Text('Sil',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(color: Colors.red))),
                     ),
                   ],
                   icon: const Icon(Icons.more_vert),
@@ -313,8 +266,7 @@ class BudgetsScreen extends GetView<BudgetsController> {
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: LinearProgressIndicator(
-                value: spentPercentage.clamp(0.0,
-                    1.0), // 1.0'dan büyük olsa bile gösterge 1.0'da sabit kalır
+                value: spentPercentage.clamp(0.0, 1.0),
                 backgroundColor: Colors.grey.shade200,
                 color: progressColor,
                 minHeight: 10,
@@ -375,6 +327,100 @@ class BudgetsScreen extends GetView<BudgetsController> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Ay/Yıl seçici widget'ı
+class _MonthSelector extends StatelessWidget {
+  final BudgetsController controller;
+  final String Function(DateTime)
+      formatMonth; // formatMonth fonksiyonunu alıyoruz
+
+  const _MonthSelector({
+    required this.controller,
+    required this.formatMonth,
+  });
+
+  /// Ay seçici diyalog
+  void _showMonthPicker(BuildContext context) async {
+    final DateTime currentPeriod = controller.selectedPeriod.value;
+
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          height: 300,
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Text("Dönem Seçin",
+                  style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 16),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: 12, // Son 6 ay + gelecek 5 ay + mevcut ay
+                  itemBuilder: (context, index) {
+                    // Mevcut aydan 6 ay öncesinden başlayarak 12 ay listele
+                    final month = DateTime(
+                      currentPeriod.year +
+                          ((currentPeriod.month + index - 7) ~/
+                              12), // -6 yerine -7
+                      ((currentPeriod.month + index - 7) % 12) +
+                          1, // -6 yerine -7
+                    );
+
+                    return ListTile(
+                      title: Text(formatMonth(month)), // formatMonth kullanıldı
+                      selected: month.month == currentPeriod.month &&
+                          month.year == currentPeriod.year,
+                      selectedTileColor:
+                          Theme.of(context).colorScheme.primaryContainer,
+                      onTap: () {
+                        controller.changePeriod(month);
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.chevron_left),
+            onPressed: controller.goToPreviousMonth,
+          ),
+          Obx(() => GestureDetector(
+                onTap: () => _showMonthPicker(context), // İç metodu çağır
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    formatMonth(controller
+                        .selectedPeriod.value), // formatMonth kullanıldı
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ),
+              )),
+          IconButton(
+            icon: const Icon(Icons.chevron_right),
+            onPressed: controller.goToNextMonth,
+          ),
+        ],
       ),
     );
   }

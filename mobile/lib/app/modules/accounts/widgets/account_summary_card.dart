@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile/app/theme/app_colors.dart';
 
 /// Varlık ve borç özetleri için kart widget'ı
 class AccountSummaryCard extends StatelessWidget {
@@ -86,10 +87,11 @@ class AccountSummaryCard extends StatelessWidget {
               padding: const EdgeInsets.only(top: 4.0),
               child: Text(
                 isNegative ? 'Toplam borç miktarı' : 'Toplam varlık miktarı',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontSize: 12, // bodyMedium 14, 12'ye çekiyoruz
+                      color: AppColors.textSecondary.withOpacity(
+                          0.8), // Colors.grey[600] yerine tema rengi
+                    ),
               ),
             ),
           ],

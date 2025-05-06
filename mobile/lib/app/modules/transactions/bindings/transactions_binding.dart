@@ -1,26 +1,26 @@
 import 'package:get/get.dart';
 
 // Controller importu (henüz oluşturulmadı)
-import 'transactions_controller.dart';
+import '../controllers/transactions_controller.dart';
 
 // Repository Arayüzü ve Implementasyonu importları
-import '../../domain/repositories/transaction_repository.dart';
-import '../../data/repositories/transaction_repository_impl.dart';
+import '../../../domain/repositories/transaction_repository.dart';
+import '../../../data/repositories/transaction_repository_impl.dart';
 // Hesap ve Kategori repository'leri de gerekebilir (filtreleme için)
-import '../../domain/repositories/account_repository.dart';
-import '../../domain/repositories/category_repository.dart';
-import '../../data/repositories/account_repository_impl.dart';
-import '../../data/repositories/category_repository_impl.dart';
+import '../../../domain/repositories/account_repository.dart';
+import '../../../domain/repositories/category_repository.dart';
+import '../../../data/repositories/account_repository_impl.dart';
+import '../../../data/repositories/category_repository_impl.dart';
 
 
 // DataSource importu (Repository için gerekli)
-import '../../data/datasources/remote/transaction_remote_datasource.dart';
-import '../../data/datasources/remote/account_remote_datasource.dart'; // Gerekli
-import '../../data/datasources/remote/category_remote_datasource.dart'; // Gerekli
+import '../../../data/datasources/remote/transaction_remote_datasource.dart';
+import '../../../data/datasources/remote/account_remote_datasource.dart'; // Gerekli
+import '../../../data/datasources/remote/category_remote_datasource.dart'; // Gerekli
 
 
 // DioClient importu (DataSource için gerekli - InitialBinding'de kaydedildi)
-import '../../data/network/dio_client.dart';
+import '../../../data/network/dio_client.dart';
 
 
 /// Transactions modülü için bağımlılıkları yönetir.

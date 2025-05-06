@@ -65,17 +65,21 @@ class CurrencyText extends StatelessWidget {
   /// Negatif/pozitif değerlere göre metin stilini belirler
   TextStyle? _getTextStyle(
       BuildContext context, TextStyle? baseStyle, bool isNegative) {
+    final defaultStyle =
+        Theme.of(context).textTheme.bodyMedium; // Varsayılan tema stili
+
     if (!colorizeNegative || !isNegative) {
-      return baseStyle;
+      // Negatif değilse veya renklendirme kapalıysa, baseStyle veya varsayılanı döndür
+      return baseStyle ?? defaultStyle;
     }
 
+    // Negatif ve renklendirme açıksa
     final negativeColor = Theme.of(context).colorScheme.error;
+    final styleToUse =
+        baseStyle ?? defaultStyle; // Kullanılacak stil (base veya varsayılan)
 
-    if (baseStyle == null) {
-      return TextStyle(color: negativeColor);
-    }
-
-    return baseStyle.copyWith(color: negativeColor);
+    // Negatif rengi uygula
+    return styleToUse?.copyWith(color: negativeColor);
   }
 
   /// Para birimi için sembol döndürür

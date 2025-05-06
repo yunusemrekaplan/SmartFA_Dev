@@ -3,7 +3,7 @@ import 'package:mobile/app/data/datasources/remote/account_remote_datasource.dar
 import 'package:mobile/app/data/network/dio_client.dart';
 import 'package:mobile/app/data/repositories/account_repository_impl.dart';
 import 'package:mobile/app/domain/repositories/account_repository.dart';
-import 'package:mobile/app/modules/accounts/accounts_controller.dart';
+import 'package:mobile/app/modules/accounts/controllers/accounts_controller.dart';
 
 /// Accounts modülü için bağımlılıkları yönetir.
 class AccountsBinding extends Bindings {

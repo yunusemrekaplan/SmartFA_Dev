@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile/app/data/models/enums/account_type.dart';
 import 'package:mobile/app/theme/app_colors.dart';
-import 'add_edit_account_controller.dart';
+import '../controllers/add_edit_account_controller.dart';
 
 class AddEditAccountScreen extends GetView<AddEditAccountController> {
   const AddEditAccountScreen({super.key});
@@ -128,9 +128,11 @@ class AddEditAccountScreen extends GetView<AddEditAccountController> {
                           : Icons.add_circle_outline),
                   label: Text(
                     isEditing ? 'Güncelle' : 'Hesap Ekle',
-                    style: const TextStyle(
-                      fontSize: 16,
+                    style: Get.theme.elevatedButtonTheme.style?.textStyle
+                        ?.resolve({})?.copyWith(
                       fontWeight: FontWeight.bold,
+                      // fontSize: 16, // Zaten ElevatedButton temasında 16
+                      // color: Colors.white, // Zaten ElevatedButton temasında textOnPrimary
                     ),
                   ),
                 ),
@@ -151,11 +153,14 @@ class AddEditAccountScreen extends GetView<AddEditAccountController> {
                       ),
                     ),
                     icon: const Icon(Icons.delete_outline),
-                    label: const Text(
+                    label: Text(
+                      // Removed const
                       'Hesabı Sil',
-                      style: TextStyle(
-                        fontSize: 16,
+                      style: Get.theme.textTheme.titleMedium?.copyWith(
+                        // fontSize: 16, // titleMedium zaten 16
                         fontWeight: FontWeight.bold,
+                        color: AppColors
+                            .error, // OutlinedButton'ın foregroundColor'ı error
                       ),
                     ),
                   ),
@@ -173,13 +178,14 @@ class AddEditAccountScreen extends GetView<AddEditAccountController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.only(left: 4.0, bottom: 10.0),
+        Padding(
+          // Removed const
+          padding: const EdgeInsets.only(left: 4.0, bottom: 10.0),
           child: Text(
             'Hesap Türü',
-            style: TextStyle(
+            style: Get.theme.textTheme.titleMedium?.copyWith(
+              // fontSize: 16, // titleMedium zaten 16
               fontWeight: FontWeight.w600,
-              fontSize: 16,
             ),
           ),
         ),
@@ -216,8 +222,11 @@ class AddEditAccountScreen extends GetView<AddEditAccountController> {
                           const SizedBox(height: 8),
                           Text(
                             label,
-                            style: TextStyle(
-                              color: isSelected ? color : Colors.grey.shade700,
+                            style: Get.theme.textTheme.bodyMedium?.copyWith(
+                              color: isSelected
+                                  ? color
+                                  : AppColors
+                                      .textSecondary, // Colors.grey.shade700 yerine tema rengi
                               fontWeight: isSelected
                                   ? FontWeight.bold
                                   : FontWeight.normal,

@@ -6,7 +6,7 @@ import 'error_interceptor.dart'; // ErrorInterceptor import
 // Backend API'nin geliştirme ortamı için temel URL'si
 // Bunu ortam değişkenleri veya config dosyası ile yönetmek daha iyidir.
 const String baseUrl =
-    'http://192.168.1.103:5104/api'; // Backend API adresinizi buraya girin (appsettings.Development.json'daki adres)
+    'http://192.168.1.101:5104/api'; // Backend API adresinizi buraya girin (appsettings.Development.json'daki adres)
 
 class DioClient {
   late final Dio _dio; // Dio instance'ı

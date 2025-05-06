@@ -120,13 +120,13 @@ class IncomeExpenseChart extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         isBalancePositive ? 'Kazanç' : 'Kayıp',
-                        style: TextStyle(
-                          color: isBalancePositive
-                              ? AppColors.success
-                              : AppColors.error,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontSize: 13, // bodyMedium 14, 13'e çekiyoruz
+                              fontWeight: FontWeight.w600,
+                              color: isBalancePositive
+                                  ? AppColors.success
+                                  : AppColors.error, // Rengi override
+                            ),
                       ),
                     ],
                   ),
@@ -205,10 +205,14 @@ class IncomeExpenseChart extends StatelessWidget {
                           const SizedBox(width: 8),
                           Text(
                             'Gelir',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.textSecondary,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight
+                                      .w500, // bodyMedium w400, w500 yapıyoruz
+                                  // color: AppColors.textSecondary, // Zaten bodyMedium rengi
+                                ),
                           ),
                         ],
                       ),
@@ -223,10 +227,10 @@ class IncomeExpenseChart extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         '%${incomePercent.round()}',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                        ),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontSize: 12, // bodyMedium 14, 12'ye çekiyoruz
+                              // color: AppColors.textSecondary, // Zaten bodyMedium rengi
+                            ),
                       ),
                     ],
                   ),
@@ -250,10 +254,14 @@ class IncomeExpenseChart extends StatelessWidget {
                           const SizedBox(width: 8),
                           Text(
                             'Gider',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              color: AppColors.textSecondary,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight
+                                      .w500, // bodyMedium w400, w500 yapıyoruz
+                                  // color: AppColors.textSecondary, // Zaten bodyMedium rengi
+                                ),
                           ),
                         ],
                       ),
@@ -268,10 +276,10 @@ class IncomeExpenseChart extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         '%${expensePercent.round()}',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                        ),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontSize: 12, // bodyMedium 14, 12'ye çekiyoruz
+                              // color: AppColors.textSecondary, // Zaten bodyMedium rengi
+                            ),
                       ),
                     ],
                   ),
@@ -295,10 +303,12 @@ class IncomeExpenseChart extends StatelessWidget {
                       children: [
                         Text(
                           'Detaylı Analizi Gör',
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors
+                                        .primary, // bodyMedium textSecondary, rengi override
+                                  ),
                         ),
                         const SizedBox(width: 4),
                         const Icon(

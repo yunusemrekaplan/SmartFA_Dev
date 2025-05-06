@@ -36,11 +36,11 @@ class SplashScreen extends GetView<SplashController> {
               // Uygulama adı
               Text(
                 'Akıllı Finans Yönetimi',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                      color: Colors.white, // Rengi override
+                      // fontSize: 28, // displayLarge zaten 28
+                      // fontWeight: FontWeight.bold, // displayLarge zaten bold
+                    ),
               ),
 
               const SizedBox(height: 64),

@@ -134,12 +134,12 @@ class AppDrawer extends StatelessWidget {
       padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 4),
       child: Text(
         title,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textSecondary,
-          letterSpacing: 0.5,
-        ),
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              // fontSize: 12, // labelSmall muhtemelen daha küçük, 12'ye ayarlıyoruz
+              fontWeight: FontWeight.bold,
+              color: AppColors.textSecondary,
+              letterSpacing: 0.5,
+            ),
       ),
     );
   }

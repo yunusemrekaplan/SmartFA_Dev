@@ -24,20 +24,20 @@ class AuthTermsText extends StatelessWidget {
                   ),
                   TextSpan(
                     text: 'Kullanım Koşulları',
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
                   const TextSpan(
                     text: ' ve ',
                   ),
                   TextSpan(
                     text: 'Gizlilik Politikası',
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
                   const TextSpan(
                     text: 'nı kabul etmiş olursunuz.',

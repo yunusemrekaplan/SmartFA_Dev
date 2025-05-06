@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:mobile/app/domain/repositories/budget_repository.dart';
 import 'package:mobile/app/domain/repositories/category_repository.dart';
-import 'package:mobile/app/modules/budgets/add_edit_budget/add_edit_budget_controller.dart';
+import 'package:mobile/app/modules/budgets/controllers/add_edit_budget_controller.dart';
 
 class AddEditBudgetBinding extends Bindings {
   @override

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile/app/modules/budgets/add_edit_budget/add_edit_budget_controller.dart';
+import 'package:mobile/app/modules/budgets/controllers/add_edit_budget_controller.dart';
 
 /// Bütçe ekleme/düzenleme ekranı.
 class AddEditBudgetScreen extends GetView<AddEditBudgetController> {
@@ -49,7 +49,11 @@ class AddEditBudgetScreen extends GetView<AddEditBudgetController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Kategori', style: TextStyle(fontWeight: FontWeight.bold)),
+        Text('Kategori', // Removed const
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Obx(() {
           if (controller.isCategoriesLoading.value) {
@@ -116,8 +120,11 @@ class AddEditBudgetScreen extends GetView<AddEditBudgetController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Bütçe Tutarı',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        Text('Bütçe Tutarı', // Removed const
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         TextFormField(
           initialValue: controller.amount.value > 0
@@ -170,7 +177,11 @@ class AddEditBudgetScreen extends GetView<AddEditBudgetController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Dönem', style: TextStyle(fontWeight: FontWeight.bold)),
+        Text('Dönem', // Removed const
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Row(
           children: [

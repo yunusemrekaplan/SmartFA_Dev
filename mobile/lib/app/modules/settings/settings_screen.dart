@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
+import 'package:mobile/app/theme/app_colors.dart';
 import 'settings_controller.dart';
 
 /// Ayarlar ekranı.
@@ -17,7 +17,6 @@ class SettingsScreen extends GetView<SettingsController> {
       body: ListView(
         children: [
           // --- Hesap Ayarları Bölümü ---
-          // _buildSectionTitle(context, 'Hesap'),
           ListTile(
             leading: const Icon(Icons.person_outline),
             title: const Text('Profil'),
@@ -27,7 +26,7 @@ class SettingsScreen extends GetView<SettingsController> {
           const Divider(height: 1, indent: 16),
 
           // --- Uygulama Ayarları Bölümü ---
-          _buildSectionTitle(context, 'Uygulama'),
+          _SectionTitle(title: 'Uygulama'),
           ListTile(
             leading: const Icon(Icons.category_outlined),
             title: const Text('Kategorileri Yönet'),
@@ -60,7 +59,7 @@ class SettingsScreen extends GetView<SettingsController> {
               leading: const Icon(Icons.logout, color: Colors.red),
               title: const Text('Çıkış Yap'),
               subtitle: const Text('Hesabınızdan çıkış yapın'),
-              onTap: () => _showLogoutConfirmationDialog(context),
+              onTap: () => _LogoutConfirmationDialog.show(context, controller),
             ),
           ),
           const Divider(height: 1, indent: 16),
@@ -83,24 +82,35 @@ class SettingsScreen extends GetView<SettingsController> {
       ),
     );
   }
+}
 
-  /// Ayarlar bölüm başlığını oluşturan yardımcı widget.
-  Widget _buildSectionTitle(BuildContext context, String title) {
+// --- Ayrılmış Widget Sınıfları ---
+
+/// Ayarlar bölüm başlığını oluşturan widget.
+class _SectionTitle extends StatelessWidget {
+  final String title;
+
+  const _SectionTitle({Key? key, required this.title}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(
           left: 16.0, right: 16.0, top: 20.0, bottom: 8.0),
       child: Text(
         title.toUpperCase(),
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: Theme.of(context).colorScheme.primary, // Ana renk
+            color: Theme.of(context).colorScheme.primary,
             fontWeight: FontWeight.bold,
             letterSpacing: 1.1),
       ),
     );
   }
+}
 
-  /// Çıkış yapmadan önce onay diyaloğu gösterir
-  void _showLogoutConfirmationDialog(BuildContext context) {
+/// Çıkış yapmadan önce onay diyalogunu gösteren widget.
+class _LogoutConfirmationDialog {
+  static void show(BuildContext context, SettingsController controller) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -117,7 +127,12 @@ class SettingsScreen extends GetView<SettingsController> {
               Get.back(); // Önce diyaloğu kapat
               controller.logout(); // Sonra çıkış yap
             },
-            child: const Text('Çıkış Yap', style: TextStyle(color: Colors.red)),
+            child: Text('Çıkış Yap',
+                style: Theme.of(context)
+                    .textButtonTheme
+                    .style
+                    ?.textStyle
+                    ?.resolve({})?.copyWith(color: AppColors.error)),
           ),
         ],
       ),

@@ -1,10 +1,10 @@
 import 'package:get/get.dart';
-import 'package:mobile/app/modules/accounts/accounts_binding.dart';
-import 'package:mobile/app/modules/budgets/budgets_binding.dart';
+import 'package:mobile/app/modules/accounts/bindings/accounts_binding.dart';
+import 'package:mobile/app/modules/budgets/bindings/budgets_binding.dart';
 import 'package:mobile/app/modules/dashboard/dashboard_binding.dart';
 import 'package:mobile/app/modules/home/home_controller.dart';
 import 'package:mobile/app/modules/settings/settings_binding.dart';
-import 'package:mobile/app/modules/transactions/transactions_binding.dart';
+import 'package:mobile/app/modules/transactions/bindings/transactions_binding.dart';
 
 /// Home modülü ve alt modüllerinin bağımlılıklarını yönetir.
 class HomeBinding extends Bindings {

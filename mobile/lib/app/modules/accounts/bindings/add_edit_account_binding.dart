@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'package:mobile/app/domain/repositories/account_repository.dart';
-import 'add_edit_account_controller.dart';
+import '../controllers/add_edit_account_controller.dart';
 
 class AddEditAccountBinding extends Bindings {
   @override

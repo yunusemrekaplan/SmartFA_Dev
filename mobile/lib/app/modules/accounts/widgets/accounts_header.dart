@@ -106,11 +106,15 @@ class AccountsHeader extends StatelessWidget {
                             const SizedBox(width: 6),
                             Text(
                               '$accountCount Hesap',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    fontSize:
+                                        13, // bodyMedium 14, 13'e çekiyoruz
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white, // Rengi override
+                                  ),
                             ),
                           ],
                         ),
@@ -140,10 +144,11 @@ class AccountsHeader extends StatelessWidget {
                   // Açıklama
                   Text(
                     'Tüm hesaplarınızdaki toplam bakiye',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
-                      fontSize: 13,
-                    ),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontSize: 13, // bodyMedium 14, 13'e çekiyoruz
+                          color:
+                              Colors.white.withOpacity(0.7), // Rengi override
+                        ),
                   ),
                 ],
               ),

@@ -9,7 +9,7 @@ import 'package:mobile/app/domain/repositories/account_repository.dart';
 import 'package:mobile/app/domain/repositories/category_repository.dart';
 import 'package:mobile/app/domain/repositories/transaction_repository.dart';
 import 'package:mobile/app/navigation/app_routes.dart';
-import 'package:mobile/app/theme/app_colors.dart';
+import 'package:mobile/app/theme/app_colors.dart'; // Tema renkleri
 
 /// İşlemler ekranının state'ini ve iş mantığını yöneten GetX controller.
 class TransactionsController extends GetxController {
@@ -65,6 +65,9 @@ class TransactionsController extends GetxController {
 
   // Sıralama kriteri
   final RxString sortCriteria = 'date_desc'.obs;
+
+  // Seçilen hızlı tarih filtresi
+  final Rx<String?> selectedQuickDate = Rx<String?>(null);
 
   // --- Lifecycle Metotları ---
 
@@ -255,6 +258,7 @@ class TransactionsController extends GetxController {
     selectedAccount.value = null;
     selectedCategory.value = null;
     selectedType.value = null;
+    selectedQuickDate.value = null;
     // Filtreler temizlendiğinde ilk sayfayı yükle
     await fetchTransactions(isInitialLoad: true);
   }
@@ -407,7 +411,9 @@ class TransactionsController extends GetxController {
   }
 
   // Hızlı tarih filtresi ayarla
-  void setQuickDateFilter(String period) {
+  void setQuickDateFilter(String? period) {
+    selectedQuickDate.value = period; // Seçilen değeri güncelle
+
     final now = DateTime.now();
 
     switch (period) {
@@ -453,6 +459,10 @@ class TransactionsController extends GetxController {
             DateTime(threeMonthsAgo.year, threeMonthsAgo.month, 1);
         selectedEndDate.value =
             DateTime(now.year, now.month, now.day, 23, 59, 59);
+        break;
+      default:
+        selectedStartDate.value = null;
+        selectedEndDate.value = null;
         break;
     }
 

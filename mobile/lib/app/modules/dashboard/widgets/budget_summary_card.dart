@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile/app/data/models/response/budget_response_model.dart';
 import 'package:mobile/app/theme/app_colors.dart';
@@ -17,7 +18,8 @@ class BudgetSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Harcama oranını hesapla
-    final double spentRatio = (budget.amount > 0) ? (budget.spentAmount / budget.amount) : 0.0;
+    final double spentRatio =
+        (budget.amount > 0) ? (budget.spentAmount / budget.amount) : 0.0;
 
     // Duruma göre renk belirle
     final Color statusColor = _getStatusColor(spentRatio);
@@ -92,20 +94,21 @@ class BudgetSummaryCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       '${(spentRatio * 100).toInt()}%',
-                      style: TextStyle(
-                        color: statusColor,
+                      style: Get.theme.textTheme.titleMedium?.copyWith(
+                        // fontSize: 16, // titleMedium zaten 16
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        color: statusColor, // Rengi override ediyoruz
                       ),
                     ),
                   ),
                   Expanded(
                     child: Text(
                       currencyFormatter.format(budget.spentAmount),
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
+                      style: Get.theme.textTheme.bodyMedium?.copyWith(
+                        // fontSize: 14, // bodyMedium zaten 14
                         fontWeight: FontWeight.w500,
-                        fontSize: 14,
+                        color: AppColors
+                            .textPrimary, // bodyMedium textSecondary, rengi override
                       ),
                       textAlign: TextAlign.right,
                     ),
@@ -134,18 +137,19 @@ class BudgetSummaryCard extends StatelessWidget {
                 children: [
                   Text(
                     'Toplam:',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 12,
+                    style: Get.theme.textTheme.bodyMedium?.copyWith(
+                      fontSize: 12, // bodyMedium 14, 12'ye çekiyoruz
                       fontWeight: FontWeight.w500,
+                      // color: AppColors.textSecondary, // bodyMedium zaten bu renkte
                     ),
                   ),
                   Text(
                     currencyFormatter.format(budget.amount),
-                    style: TextStyle(
-                      color: AppColors.textPrimary,
-                      fontSize: 12,
+                    style: Get.theme.textTheme.bodyMedium?.copyWith(
+                      fontSize: 12, // bodyMedium 14, 12'ye çekiyoruz
                       fontWeight: FontWeight.w600,
+                      color: AppColors
+                          .textPrimary, // bodyMedium textSecondary, rengi override
                     ),
                   ),
                 ],
@@ -160,18 +164,21 @@ class BudgetSummaryCard extends StatelessWidget {
                     children: [
                       Text(
                         'Kalan:',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
+                        style: Get.theme.textTheme.bodyMedium?.copyWith(
+                          fontSize: 12, // bodyMedium 14, 12'ye çekiyoruz
                           fontWeight: FontWeight.w500,
+                          // color: AppColors.textSecondary, // bodyMedium zaten bu renkte
                         ),
                       ),
                       Text(
                         currencyFormatter.format(budget.remainingAmount),
-                        style: TextStyle(
-                          color: spentRatio > 0.8 ? statusColor : AppColors.textPrimary,
-                          fontSize: 12,
+                        style: Get.theme.textTheme.bodyMedium?.copyWith(
+                          fontSize: 12, // bodyMedium 14, 12'ye çekiyoruz
                           fontWeight: FontWeight.w600,
+                          color: spentRatio > 0.8
+                              ? statusColor
+                              : AppColors
+                                  .textPrimary, // Rengi dinamik olarak override
                         ),
                       ),
                     ],
@@ -185,18 +192,18 @@ class BudgetSummaryCard extends StatelessWidget {
                     children: [
                       Text(
                         'Aşım:',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
+                        style: Get.theme.textTheme.bodyMedium?.copyWith(
+                          fontSize: 12, // bodyMedium 14, 12'ye çekiyoruz
                           fontWeight: FontWeight.w500,
+                          // color: AppColors.textSecondary, // bodyMedium zaten bu renkte
                         ),
                       ),
                       Text(
                         currencyFormatter.format(-budget.remainingAmount),
-                        style: TextStyle(
-                          color: AppColors.error,
-                          fontSize: 12,
+                        style: Get.theme.textTheme.bodyMedium?.copyWith(
+                          fontSize: 12, // bodyMedium 14, 12'ye çekiyoruz
                           fontWeight: FontWeight.w600,
+                          color: AppColors.error, // Rengi override ediyoruz
                         ),
                       ),
                     ],
