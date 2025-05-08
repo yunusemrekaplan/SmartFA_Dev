@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/app/theme/app_colors.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:mobile/app/utils/exceptions.dart';
 
 /// Hata durumlarını görüntülemek için kullanılan widget.
@@ -34,11 +36,11 @@ class ErrorView extends StatelessWidget {
     this.error,
     this.message,
     this.onRetry,
-    this.icon = Icons.error_outline,
+    this.icon = Icons.error_outline_rounded,
     this.retryText = 'Tekrar Dene',
     this.secondaryButtonText,
     this.onSecondaryButtonPressed,
-    this.isLarge = true,
+    this.isLarge = false,
     this.height,
   })  : assert(error != null || message != null,
             'error veya message verilmelidir'),
@@ -114,101 +116,222 @@ class ErrorView extends StatelessWidget {
     // Gösterilecek mesajı belirle
     final displayMessage = message ?? error?.message ?? 'Bir hata oluştu.';
 
-    if (isLarge) {
-      return _buildLargeErrorView(context, displayMessage);
-    } else {
-      return _buildCompactErrorView(context, displayMessage);
-    }
-  }
-
-  /// Tam ekran hata görünümü
-  Widget _buildLargeErrorView(BuildContext context, String displayMessage) {
-    return Container(
-      height: height,
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 64,
-              color: _getIconColor(context),
+    return Center(
+      child: Animate(
+        effects: [
+          FadeEffect(duration: 400.ms),
+          SlideEffect(
+            begin: const Offset(0, 0.2),
+            end: Offset.zero,
+            duration: 500.ms,
+            curve: Curves.easeOutCubic,
+          ),
+        ],
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: isLarge ? 350 : 300,
+          ),
+          padding: EdgeInsets.all(isLarge ? 24.0 : 16.0),
+          decoration: BoxDecoration(
+            color: AppColors.error.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(16.0),
+            border: Border.all(
+              color: AppColors.error.withOpacity(0.3),
+              width: 1.0,
             ),
-            const SizedBox(height: 16),
-            Text(
-              displayMessage,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 24),
-            if (onRetry != null) ...[
-              ElevatedButton.icon(
-                onPressed: onRetry,
-                icon: const Icon(Icons.refresh, color: Colors.white),
-                label: Text(retryText),
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: isLarge ? 64 : 48,
+                height: isLarge ? 64 : 48,
+                decoration: BoxDecoration(
+                  color: AppColors.error.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  color: AppColors.error,
+                  size: isLarge ? 32 : 24,
                 ),
               ),
-              const SizedBox(height: 8),
-            ],
-            if (secondaryButtonText != null &&
-                onSecondaryButtonPressed != null) ...[
-              TextButton(
-                onPressed: onSecondaryButtonPressed,
-                child: Text(secondaryButtonText!),
+              SizedBox(height: isLarge ? 16.0 : 12.0),
+              Text(
+                'Bir hata oluştu',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                textAlign: TextAlign.center,
               ),
+              SizedBox(height: isLarge ? 12.0 : 8.0),
+              Text(
+                displayMessage,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+              if (onRetry != null) ...[
+                SizedBox(height: isLarge ? 24.0 : 16.0),
+                FilledButton.icon(
+                  onPressed: onRetry,
+                  icon: const Icon(Icons.refresh_rounded),
+                  label: const Text('Tekrar Dene'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.error,
+                    foregroundColor: Colors.white,
+                    minimumSize: Size(isLarge ? 200 : 150, isLarge ? 48 : 40),
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
   }
+}
 
-  /// Kompakt hata görünümü (Liste itemı veya küçük kart için)
-  Widget _buildCompactErrorView(BuildContext context, String displayMessage) {
-    return Container(
-      height: height,
-      padding: const EdgeInsets.all(16.0),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: 24,
-            color: _getIconColor(context),
+/// Verilerin boş olduğu durumlar için görünüm
+class EmptyStateView extends StatelessWidget {
+  final String title;
+  final String message;
+  final IconData icon;
+  final String? actionText;
+  final VoidCallback? onAction;
+
+  const EmptyStateView({
+    super.key,
+    required this.title,
+    required this.message,
+    this.icon = Icons.info_outline_rounded,
+    this.actionText,
+    this.onAction,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Animate(
+        effects: [
+          FadeEffect(duration: 400.ms),
+          SlideEffect(
+            begin: const Offset(0, 0.1),
+            end: Offset.zero,
+            duration: 500.ms,
+            curve: Curves.easeOutCubic,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              displayMessage,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ),
-          if (onRetry != null) ...[
-            const SizedBox(width: 8),
-            IconButton(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              tooltip: retryText,
-            ),
-          ],
         ],
+        child: Container(
+          constraints: const BoxConstraints(
+            maxWidth: 320,
+          ),
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceVariant,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  color: AppColors.primary.withOpacity(0.7),
+                  size: 36,
+                ),
+              ),
+              const SizedBox(height: 20.0),
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12.0),
+              Text(
+                message,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                      height: 1.5,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+              if (actionText != null && onAction != null) ...[
+                const SizedBox(height: 24.0),
+                FilledButton.icon(
+                  onPressed: onAction,
+                  icon: const Icon(Icons.add_rounded),
+                  label: Text(actionText!),
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(220, 48),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
+}
 
-  /// Hata tipine göre uygun icon rengini döndürür
-  Color _getIconColor(BuildContext context) {
-    if (error is AuthException) {
-      return Colors.orange;
-    } else if (error is NetworkException) {
-      return Colors.blue;
-    } else if (error is ValidationException) {
-      return Colors.amber;
-    } else {
-      return Colors.red;
+/// Yükleme durumları için daha gelişmiş görünüm
+class LoadingStateView extends StatelessWidget {
+  final String? message;
+  final bool isFullScreen;
+
+  const LoadingStateView({
+    super.key,
+    this.message,
+    this.isFullScreen = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final Widget content = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const SizedBox(
+          width: 48,
+          height: 48,
+          child: CircularProgressIndicator(
+            strokeWidth: 3,
+          ),
+        ),
+        if (message != null) ...[
+          const SizedBox(height: 24),
+          Text(
+            message!,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ],
+    );
+
+    if (isFullScreen) {
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(
+          child: content.animate().fade(duration: 400.ms),
+        ),
+      );
     }
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 40),
+        child: content.animate().fade(duration: 400.ms),
+      ),
+    );
   }
 }

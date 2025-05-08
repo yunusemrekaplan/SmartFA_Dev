@@ -4,21 +4,22 @@ import 'package:intl/intl.dart';
 import 'package:mobile/app/modules/dashboard/dashboard_controller.dart';
 import 'package:mobile/app/modules/dashboard/widgets/budget_summary_card.dart';
 import 'package:mobile/app/modules/dashboard/widgets/income_expense_chart.dart';
-import 'package:mobile/app/widgets/info_panel.dart'; // Güncellenmiş yol
-import 'package:mobile/app/widgets/section_header.dart'; // Güncellenmiş yol
+import 'package:mobile/app/widgets/info_panel.dart';
+import 'package:mobile/app/widgets/section_header.dart';
 import 'package:mobile/app/modules/dashboard/widgets/transaction_summary_card.dart';
 import 'package:mobile/app/theme/app_colors.dart';
+import 'package:mobile/app/theme/app_theme.dart';
 import 'package:mobile/app/widgets/error_view.dart';
 import 'package:mobile/app/widgets/custom_home_app_bar.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 /// Modern dashboard ekranı, finans özetini görsel öğelerle gösterir
 class DashboardScreen extends GetView<DashboardController> {
   const DashboardScreen({super.key});
 
   // Sayı formatlayıcı (para birimi için)
-  // Intl paketinin locale ayarlarının main.dart veya başlangıçta yapıldığını varsayıyoruz.
-  NumberFormat get currencyFormatter => NumberFormat.currency(
-      locale: 'tr_TR', symbol: '₺'); // Türkçe locale ve TL simgesi
+  NumberFormat get currencyFormatter =>
+      NumberFormat.currency(locale: 'tr_TR', symbol: '₺', decimalDigits: 0);
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +37,6 @@ class DashboardScreen extends GetView<DashboardController> {
             icon: const Icon(Icons.notifications_outlined),
             tooltip: 'Bildirimler',
             onPressed: () {
-              // TODO: Bildirimler sayfasına yönlendir
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Bildirimler henüz yapım aşamasında'),
@@ -66,14 +66,16 @@ class DashboardScreen extends GetView<DashboardController> {
         color: AppColors.primary,
         onRefresh: controller.refreshData,
         child: Obx(() {
-          // Yükleme durumu kontrol et
+          // Tamamen yükleme durumu
           if (controller.isLoading.value &&
               controller.recentTransactions.isEmpty &&
               controller.budgetSummaries.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
+            return const LoadingStateView(
+              message: 'Finans verileri yükleniyor...',
+            );
           }
 
-          // Hata durumunu kontrol et (Tamamen yüklenemediği durumda)
+          // Tamamen hata durumu
           if (controller.errorMessage.isNotEmpty &&
               controller.recentTransactions.isEmpty &&
               controller.budgetSummaries.isEmpty) {
@@ -94,14 +96,16 @@ class DashboardScreen extends GetView<DashboardController> {
   /// Dashboard içeriğini oluşturur
   Widget _buildDashboardContent(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(AppTheme.kHorizontalPadding),
       children: [
         // Yükleniyor göstergesi (ilk yüklemeden sonra)
         if (controller.isLoading.value)
-          const Padding(
-            padding: EdgeInsets.only(bottom: 16.0),
-            child: Center(child: LinearProgressIndicator()),
-          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: LinearProgressIndicator(
+              backgroundColor: AppColors.primary.withOpacity(0.1),
+            ),
+          ).animate().fadeIn(),
 
         // Hata mesajı (kısmi hata durumu için)
         if (controller.errorMessage.isNotEmpty)
@@ -113,16 +117,7 @@ class DashboardScreen extends GetView<DashboardController> {
               onActionPressed: controller.refreshData,
               actionText: 'Yenile',
             ),
-          ),
-
-        // --- Bakiye Kartı ---
-        /*Obx(() => BalanceCard(
-              totalBalance: controller.totalBalance.value,
-              onRefresh: controller.refreshData,
-              onViewDetails: controller.navigateToAccounts,
-            )),
-
-        const SizedBox(height: 24),*/
+          ).animate().fadeIn().slideY(begin: 0.2, end: 0),
 
         // --- Gelir-Gider Özeti Grafik ---
         Obx(() => IncomeExpenseChart(
@@ -137,13 +132,11 @@ class DashboardScreen extends GetView<DashboardController> {
         // --- Bütçe Özetleri Bölümü ---
         _buildBudgetSection(context),
 
-        const SizedBox(height: 8),
-
         // Aşılan bütçe uyarısı (varsa)
         Obx(() {
           if (controller.hasOverspentBudgets.value) {
             return Padding(
-              padding: const EdgeInsets.only(bottom: 24.0),
+              padding: const EdgeInsets.only(top: 8.0, bottom: 24.0),
               child: InfoPanel.warning(
                 title: 'Bütçe Aşımı',
                 message:
@@ -151,9 +144,9 @@ class DashboardScreen extends GetView<DashboardController> {
                 onActionPressed: controller.navigateToBudgets,
                 actionText: 'Bütçeleri Görüntüle',
               ),
-            );
+            ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, end: 0);
           } else {
-            return const SizedBox(height: 24);
+            return const SizedBox(height: 16);
           }
         }),
 
@@ -169,7 +162,7 @@ class DashboardScreen extends GetView<DashboardController> {
                   '${controller.accountCount} aktif hesabınız bulunmaktadır.',
               onActionPressed: controller.navigateToAccounts,
               actionText: 'Hesapları Yönet',
-            )),
+            )).animate(delay: 400.ms).fadeIn().slideY(begin: 0.2, end: 0),
 
         const SizedBox(height: 50), // Alt boşluk
       ],
@@ -178,183 +171,147 @@ class DashboardScreen extends GetView<DashboardController> {
 
   // --- Dashboard İçerik Oluşturma Metotları ---
 
-  /// Bütçe özet bölümünü oluşturur (Widget'a taşındı)
+  /// Bütçe özet bölümünü oluşturur
   Widget _buildBudgetSection(BuildContext context) {
-    return _BudgetSectionWidget(controller: controller);
-  }
-
-  /// Son işlemler bölümünü oluşturur (Widget'a taşındı)
-  Widget _buildRecentTransactionsSection(BuildContext context) {
-    return _RecentTransactionsSectionWidget(controller: controller);
-  }
-}
-
-// --- Ayrılmış Widget Sınıfları ---
-
-/// Bütçe Özetleri Bölümü Widget'ı
-class _BudgetSectionWidget extends StatelessWidget {
-  final DashboardController controller;
-
-  const _BudgetSectionWidget({required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Bölüm başlığı
-        SectionHeader(
-          title: 'Bu Ayın Bütçeleri',
-          subtitle: 'Harcamalarınızı izleyin ve yönetin',
-          onActionPressed: controller.navigateToBudgets,
-          actionText: 'Tümünü Gör',
-          actionIcon: Icons.arrow_forward_rounded,
+    return Animate(
+      effects: [
+        FadeEffect(duration: 300.ms, delay: 100.ms),
+        SlideEffect(
+          begin: const Offset(0, 0.2),
+          end: Offset.zero,
+          duration: 400.ms,
+          delay: 100.ms,
+          curve: Curves.easeOutCubic,
         ),
+      ],
+      child: Column(
+        children: [
+          // Bölüm başlığı
+          SectionHeader(
+            title: 'Bu Ayın Bütçeleri',
+            subtitle: 'Harcamalarınızı izleyin ve yönetin',
+            onActionPressed: controller.navigateToBudgets,
+            actionText: 'Tümünü Gör',
+            actionIcon: Icons.arrow_forward_rounded,
+          ),
 
-        // Bütçe listesi
-        Obx(() {
-          if (controller.budgetSummaries.isEmpty &&
-              !controller.isLoading.value) {
+          // Bütçe listesi
+          Obx(() {
+            if (controller.budgetSummaries.isEmpty &&
+                !controller.isLoading.value) {
+              return EmptyStateView(
+                title: 'Henüz bütçe yok',
+                message:
+                    'Harcamalarınızı planlayarak bütçelemenizi yapın ve finansal hedeflerinize ulaşın.',
+                icon: Icons.account_balance_wallet_outlined,
+                actionText: 'Bütçe Oluştur',
+                onAction: () => Get.toNamed('/budgets/add'),
+              );
+            }
+
+            if (controller.budgetSummaries.isEmpty &&
+                controller.isLoading.value) {
+              return const SizedBox(
+                height: 200,
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+
             return SizedBox(
-              height: 180,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.account_balance_wallet_outlined,
-                      size: 48,
-                      color: AppColors.textSecondary.withOpacity(0.5),
+              height: 220,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: controller.budgetSummaries.length,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemBuilder: (context, index) {
+                  final budget = controller.budgetSummaries[index];
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      right: index == controller.budgetSummaries.length - 1
+                          ? 0
+                          : 12,
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Henüz bütçe tanımlanmamış',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: () {
-                        Get.toNamed('/budgets/add');
+                    child: BudgetSummaryCard(
+                      budget: budget,
+                      onTap: () {
+                        // Bütçe detay sayfasına git
                       },
-                      child: const Text('Bütçe Oluştur'),
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             );
-          }
+          }),
+        ],
+      ),
+    );
+  }
 
-          if (controller.budgetSummaries.isEmpty &&
-              controller.isLoading.value) {
-            return const SizedBox(
-              height: 180,
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
+  /// Son işlemler bölümünü oluşturur
+  Widget _buildRecentTransactionsSection(BuildContext context) {
+    return Animate(
+      effects: [
+        FadeEffect(duration: 300.ms, delay: 200.ms),
+        SlideEffect(
+          begin: const Offset(0, 0.2),
+          end: Offset.zero,
+          duration: 400.ms,
+          delay: 200.ms,
+          curve: Curves.easeOutCubic,
+        ),
+      ],
+      child: Column(
+        children: [
+          // Bölüm başlığı
+          SectionHeader(
+            title: 'Son İşlemler',
+            subtitle: 'En son gerçekleşen finansal hareketleriniz',
+            onActionPressed: controller.navigateToTransactions,
+            actionText: 'Tümünü Gör',
+            actionIcon: Icons.arrow_forward_rounded,
+          ),
 
-          return SizedBox(
-            height: 220,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: controller.budgetSummaries.length,
+          // İşlem listesi
+          Obx(() {
+            if (controller.recentTransactions.isEmpty &&
+                !controller.isLoading.value) {
+              return EmptyStateView(
+                title: 'İşlem kaydı yok',
+                message:
+                    'Gelir ve giderlerinizi takip etmek için işlem ekleyin ve finansal durumunuzu daha iyi anlayın.',
+                icon: Icons.sync_alt_rounded,
+                actionText: 'İşlem Ekle',
+                onAction: () => Get.toNamed('/transactions/add'),
+              );
+            }
+
+            if (controller.recentTransactions.isEmpty &&
+                controller.isLoading.value) {
+              return const SizedBox(
+                height: 200,
+                child: Center(child: CircularProgressIndicator()),
+              );
+            }
+
+            return ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: controller.recentTransactions.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              padding: const EdgeInsets.symmetric(vertical: 8),
               itemBuilder: (context, index) {
-                final budget = controller.budgetSummaries[index];
-                return BudgetSummaryCard(
-                  budget: budget,
+                final transaction = controller.recentTransactions[index];
+                return TransactionSummaryCard(
+                  transaction: transaction,
                   onTap: () {
-                    // Bütçe detay sayfasına gidebilir
-                    //Get.toNamed('/budgets/${budget.id}');
+                    // İşlem detay sayfasına git
                   },
                 );
               },
-            ),
-          );
-        }),
-      ],
-    );
-  }
-}
-
-/// Son İşlemler Bölümü Widget'ı
-class _RecentTransactionsSectionWidget extends StatelessWidget {
-  final DashboardController controller;
-
-  const _RecentTransactionsSectionWidget({required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Bölüm başlığı
-        SectionHeader(
-          title: 'Son İşlemler',
-          subtitle: 'En son gerçekleşen finansal hareketleriniz',
-          onActionPressed: controller.navigateToTransactions,
-          actionText: 'Tümünü Gör',
-          actionIcon: Icons.arrow_forward_rounded,
-        ),
-
-        // İşlem listesi
-        Obx(() {
-          if (controller.recentTransactions.isEmpty &&
-              !controller.isLoading.value) {
-            return SizedBox(
-              height: 180,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.sync_alt_rounded,
-                      size: 48,
-                      color: AppColors.textSecondary.withOpacity(0.5),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Henüz işlem kaydedilmemiş',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: () {
-                        Get.toNamed('/transactions/add');
-                      },
-                      child: const Text('İşlem Ekle'),
-                    ),
-                  ],
-                ),
-              ),
             );
-          }
-
-          if (controller.recentTransactions.isEmpty &&
-              controller.isLoading.value) {
-            return const SizedBox(
-              height: 180,
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
-
-          return ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: controller.recentTransactions.length,
-            itemBuilder: (context, index) {
-              final transaction = controller.recentTransactions[index];
-              return TransactionSummaryCard(
-                transaction: transaction,
-                onTap: () {
-                  // İşlem detay sayfasına gidebilir
-                  //Get.toNamed('/transactions/${transaction.id}');
-                },
-              );
-            },
-          );
-        }),
-      ],
+          }),
+        ],
+      ),
     );
   }
 }
