@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile/app/data/models/response/budget_response_model.dart';
+import 'package:mobile/app/modules/budgets/Widgets/budget_card.dart';
+import 'package:mobile/app/modules/budgets/Widgets/month_selector.dart';
 import 'package:mobile/app/modules/budgets/controllers/budgets_controller.dart';
-import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/app/widgets/error_view.dart';
 import 'package:mobile/app/widgets/custom_home_app_bar.dart';
 
@@ -80,7 +80,7 @@ class BudgetsScreen extends GetView<BudgetsController> {
       body: Column(
         children: [
           // Ay/Yıl seçici
-          _MonthSelector(
+          MonthSelector(
               controller: controller, formatMonth: _formatMonth), // Yeni widget
           // Bütçe listesi
           Expanded(
@@ -119,7 +119,7 @@ class BudgetsScreen extends GetView<BudgetsController> {
                     itemCount: controller.budgetList.length,
                     itemBuilder: (context, index) {
                       final budget = controller.budgetList[index];
-                      return _BudgetCard(
+                      return BudgetCard(
                         // Yeni widget çağrısı
                         budget: budget,
                         currencyFormatter: currencyFormatter,
@@ -132,293 +132,6 @@ class BudgetsScreen extends GetView<BudgetsController> {
                 }
               }),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // _showMonthPicker metodu _MonthSelector widget'ına taşındı.
-
-  // _buildBudgetTile metodu _BudgetCard widget'ına taşındı.
-}
-
-// --- Ayrılmış Widget Sınıfları ---
-
-/// Tek bir bütçe öğesini gösteren kart widget'ı.
-class _BudgetCard extends StatelessWidget {
-  final BudgetModel budget;
-  final NumberFormat currencyFormatter;
-  final BudgetsController controller; // Controller eklendi
-
-  const _BudgetCard({
-    required this.budget,
-    required this.currencyFormatter,
-    required this.controller, // Controller eklendi
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    // İlerleme çubuğu için yüzdelik değer (0.0-1.0 arasında)
-    final double spentPercentage =
-        budget.amount > 0 ? budget.spentAmount / budget.amount : 0;
-
-    // İlerleme çubuğu rengi (kırmızı: aşım, yeşilden turuncuya: normal)
-    Color progressColor;
-    if (spentPercentage >= 1.0) {
-      progressColor = AppColors.error; // Bütçeyi aşmış
-    } else if (spentPercentage >= 0.8) {
-      progressColor = Colors.orange; // Bütçe limitine yaklaşıyor
-    } else {
-      progressColor = Colors.green; // Normal harcama
-    }
-
-    return Card(
-      elevation: 2.0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Kategori adı ve ikon
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        backgroundColor: Theme.of(context)
-                            .colorScheme
-                            .primaryContainer
-                            .withOpacity(0.3),
-                        child: budget.categoryIcon != null &&
-                                budget.categoryIcon!.isNotEmpty
-                            ? Icon(
-                                IconData(int.parse(budget.categoryIcon!),
-                                    fontFamily: 'MaterialIcons'),
-                                color: Theme.of(context).colorScheme.primary)
-                            : Icon(Icons.category_outlined,
-                                color: Theme.of(context).colorScheme.primary),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          budget.categoryName,
-                          style:
-                              Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                PopupMenuButton<String>(
-                  onSelected: (String result) {
-                    if (result == 'edit') {
-                      controller
-                          .goToEditBudget(budget); // Controller kullanıldı
-                    } else if (result == 'delete') {
-                      // Onay dialogu göster
-                      Get.defaultDialog(
-                          title: "Bütçeyi Sil",
-                          middleText:
-                              "'${budget.categoryName}' kategorisi için bütçeyi silmek istediğinizden emin misiniz?",
-                          textConfirm: "Sil",
-                          textCancel: "İptal",
-                          confirmTextColor: Colors.white,
-                          onConfirm: () {
-                            Get.back(); // Dialogu kapat
-                            controller.deleteBudget(
-                                budget.id); // Controller kullanıldı
-                          });
-                    }
-                  },
-                  itemBuilder: (BuildContext context) =>
-                      <PopupMenuEntry<String>>[
-                    const PopupMenuItem<String>(
-                      value: 'edit',
-                      child: ListTile(
-                          leading: Icon(Icons.edit_outlined),
-                          title: Text('Düzenle')),
-                    ),
-                    PopupMenuItem<String>(
-                      value: 'delete',
-                      child: ListTile(
-                          leading: const Icon(Icons.delete_outline,
-                              color: Colors.red),
-                          title: Text('Sil',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(color: Colors.red))),
-                    ),
-                  ],
-                  icon: const Icon(Icons.more_vert),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            // Bütçe ilerleme çubuğu
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: LinearProgressIndicator(
-                value: spentPercentage.clamp(0.0, 1.0),
-                backgroundColor: Colors.grey.shade200,
-                color: progressColor,
-                minHeight: 10,
-              ),
-            ),
-            const SizedBox(height: 12),
-            // Bütçe tutar bilgileri
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Harcanan miktar
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Harcanan',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: Colors.grey),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      currencyFormatter.format(budget.spentAmount),
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: spentPercentage >= 1.0
-                                ? AppColors.error
-                                : Colors.black87,
-                          ),
-                    ),
-                  ],
-                ),
-                // Kalan miktar
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      'Kalan / Toplam',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall
-                          ?.copyWith(color: Colors.grey),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${currencyFormatter.format(budget.remainingAmount)} / ${currencyFormatter.format(budget.amount)}',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: budget.remainingAmount < 0
-                                ? AppColors.error
-                                : Colors.black87,
-                          ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Ay/Yıl seçici widget'ı
-class _MonthSelector extends StatelessWidget {
-  final BudgetsController controller;
-  final String Function(DateTime)
-      formatMonth; // formatMonth fonksiyonunu alıyoruz
-
-  const _MonthSelector({
-    required this.controller,
-    required this.formatMonth,
-  });
-
-  /// Ay seçici diyalog
-  void _showMonthPicker(BuildContext context) async {
-    final DateTime currentPeriod = controller.selectedPeriod.value;
-
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return Container(
-          height: 300,
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Text("Dönem Seçin",
-                  style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 16),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: 12, // Son 6 ay + gelecek 5 ay + mevcut ay
-                  itemBuilder: (context, index) {
-                    // Mevcut aydan 6 ay öncesinden başlayarak 12 ay listele
-                    final month = DateTime(
-                      currentPeriod.year +
-                          ((currentPeriod.month + index - 7) ~/
-                              12), // -6 yerine -7
-                      ((currentPeriod.month + index - 7) % 12) +
-                          1, // -6 yerine -7
-                    );
-
-                    return ListTile(
-                      title: Text(formatMonth(month)), // formatMonth kullanıldı
-                      selected: month.month == currentPeriod.month &&
-                          month.year == currentPeriod.year,
-                      selectedTileColor:
-                          Theme.of(context).colorScheme.primaryContainer,
-                      onTap: () {
-                        controller.changePeriod(month);
-                        Navigator.pop(context);
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.chevron_left),
-            onPressed: controller.goToPreviousMonth,
-          ),
-          Obx(() => GestureDetector(
-                onTap: () => _showMonthPicker(context), // İç metodu çağır
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text(
-                    formatMonth(controller
-                        .selectedPeriod.value), // formatMonth kullanıldı
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                ),
-              )),
-          IconButton(
-            icon: const Icon(Icons.chevron_right),
-            onPressed: controller.goToNextMonth,
           ),
         ],
       ),
