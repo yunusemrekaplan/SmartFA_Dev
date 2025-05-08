@@ -30,7 +30,8 @@ class TransactionListView extends StatelessWidget {
       // Tarih gruplarına göre işlemleri ayır
       final Map<String, List<TransactionModel>> groupedTransactions = {};
       for (var transaction in controller.transactionList) {
-        final dateStr = DateFormat('dd MMMM yyyy', 'tr_TR').format(transaction.transactionDate);
+        final dateStr = DateFormat('dd MMMM yyyy', 'tr_TR')
+            .format(transaction.transactionDate);
         if (!groupedTransactions.containsKey(dateStr)) {
           groupedTransactions[dateStr] = [];
         }
@@ -55,7 +56,8 @@ class TransactionListView extends StatelessWidget {
             return controller.isLoadingMore.value
                 ? const Padding(
                     padding: EdgeInsets.symmetric(vertical: 16.0),
-                    child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                    child: Center(
+                        child: CircularProgressIndicator(strokeWidth: 2)),
                   )
                 : const SizedBox.shrink();
           }
@@ -69,32 +71,22 @@ class TransactionListView extends StatelessWidget {
             children: [
               // Tarih başlığı
               Padding(
-                padding: const EdgeInsets.only(top: 16.0, bottom: 8.0, left: 4.0),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        dateStr,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primary,
-                            ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Divider(
-                        color: Colors.grey.shade300,
-                        thickness: 1,
-                      ),
-                    ),
-                  ],
+                padding:
+                    const EdgeInsets.only(top: 16.0, bottom: 8.0, left: 4.0),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    dateStr,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                        ),
+                  ),
                 ),
               ),
 

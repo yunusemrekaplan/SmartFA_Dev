@@ -492,4 +492,13 @@ class TransactionsController extends GetxController {
     totalIncome.value = income;
     totalExpense.value = expense;
   }
+
+  /// Aktif filtre olup olmadığını kontrol eder
+  bool get hasActiveFilters {
+    return selectedAccount.value != null ||
+        selectedCategory.value != null ||
+        selectedType.value != null ||
+        selectedStartDate.value != null ||
+        selectedQuickDate.value != null;
+  }
 }
