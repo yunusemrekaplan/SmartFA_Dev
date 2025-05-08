@@ -4,6 +4,8 @@ import 'package:mobile/app/modules/budgets/Widgets/filter_option.dart';
 import 'package:mobile/app/modules/budgets/Widgets/sort_chip.dart';
 import 'package:mobile/app/modules/budgets/controllers/budgets_controller.dart';
 import 'package:mobile/app/theme/app_colors.dart';
+import 'package:mobile/app/theme/app_theme.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 /// Bütçe filtreleme için bottom sheet widget'ı
 class BudgetFilterBottomSheet extends StatelessWidget {
@@ -126,6 +128,84 @@ class BudgetFilterBottomSheet extends StatelessWidget {
                     onChanged: controller.updateSearchQuery,
                     textInputAction: TextInputAction.search,
                   ),
+
+                  const SizedBox(height: 24),
+
+                  // Kategori Filtreleri - YENİ
+                  Text(
+                    'Kategorilere Göre',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary,
+                        ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Kategori filtreleme chip'leri
+                  Obx(() {
+                    // Mevcut bütçelerin kategorilerini topla (tekrar edilenleri hariç tut)
+                    final categories = <int, String>{};
+                    for (final budget in controller.budgetList) {
+                      categories[budget.categoryId] = budget.categoryName;
+                    }
+
+                    if (categories.isEmpty) {
+                      return Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceVariant,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Center(
+                          child: Text(
+                            'Filtrelenecek kategori bulunamadı',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: categories.entries.map((entry) {
+                        final isSelected =
+                            controller.selectedCategoryIds.contains(entry.key);
+                        return FilterChip(
+                          label: Text(entry.value),
+                          selected: isSelected,
+                          checkmarkColor: Colors.white,
+                          selectedColor: AppColors.primary,
+                          backgroundColor: AppColors.surfaceVariant,
+                          labelStyle: TextStyle(
+                            color: isSelected
+                                ? Colors.white
+                                : AppColors.textPrimary,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            side: BorderSide(
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.border,
+                              width: 1,
+                            ),
+                          ),
+                          onSelected: (selected) {
+                            controller.toggleCategoryFilter(entry.key);
+                          },
+                        ).animate().fadeIn(duration: 200.ms);
+                      }).toList(),
+                    );
+                  }),
 
                   const SizedBox(height: 24),
 
@@ -261,8 +341,6 @@ class BudgetFilterBottomSheet extends StatelessWidget {
                           ),
                         ],
                       )),
-
-                  // Kategorileri daha sonra API'den alınıp kategorilere göre filtreleme ekleyebiliriz
                 ],
               ),
             ),
@@ -280,6 +358,10 @@ class BudgetFilterBottomSheet extends StatelessWidget {
                     onPressed: () => Navigator.pop(context),
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(AppTheme.kBorderRadius),
+                      ),
                     ),
                     child: const Text('Tamam'),
                   ),

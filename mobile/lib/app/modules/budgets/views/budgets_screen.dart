@@ -118,17 +118,26 @@ class BudgetsScreen extends GetView<BudgetsController> {
                   // Filtre uygulanmış ve sonuç boş mu kontrolü
                   if (controller.budgetList.isNotEmpty) {
                     // Filtreleme sonucu boş
-                    return ErrorView.noData(
+                    return EmptyStateView(
+                      title: 'Bütçe Bulunamadı',
                       message: 'Seçilen filtrelere uygun bütçe bulunamadı.',
-                      onRetry: controller.resetFilters,
+                      actionText: 'Filtreleri Sıfırla',
+                      onAction: controller.resetFilters,
+                      icon: Icons.filter_alt_off_rounded,
+                      actionIcon: Icons.clear_all_rounded,
                     );
                   }
 
                   // Veri yok (filtresiz)
-                  return ErrorView.noData(
-                    message: 'Bu dönem için bütçe bulunmuyor.',
-                    onRetry: controller.refreshBudgets,
-                    onAdd: controller.goToAddBudget,
+                  return EmptyStateView(
+                    title: 'Bütçe Bulunamadı',
+                    message: 'Henüz bütçeniz yok.',
+                    actionText: 'Bütçe Ekle',
+                    onAction: () {
+                      // Bütçe ekleme sayfasına yönlendir
+                      Get.toNamed('/budgets/add');
+                    },
+                    icon: Icons.pie_chart_rounded,
                   );
                 }
                 // 4. Bütçe Listesi

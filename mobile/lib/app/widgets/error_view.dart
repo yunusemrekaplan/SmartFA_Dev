@@ -42,8 +42,7 @@ class ErrorView extends StatelessWidget {
     this.onSecondaryButtonPressed,
     this.isLarge = false,
     this.height,
-  })  : assert(error != null || message != null,
-            'error veya message verilmelidir'),
+  })  : assert(error != null || message != null, 'error veya message verilmelidir'),
         super(key: key);
 
   /// Özel network hatası görünümü
@@ -58,8 +57,7 @@ class ErrorView extends StatelessWidget {
     return ErrorView(
       key: key,
       error: error,
-      message: message ??
-          'İnternet bağlantısı sağlanamadı. Lütfen bağlantınızı kontrol edin.',
+      message: message ?? 'İnternet bağlantısı sağlanamadı. Lütfen bağlantınızı kontrol edin.',
       onRetry: onRetry,
       icon: Icons.wifi_off_rounded,
       isLarge: isLarge,
@@ -201,6 +199,7 @@ class EmptyStateView extends StatelessWidget {
   final IconData icon;
   final String? actionText;
   final VoidCallback? onAction;
+  final IconData? actionIcon;
 
   const EmptyStateView({
     super.key,
@@ -209,6 +208,7 @@ class EmptyStateView extends StatelessWidget {
     this.icon = Icons.info_outline_rounded,
     this.actionText,
     this.onAction,
+    this.actionIcon,
   });
 
   @override
@@ -267,7 +267,9 @@ class EmptyStateView extends StatelessWidget {
                 const SizedBox(height: 24.0),
                 FilledButton.icon(
                   onPressed: onAction,
-                  icon: const Icon(Icons.add_rounded),
+                  icon: actionIcon != null
+                      ? Icon(actionIcon)
+                      : const Icon(Icons.add_rounded),
                   label: Text(actionText!),
                   style: FilledButton.styleFrom(
                     minimumSize: const Size(220, 48),

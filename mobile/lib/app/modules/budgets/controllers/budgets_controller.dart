@@ -89,8 +89,7 @@ class BudgetsController extends GetxController {
     final int month = selectedPeriod.value.month;
 
     try {
-      final result =
-          await _budgetRepository.getUserBudgetsByPeriod(year, month);
+      final result = await _budgetRepository.getUserBudgetsByPeriod(year, month);
 
       result.when(
         success: (budgets) {
@@ -136,8 +135,7 @@ class BudgetsController extends GetxController {
     // Durum filtresi uygula
     if (activeFilter.value != BudgetFilterType.all) {
       result = result.where((budget) {
-        final double spentPercentage =
-            budget.amount > 0 ? budget.spentAmount / budget.amount : 0;
+        final double spentPercentage = budget.amount > 0 ? budget.spentAmount / budget.amount : 0;
 
         switch (activeFilter.value) {
           case BudgetFilterType.overLimit:
@@ -154,17 +152,13 @@ class BudgetsController extends GetxController {
 
     // Kategori filtresi uygula
     if (selectedCategoryIds.isNotEmpty) {
-      result = result
-          .where((budget) => selectedCategoryIds.contains(budget.categoryId))
-          .toList();
+      result = result.where((budget) => selectedCategoryIds.contains(budget.categoryId)).toList();
     }
 
     // Arama filtresi uygula
     if (searchQuery.value.isNotEmpty) {
       final query = searchQuery.value.toLowerCase();
-      result = result
-          .where((budget) => budget.categoryName.toLowerCase().contains(query))
-          .toList();
+      result = result.where((budget) => budget.categoryName.toLowerCase().contains(query)).toList();
     }
 
     // Sıralama uygula
