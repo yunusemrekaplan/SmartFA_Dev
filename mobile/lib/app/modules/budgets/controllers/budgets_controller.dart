@@ -4,6 +4,26 @@ import 'package:mobile/app/domain/repositories/budget_repository.dart';
 import 'package:mobile/app/navigation/app_routes.dart';
 import 'package:mobile/app/utils/error_handler.dart';
 
+/// Filtreleme seçenekleri için enum
+enum BudgetFilterType {
+  all, // Tüm bütçeler
+  overLimit, // Limit aşılmış bütçeler
+  nearLimit, // Limite yaklaşan bütçeler
+  underBudget, // Normal harcama olan bütçeler
+}
+
+/// Sıralama seçenekleri için enum
+enum BudgetSortType {
+  categoryAZ, // Kategori adına göre A-Z
+  categoryZA, // Kategori adına göre Z-A
+  amountHighToLow, // Toplam bütçe miktarı yüksekten düşüğe
+  amountLowToHigh, // Toplam bütçe miktarı düşükten yükseğe
+  spentHighToLow, // Harcanan miktar yüksekten düşüğe
+  spentLowToHigh, // Harcanan miktar düşükten yükseğe
+  remainingHighToLow, // Kalan miktar yüksekten düşüğe
+  remainingLowToHigh, // Kalan miktar düşükten yükseğe
+}
+
 /// Bütçeler ekranının state'ini ve iş mantığını yöneten GetX controller.
 class BudgetsController extends GetxController {
   // Repository'yi inject et (Binding üzerinden)
@@ -23,8 +43,23 @@ class BudgetsController extends GetxController {
   // Bütçe Listesi
   final RxList<BudgetModel> budgetList = <BudgetModel>[].obs;
 
+  // Filtre ve sıralamanın uygulandığı liste - UI bu listeyi kullanacak
+  final RxList<BudgetModel> filteredBudgetList = <BudgetModel>[].obs;
+
   // Filtreleme için seçili dönem (ay/yıl)
   final Rx<DateTime> selectedPeriod = DateTime.now().obs;
+
+  // Filtreleme seçenekleri
+  final Rx<BudgetFilterType> activeFilter = BudgetFilterType.all.obs;
+
+  // Sıralama seçeneği
+  final Rx<BudgetSortType> activeSortType = BudgetSortType.categoryAZ.obs;
+
+  // Filtre veya sıralama değiştiğinde kullanılacak arama metni
+  final RxString searchQuery = ''.obs;
+
+  // Kategori ID'sine göre filtreleme (çoklu seçim yapılabilir)
+  final RxList<int> selectedCategoryIds = <int>[].obs;
 
   // --- Lifecycle Metotları ---
 
@@ -34,6 +69,13 @@ class BudgetsController extends GetxController {
     print('>>> BudgetsController onInit called');
     // Controller ilk oluşturulduğunda bütçeleri çek
     fetchBudgets();
+
+    // Filtreleme değişikliklerini dinle
+    ever(activeFilter, (_) => applyFilters());
+    ever(activeSortType, (_) => applyFilters());
+    ever(searchQuery, (_) => applyFilters());
+    ever(selectedCategoryIds, (_) => applyFilters());
+    ever(budgetList, (_) => applyFilters());
   }
 
   // --- Metotlar ---
@@ -47,7 +89,8 @@ class BudgetsController extends GetxController {
     final int month = selectedPeriod.value.month;
 
     try {
-      final result = await _budgetRepository.getUserBudgetsByPeriod(year, month);
+      final result =
+          await _budgetRepository.getUserBudgetsByPeriod(year, month);
 
       result.when(
         success: (budgets) {
@@ -78,6 +121,114 @@ class BudgetsController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  /// Tüm filtreleme ve sıralama seçeneklerini uygular
+  void applyFilters() {
+    if (budgetList.isEmpty) {
+      filteredBudgetList.clear();
+      return;
+    }
+
+    // İlk filtrelemeyi yap
+    List<BudgetModel> result = List.from(budgetList);
+
+    // Durum filtresi uygula
+    if (activeFilter.value != BudgetFilterType.all) {
+      result = result.where((budget) {
+        final double spentPercentage =
+            budget.amount > 0 ? budget.spentAmount / budget.amount : 0;
+
+        switch (activeFilter.value) {
+          case BudgetFilterType.overLimit:
+            return spentPercentage >= 1.0;
+          case BudgetFilterType.nearLimit:
+            return spentPercentage >= 0.85 && spentPercentage < 1.0;
+          case BudgetFilterType.underBudget:
+            return spentPercentage < 0.85;
+          default:
+            return true;
+        }
+      }).toList();
+    }
+
+    // Kategori filtresi uygula
+    if (selectedCategoryIds.isNotEmpty) {
+      result = result
+          .where((budget) => selectedCategoryIds.contains(budget.categoryId))
+          .toList();
+    }
+
+    // Arama filtresi uygula
+    if (searchQuery.value.isNotEmpty) {
+      final query = searchQuery.value.toLowerCase();
+      result = result
+          .where((budget) => budget.categoryName.toLowerCase().contains(query))
+          .toList();
+    }
+
+    // Sıralama uygula
+    switch (activeSortType.value) {
+      case BudgetSortType.categoryAZ:
+        result.sort((a, b) => a.categoryName.compareTo(b.categoryName));
+        break;
+      case BudgetSortType.categoryZA:
+        result.sort((a, b) => b.categoryName.compareTo(a.categoryName));
+        break;
+      case BudgetSortType.amountHighToLow:
+        result.sort((a, b) => b.amount.compareTo(a.amount));
+        break;
+      case BudgetSortType.amountLowToHigh:
+        result.sort((a, b) => a.amount.compareTo(b.amount));
+        break;
+      case BudgetSortType.spentHighToLow:
+        result.sort((a, b) => b.spentAmount.compareTo(a.spentAmount));
+        break;
+      case BudgetSortType.spentLowToHigh:
+        result.sort((a, b) => a.spentAmount.compareTo(b.spentAmount));
+        break;
+      case BudgetSortType.remainingHighToLow:
+        result.sort((a, b) => b.remainingAmount.compareTo(a.remainingAmount));
+        break;
+      case BudgetSortType.remainingLowToHigh:
+        result.sort((a, b) => a.remainingAmount.compareTo(b.remainingAmount));
+        break;
+    }
+
+    // Filtrelenmiş ve sıralanmış listeyi güncelle
+    filteredBudgetList.assignAll(result);
+  }
+
+  /// Aktif filtreyi değiştirir
+  void changeFilter(BudgetFilterType filter) {
+    activeFilter.value = filter;
+  }
+
+  /// Sıralama tipini değiştirir
+  void changeSortType(BudgetSortType sortType) {
+    activeSortType.value = sortType;
+  }
+
+  /// Arama sorgusunu günceller
+  void updateSearchQuery(String query) {
+    searchQuery.value = query;
+  }
+
+  /// Kategori filtrelemesini günceller
+  void toggleCategoryFilter(int categoryId) {
+    if (selectedCategoryIds.contains(categoryId)) {
+      selectedCategoryIds.remove(categoryId);
+    } else {
+      selectedCategoryIds.add(categoryId);
+    }
+  }
+
+  /// Tüm filtreleri sıfırlar
+  void resetFilters() {
+    activeFilter.value = BudgetFilterType.all;
+    activeSortType.value = BudgetSortType.categoryAZ;
+    searchQuery.value = '';
+    selectedCategoryIds.clear();
   }
 
   /// Dönemi değiştir ve bütçeleri yeniden yükle

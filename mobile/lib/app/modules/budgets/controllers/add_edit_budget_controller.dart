@@ -6,6 +6,7 @@ import 'package:mobile/app/data/models/response/budget_response_model.dart';
 import 'package:mobile/app/data/models/response/category_response_model.dart';
 import 'package:mobile/app/domain/repositories/budget_repository.dart';
 import 'package:mobile/app/domain/repositories/category_repository.dart';
+import 'package:mobile/app/theme/app_colors.dart';
 
 /// Bütçe ekleme/düzenleme ekranının controller'ı.
 class AddEditBudgetController extends GetxController {
@@ -196,6 +197,52 @@ class AddEditBudgetController extends GetxController {
           },
         );
       }
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  /// Bütçeyi siler
+  Future<void> deleteBudget(int budgetId) async {
+    if (isLoading.value) return; // İşlem devam ediyorsa çıkış yap
+
+    isLoading.value = true;
+    errorMessage.value = '';
+
+    try {
+      final result = await _budgetRepository.deleteBudget(budgetId);
+
+      result.when(
+        success: (_) {
+          Get.back(result: true); // Önceki ekrana dön
+          Get.snackbar(
+            'Başarılı',
+            'Bütçe başarıyla silindi',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppColors.success,
+            colorText: Colors.white,
+          );
+        },
+        failure: (error) {
+          errorMessage.value = 'Bütçe silinirken hata oluştu: ${error.message}';
+          Get.snackbar(
+            'Hata',
+            errorMessage.value,
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: AppColors.error,
+            colorText: Colors.white,
+          );
+        },
+      );
+    } catch (e) {
+      errorMessage.value = 'Beklenmeyen bir hata oluştu: $e';
+      Get.snackbar(
+        'Hata',
+        errorMessage.value,
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppColors.error,
+        colorText: Colors.white,
+      );
     } finally {
       isLoading.value = false;
     }

@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile/app/modules/budgets/Widgets/active_filters_bar.dart';
 import 'package:mobile/app/modules/budgets/Widgets/budget_card.dart';
+import 'package:mobile/app/modules/budgets/Widgets/budget_filter_bottom_sheet.dart';
 import 'package:mobile/app/modules/budgets/Widgets/month_selector.dart';
 import 'package:mobile/app/modules/budgets/controllers/budgets_controller.dart';
+import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/app/widgets/error_view.dart';
 import 'package:mobile/app/widgets/custom_home_app_bar.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 /// Kullanıcının bütçelerini listeleyen ekran.
 class BudgetsScreen extends GetView<BudgetsController> {
@@ -47,20 +51,23 @@ class BudgetsScreen extends GetView<BudgetsController> {
           },
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list_rounded),
-            tooltip: 'Filtrele',
-            onPressed: () {
-              // TODO: Filtreleme dialogunu göster
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Filtreleme özelliği henüz yapım aşamasında'),
-                  duration: Duration(seconds: 2),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-          ),
+          Obx(() {
+            // Aktif filtre varsa butonları belirginleştir
+            final bool hasActiveFilters =
+                controller.activeFilter.value != BudgetFilterType.all ||
+                    controller.selectedCategoryIds.isNotEmpty ||
+                    controller.searchQuery.isNotEmpty;
+
+            return IconButton(
+              icon: Icon(
+                Icons.filter_list_rounded,
+                color: hasActiveFilters ? AppColors.primary : null,
+              ),
+              tooltip: 'Filtrele',
+              onPressed: () =>
+                  BudgetFilterBottomSheet.show(context, controller),
+            );
+          }),
           IconButton(
             icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Yenile',
@@ -80,8 +87,11 @@ class BudgetsScreen extends GetView<BudgetsController> {
       body: Column(
         children: [
           // Ay/Yıl seçici
-          MonthSelector(
-              controller: controller, formatMonth: _formatMonth), // Yeni widget
+          MonthSelector(controller: controller, formatMonth: _formatMonth),
+
+          // Aktif filtre göstergesi
+          ActiveFiltersBar(controller: controller),
+
           // Bütçe listesi
           Expanded(
             child: RefreshIndicator(
@@ -103,9 +113,18 @@ class BudgetsScreen extends GetView<BudgetsController> {
                   );
                 }
                 // 3. Boş Liste Durumu
-                else if (controller.budgetList.isEmpty &&
+                else if (controller.filteredBudgetList.isEmpty &&
                     !controller.isLoading.value) {
-                  // ErrorView.noData widget'ını kullan
+                  // Filtre uygulanmış ve sonuç boş mu kontrolü
+                  if (controller.budgetList.isNotEmpty) {
+                    // Filtreleme sonucu boş
+                    return ErrorView.noData(
+                      message: 'Seçilen filtrelere uygun bütçe bulunamadı.',
+                      onRetry: controller.resetFilters,
+                    );
+                  }
+
+                  // Veri yok (filtresiz)
                   return ErrorView.noData(
                     message: 'Bu dönem için bütçe bulunmuyor.',
                     onRetry: controller.refreshBudgets,
@@ -116,15 +135,17 @@ class BudgetsScreen extends GetView<BudgetsController> {
                 else {
                   return ListView.separated(
                     padding: const EdgeInsets.all(16.0),
-                    itemCount: controller.budgetList.length,
+                    itemCount: controller.filteredBudgetList.length,
                     itemBuilder: (context, index) {
-                      final budget = controller.budgetList[index];
+                      final budget = controller.filteredBudgetList[index];
                       return BudgetCard(
-                        // Yeni widget çağrısı
                         budget: budget,
                         currencyFormatter: currencyFormatter,
-                        controller: controller, // Controller eklendi
-                      );
+                        controller: controller,
+                      ).animate().fadeIn(
+                            duration: 300.ms,
+                            delay: Duration(milliseconds: 50 * index),
+                          );
                     },
                     separatorBuilder: (context, index) =>
                         const SizedBox(height: 10),
