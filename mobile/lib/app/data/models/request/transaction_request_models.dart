@@ -83,7 +83,7 @@ class TransactionFilterDto {
     if (categoryId != null) params['categoryId'] = categoryId.toString();
     if (startDate != null) params['startDate'] = startDate!.toIso8601String();
     if (endDate != null) params['endDate'] = endDate!.toIso8601String();
-    if (type != null) params['type'] = type!.index.toString(); // Enum index'ini gönder
+    if (type != null) params['type'] = categoryTypeToJson(type!);
     return params;
   }
 }

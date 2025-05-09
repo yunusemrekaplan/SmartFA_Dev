@@ -10,8 +10,9 @@ import 'package:flutter_animate/flutter_animate.dart';
 class TransactionSummary extends StatelessWidget {
   final TransactionsController controller;
   final NumberFormat currencyFormatter;
+  final GlobalKey _dateButtonKey = GlobalKey();
 
-  const TransactionSummary({
+  TransactionSummary({
     super.key,
     required this.controller,
     required this.currencyFormatter,
@@ -51,8 +52,22 @@ class TransactionSummary extends StatelessWidget {
               children: [
                 // Dönem seçici - Merkeze yerleştirildi
                 Center(
-                  child: GestureDetector(
-                    onTap: () => controller.selectDateRange(context),
+                  child: InkWell(
+                    key: _dateButtonKey,
+                    onTap: () {
+                      // Butonun pozisyonunu al
+                      final RenderBox? renderBox = _dateButtonKey.currentContext
+                          ?.findRenderObject() as RenderBox?;
+                      if (renderBox == null) return;
+
+                      final Offset offset =
+                          renderBox.localToGlobal(Offset.zero);
+
+                      // Popup menüyü göster
+                      controller.showQuickDateMenu(
+                          context, Offset(offset.dx, offset.dy));
+                    },
+                    borderRadius: BorderRadius.circular(24),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 10),
@@ -78,9 +93,7 @@ class TransactionSummary extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            controller.selectedStartDate.value == null
-                                ? 'Tüm Zamanlar'
-                                : "${DateFormat('dd MMM', 'tr_TR').format(controller.selectedStartDate.value!)} - ${DateFormat('dd MMM', 'tr_TR').format(controller.selectedEndDate.value!)}",
+                            _getDateRangeText(context),
                             style:
                                 Theme.of(context).textTheme.bodyLarge?.copyWith(
                                       fontWeight: FontWeight.w600,
@@ -304,5 +317,38 @@ class TransactionSummary extends StatelessWidget {
           delay: 200.ms,
           curve: Curves.easeOutCubic,
         );
+  }
+
+  /// Tarih aralığı metnini oluşturur
+  String _getDateRangeText(BuildContext context) {
+    // Eğer hızlı tarih filtresi aktifse, onun adını göster
+    if (controller.selectedQuickDate.value != null) {
+      switch (controller.selectedQuickDate.value) {
+        case 'today':
+          return 'Bugün';
+        case 'yesterday':
+          return 'Dün';
+        case 'thisWeek':
+          return 'Bu Hafta';
+        case 'thisMonth':
+          return 'Bu Ay';
+        case 'lastMonth':
+          return 'Geçen Ay';
+        case 'last3Months':
+          return 'Son 3 Ay';
+        case 'lastYear':
+          return 'Son 1 Yıl';
+        case 'all':
+          return 'Tüm Zamanlar';
+      }
+    }
+
+    // Özel tarih aralığı seçilmişse tarih aralığını göster
+    if (controller.selectedStartDate.value != null) {
+      return "${DateFormat('dd MMM', 'tr_TR').format(controller.selectedStartDate.value!)} - ${DateFormat('dd MMM', 'tr_TR').format(controller.selectedEndDate.value!)}";
+    }
+
+    // Tarih seçilmemişse
+    return 'Tüm Zamanlar';
   }
 }

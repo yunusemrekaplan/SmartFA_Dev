@@ -6,8 +6,9 @@ import 'package:mobile/app/modules/transactions/controllers/transactions_control
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/app/theme/app_theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:mobile/app/modules/transactions/widgets/filter_bottom_sheet/filter_bottom_sheet.dart';
 
-/// Aktif filtreleri gösteren gelişmiş chip'leri içeren satır Widget'ı
+/// Aktif filtreleri gösteren bar widget'ı - Bütçe ekranındaki tasarıma benzer şekilde
 class ActiveFiltersRow extends StatelessWidget {
   final TransactionsController controller;
 
@@ -16,233 +17,176 @@ class ActiveFiltersRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final List<Widget> chips = [];
+      final bool hasFilters = controller.hasActiveFilters;
 
-      // Hesap filtresi
-      if (controller.selectedAccount.value != null) {
-        chips.add(_buildFilterChip(
-          context: context,
-          label: controller.selectedAccount.value!.name,
-          onDeleted: () => controller.selectAccountFilter(null),
-          icon: Icons.account_balance_wallet_outlined,
-          color: AppColors.primary,
-          index: chips.length,
-        ));
-      }
+      if (!hasFilters) return const SizedBox.shrink();
 
-      // Kategori filtresi
-      if (controller.selectedCategory.value != null) {
-        // Kategori tipine göre renk belirle
-        final Color categoryColor =
-            controller.selectedCategory.value!.type == CategoryType.Income
-                ? AppColors.income
-                : AppColors.expense;
-
-        chips.add(_buildFilterChip(
-          context: context,
-          label: controller.selectedCategory.value!.name,
-          onDeleted: () => controller.selectCategoryFilter(null),
-          icon: Icons.category_outlined,
-          color: categoryColor,
-          index: chips.length,
-        ));
-      }
-
-      // İşlem tipi filtresi
-      if (controller.selectedType.value != null) {
-        final bool isExpense =
-            controller.selectedType.value == CategoryType.Expense;
-        chips.add(_buildFilterChip(
-          context: context,
-          label: isExpense ? 'Gider' : 'Gelir',
-          onDeleted: () => controller.selectTypeFilter(null),
-          icon: isExpense
-              ? Icons.arrow_downward_rounded
-              : Icons.arrow_upward_rounded,
-          color: isExpense ? AppColors.expense : AppColors.income,
-          index: chips.length,
-        ));
-      }
-
-      // Tarih filtresi
-      if (controller.selectedStartDate.value != null) {
-        chips.add(_buildFilterChip(
-          context: context,
-          label:
-              '${DateFormat('d MMM', 'tr_TR').format(controller.selectedStartDate.value!)} - ${DateFormat('d MMM', 'tr_TR').format(controller.selectedEndDate.value!)}',
-          onDeleted: () {
-            controller.selectedStartDate.value = null;
-            controller.selectedEndDate.value = null;
-            controller.applyFilters();
-          },
-          icon: Icons.date_range_rounded,
-          color: AppColors.info,
-          index: chips.length,
-        ));
-      }
-
-      // Hızlı tarih filtresi
-      if (controller.selectedQuickDate.value != null) {
-        String periodText = '';
-        switch (controller.selectedQuickDate.value) {
-          case 'today':
-            periodText = 'Bugün';
-            break;
-          case 'yesterday':
-            periodText = 'Dün';
-            break;
-          case 'thisWeek':
-            periodText = 'Bu Hafta';
-            break;
-          case 'thisMonth':
-            periodText = 'Bu Ay';
-            break;
-          case 'lastMonth':
-            periodText = 'Geçen Ay';
-            break;
-          case 'last3Months':
-            periodText = 'Son 3 Ay';
-            break;
-        }
-
-        if (periodText.isNotEmpty) {
-          chips.add(_buildFilterChip(
-            context: context,
-            label: periodText,
-            onDeleted: () {
-              controller.selectedQuickDate.value = null;
-              controller.applyFilters();
-            },
-            icon: Icons.access_time_rounded,
-            color: AppColors.info,
-            index: chips.length,
-          ));
-        }
-      }
-
-      if (chips.isEmpty) {
-        return const SizedBox.shrink();
-      }
-
-      // Filtre temizleme butonu
-      if (chips.isNotEmpty) {
-        chips.add(
-          InkWell(
-            onTap: controller.clearFilters,
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.error.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: AppColors.error.withOpacity(0.3),
-                  width: 1,
+      // Aktif filtreleri gösteren bar
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        color: AppColors.surfaceVariant,
+        child: Row(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: _buildFilterChips(context),
                 ),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.close_rounded,
-                    size: 14,
-                    color: AppColors.error,
-                  ),
-                  const SizedBox(width: 2),
-                  Text(
-                    'Temizle',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.error,
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                ],
-              ),
             ),
-          ).animate().fadeIn(delay: 200.ms, duration: 200.ms),
-        );
-      }
 
-      // Kaydırılabilir filtre chip'leri
-      return Container(
-        height: 56,
-        margin: const EdgeInsets.fromLTRB(0, 4, 0, 8),
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          itemCount: chips.length,
-          itemBuilder: (context, index) => chips[index],
-          separatorBuilder: (context, index) => const SizedBox(width: 8),
+            // Tüm filtreleri temizle butonu
+            IconButton(
+              icon: const Icon(Icons.clear_all),
+              onPressed: controller.clearAndApplyFilters,
+              tooltip: 'Filtreleri Temizle',
+              visualDensity: VisualDensity.compact,
+              color: AppColors.error,
+            ),
+          ],
         ),
-      );
+      ).animate().fadeIn(duration: 300.ms).slideY(
+            begin: -0.1,
+            end: 0,
+            duration: 300.ms,
+            curve: Curves.easeOutCubic,
+          );
     });
   }
 
-  /// Gelişmiş tasarlanmış filtre chip'i
-  Widget _buildFilterChip({
+  /// Aktif filtrelere göre chip'leri oluşturur
+  List<Widget> _buildFilterChips(BuildContext context) {
+    final List<Widget> chips = [];
+
+    // Hesap filtresi
+    if (controller.selectedAccount.value != null) {
+      chips.add(_buildChip(
+        context: context,
+        label: controller.selectedAccount.value!.name,
+        onTap: () => FilterBottomSheet.show(context, controller),
+        color: AppColors.primary,
+      ));
+    }
+
+    // Kategori filtresi
+    if (controller.selectedCategory.value != null) {
+      // Kategori tipine göre renk belirle
+      final Color categoryColor =
+          controller.selectedCategory.value!.type == CategoryType.Income
+              ? AppColors.income
+              : AppColors.expense;
+
+      chips.add(_buildChip(
+        context: context,
+        label: controller.selectedCategory.value!.name,
+        onTap: () => FilterBottomSheet.show(context, controller),
+        color: categoryColor,
+      ));
+    }
+
+    // İşlem tipi filtresi
+    if (controller.selectedType.value != null) {
+      final bool isExpense =
+          controller.selectedType.value == CategoryType.Expense;
+      chips.add(_buildChip(
+        context: context,
+        label: isExpense ? 'Gider' : 'Gelir',
+        onTap: () => FilterBottomSheet.show(context, controller),
+        color: isExpense ? AppColors.expense : AppColors.income,
+      ));
+    }
+
+    // Tarih filtresi
+    if (controller.selectedStartDate.value != null) {
+      chips.add(_buildChip(
+        context: context,
+        label:
+            '${DateFormat('d MMM', 'tr_TR').format(controller.selectedStartDate.value!)} - ${DateFormat('d MMM', 'tr_TR').format(controller.selectedEndDate.value!)}',
+        onTap: () => FilterBottomSheet.show(context, controller),
+        color: AppColors.info,
+      ));
+    }
+
+    // Hızlı tarih filtresi
+    if (controller.selectedQuickDate.value != null) {
+      String periodText = '';
+      switch (controller.selectedQuickDate.value) {
+        case 'today':
+          periodText = 'Bugün';
+          break;
+        case 'yesterday':
+          periodText = 'Dün';
+          break;
+        case 'thisWeek':
+          periodText = 'Bu Hafta';
+          break;
+        case 'thisMonth':
+          periodText = 'Bu Ay';
+          break;
+        case 'lastMonth':
+          periodText = 'Geçen Ay';
+          break;
+        case 'last3Months':
+          periodText = 'Son 3 Ay';
+          break;
+      }
+
+      if (periodText.isNotEmpty) {
+        chips.add(_buildChip(
+          context: context,
+          label: periodText,
+          onTap: () => FilterBottomSheet.show(context, controller),
+          color: AppColors.info,
+        ));
+      }
+    }
+
+    return chips;
+  }
+
+  /// Bütçe ekranındaki gibi filtre chip'i oluşturur
+  Widget _buildChip({
     required BuildContext context,
     required String label,
-    required VoidCallback onDeleted,
-    required IconData icon,
+    required VoidCallback onTap,
     required Color color,
-    required int index,
   }) {
-    return Chip(
-      avatar: Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          shape: BoxShape.circle,
-        ),
-        child: Icon(
-          icon,
-          size: 14,
-          color: color,
-        ),
-      ),
-      label: Text(
-        label,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(50),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(50),
+            border: Border.all(
+              color: color.withOpacity(0.3),
+              width: 1.0,
             ),
-      ),
-      deleteIcon: Container(
-        margin: const EdgeInsets.only(left: 0),
-        padding: const EdgeInsets.all(2),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.05),
-          shape: BoxShape.circle,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: color,
+                      fontWeight: FontWeight.w600,
+                    ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                Icons.close,
+                size: 16,
+                color: color,
+              ),
+            ],
+          ),
         ),
-        child: const Icon(
-          Icons.close_rounded,
-          size: 14,
-        ),
       ),
-      onDeleted: onDeleted,
-      deleteIconColor: AppColors.textSecondary,
-      backgroundColor: Colors.white,
-      side: BorderSide(color: color.withOpacity(0.3)),
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-      labelPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
-      visualDensity: VisualDensity.compact,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      elevation: 0,
-      shadowColor: Colors.transparent,
-    )
-        .animate()
-        .fadeIn(
-          duration: 300.ms,
-          delay: Duration(milliseconds: 50 * index),
-        )
-        .slideX(
-          begin: 0.2,
-          end: 0.0,
-          duration: 300.ms,
-          delay: Duration(milliseconds: 50 * index),
-          curve: Curves.easeOutCubic,
-        );
+    );
   }
 }

@@ -17,6 +17,7 @@ class TransactionsController extends GetxController {
   final ITransactionRepository _transactionRepository;
   final IAccountRepository _accountRepository;
   final ICategoryRepository _categoryRepository;
+
   //final ErrorHandler _errorHandler = ErrorHandler();
 
   TransactionsController({
@@ -51,6 +52,16 @@ class TransactionsController extends GetxController {
   final Rx<AccountModel?> selectedAccount = Rx<AccountModel?>(null);
   final Rx<CategoryModel?> selectedCategory = Rx<CategoryModel?>(null);
   final Rx<CategoryType?> selectedType = Rx<CategoryType?>(null); // Gelir/Gider
+  final RxString sortCriteria = 'date_desc'.obs; // Sıralama kriteri ekledim
+
+  // Geçici filtre state'leri (Tamam butonuna basılana kadar kullanılacak)
+  final Rx<DateTime?> tempStartDate = Rx<DateTime?>(null);
+  final Rx<DateTime?> tempEndDate = Rx<DateTime?>(null);
+  final Rx<AccountModel?> tempAccount = Rx<AccountModel?>(null);
+  final Rx<CategoryModel?> tempCategory = Rx<CategoryModel?>(null);
+  final Rx<CategoryType?> tempType = Rx<CategoryType?>(null);
+  final Rx<String?> tempQuickDate = Rx<String?>(null);
+  final RxString tempSortCriteria = 'date_desc'.obs;
 
   // Filtre seçeneklerini tutacak listeler
   final RxList<AccountModel> filterAccounts = <AccountModel>[].obs;
@@ -62,9 +73,6 @@ class TransactionsController extends GetxController {
   // Toplam gelir ve gider değerleri için observable değişkenler
   final RxDouble totalIncome = 0.0.obs;
   final RxDouble totalExpense = 0.0.obs;
-
-  // Sıralama kriteri
-  final RxString sortCriteria = 'date_desc'.obs;
 
   // Seçilen hızlı tarih filtresi
   final Rx<String?> selectedQuickDate = Rx<String?>(null);
@@ -242,8 +250,19 @@ class TransactionsController extends GetxController {
     }
   }
 
-  /// Seçilen filtreleri uygular ve işlemleri yeniden yükler.
+  /// Filtreleri uygular ve işlemleri yeniden yükler.
+  /// Bu metod sadece Tamam butonuna basıldığında çağrılmalı.
   void applyFilters() {
+    // Geçici filtre değerlerini gerçek filtrelere uygula
+    selectedStartDate.value = tempStartDate.value;
+    selectedEndDate.value = tempEndDate.value;
+    selectedAccount.value = tempAccount.value;
+    selectedCategory.value = tempCategory.value;
+    selectedType.value = tempType.value;
+    selectedQuickDate.value = tempQuickDate.value;
+    sortCriteria.value = tempSortCriteria.value;
+
+    // Verileri yükle
     isLoading.value = true;
     transactionList.clear();
     _currentPage.value = 1;
@@ -251,16 +270,68 @@ class TransactionsController extends GetxController {
     fetchTransactions(isInitialLoad: false);
   }
 
-  /// Tüm filtreleri temizler ve işlemleri yeniden yükler.
-  Future<void> clearFilters() async {
+  /// Tüm filtreleri temizler - FilterBottomSheet içinde kullanılır
+  void clearFilters() {
+    // Geçici filtreleri temizle
+    tempStartDate.value = null;
+    tempEndDate.value = null;
+    tempAccount.value = null;
+    tempCategory.value = null;
+    tempType.value = null;
+    tempQuickDate.value = null;
+    tempSortCriteria.value = 'date_desc';
+
+    // Seçilen filtreleri de temizle
     selectedStartDate.value = null;
     selectedEndDate.value = null;
     selectedAccount.value = null;
     selectedCategory.value = null;
     selectedType.value = null;
     selectedQuickDate.value = null;
+    sortCriteria.value = 'date_desc';
+
+    // Filtreler temizlendiğinde ilk sayfayı yükle
+    transactionList.clear();
+    _currentPage.value = 1;
+    hasMoreData.value = true;
+    fetchTransactions(isInitialLoad: true);
+  }
+
+  /// Tüm filtreleri uygular ve işlemleri yeniden yükler.
+  /// Bottom sheet kapatılırken çağrılır (iptal edilirse çağrılmaz).
+  Future<void> clearAndApplyFilters() async {
+    // Gerçek filtreleri temizle
+    selectedStartDate.value = null;
+    selectedEndDate.value = null;
+    selectedAccount.value = null;
+    selectedCategory.value = null;
+    selectedType.value = null;
+    selectedQuickDate.value = null;
+    sortCriteria.value = 'date_desc';
+
+    // Geçici filtreleri de temizle
+    tempStartDate.value = null;
+    tempEndDate.value = null;
+    tempAccount.value = null;
+    tempCategory.value = null;
+    tempType.value = null;
+    tempQuickDate.value = null;
+    tempSortCriteria.value = 'date_desc';
+
     // Filtreler temizlendiğinde ilk sayfayı yükle
     await fetchTransactions(isInitialLoad: true);
+  }
+
+  /// Filtreleme seansını başlat - Bottom Sheet açıldığında çağrılır
+  void startFiltering() {
+    // Mevcut filtre değerlerini geçici değişkenlere kopyala
+    tempStartDate.value = selectedStartDate.value;
+    tempEndDate.value = selectedEndDate.value;
+    tempAccount.value = selectedAccount.value;
+    tempCategory.value = selectedCategory.value;
+    tempType.value = selectedType.value;
+    tempQuickDate.value = selectedQuickDate.value;
+    tempSortCriteria.value = sortCriteria.value;
   }
 
   /// Tarih aralığı seçimi için dialog gösterir.
@@ -271,11 +342,9 @@ class TransactionsController extends GetxController {
       // 5 yıl öncesine kadar
       lastDate: DateTime.now().add(const Duration(days: 1)),
       // Yarına kadar
-      initialDateRange:
-          selectedStartDate.value != null && selectedEndDate.value != null
-              ? DateTimeRange(
-                  start: selectedStartDate.value!, end: selectedEndDate.value!)
-              : null,
+      initialDateRange: tempStartDate.value != null && tempEndDate.value != null
+          ? DateTimeRange(start: tempStartDate.value!, end: tempEndDate.value!)
+          : null,
       locale: const Locale('tr', 'TR'),
       // Türkçe locale
       builder: (context, child) {
@@ -289,37 +358,105 @@ class TransactionsController extends GetxController {
                   surface: Colors.white, // Dialog arkaplanı
                   onSurface: AppColors.textPrimary, // Dialog yazı rengi
                 ),
-            // textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(primary: AppColors.primary)),
           ),
           child: child!,
         );
       },
     );
     if (picked != null) {
-      selectedStartDate.value = picked.start;
+      tempStartDate.value = picked.start;
       // Bitiş tarihine günün sonunu ekleyerek tüm günü kapsamasını sağla (opsiyonel)
-      selectedEndDate.value = DateTime(
+      tempEndDate.value = DateTime(
           picked.end.year, picked.end.month, picked.end.day, 23, 59, 59);
-      applyFilters(); // Filtreyi uygula
+
+      // Özel tarih seçildiğinde hızlı tarih filtresi temizlenir
+      tempQuickDate.value = null;
     }
   }
 
-  /// Hesap filtresini ayarlar.
+  /// Hesap filtresini ayarlar (geçici değere).
   void selectAccountFilter(AccountModel? account) {
-    selectedAccount.value = account;
-    applyFilters();
+    tempAccount.value = account;
   }
 
-  /// Kategori filtresini ayarlar.
+  /// Kategori filtresini ayarlar (geçici değere).
   void selectCategoryFilter(CategoryModel? category) {
-    selectedCategory.value = category;
-    applyFilters();
+    tempCategory.value = category;
   }
 
-  /// Gelir/Gider filtresini ayarlar.
+  /// Gelir/Gider filtresini ayarlar (geçici değere).
   void selectTypeFilter(CategoryType? type) {
-    selectedType.value = type;
-    applyFilters();
+    tempType.value = type;
+  }
+
+  // Sıralama kriterini ayarla (geçici değere)
+  void setSortingCriteria(String criteria) {
+    tempSortCriteria.value = criteria;
+  }
+
+  // Hızlı tarih filtresi ayarla (geçici değere)
+  void setQuickDateFilter(String? period) {
+    tempQuickDate.value = period; // Seçilen değeri güncelle
+
+    final now = DateTime.now();
+
+    switch (period) {
+      case 'today':
+        tempStartDate.value = DateTime(now.year, now.month, now.day);
+        tempEndDate.value = DateTime(now.year, now.month, now.day, 23, 59, 59);
+        break;
+
+      case 'yesterday':
+        final yesterday = now.subtract(const Duration(days: 1));
+        tempStartDate.value =
+            DateTime(yesterday.year, yesterday.month, yesterday.day);
+        tempEndDate.value = DateTime(
+            yesterday.year, yesterday.month, yesterday.day, 23, 59, 59);
+        break;
+
+      case 'thisWeek':
+        // Haftanın ilk günü (Pazartesi) olarak ayarla
+        final firstDayOfWeek = now.subtract(Duration(days: now.weekday - 1));
+        tempStartDate.value = DateTime(
+            firstDayOfWeek.year, firstDayOfWeek.month, firstDayOfWeek.day);
+        tempEndDate.value = DateTime(now.year, now.month, now.day, 23, 59, 59);
+        break;
+
+      case 'thisMonth':
+        tempStartDate.value = DateTime(now.year, now.month, 1);
+        tempEndDate.value = DateTime(now.year, now.month, now.day, 23, 59, 59);
+        break;
+
+      case 'lastMonth':
+        final lastMonth = DateTime(now.year, now.month - 1, 1);
+        tempStartDate.value = DateTime(lastMonth.year, lastMonth.month, 1);
+        tempEndDate.value =
+            DateTime(lastMonth.year, lastMonth.month + 1, 0, 23, 59, 59);
+        break;
+
+      case 'last3Months':
+        final threeMonthsAgo = DateTime(now.year, now.month - 3, 1);
+        tempStartDate.value =
+            DateTime(threeMonthsAgo.year, threeMonthsAgo.month, 1);
+        tempEndDate.value = DateTime(now.year, now.month, now.day, 23, 59, 59);
+        break;
+      default:
+        tempStartDate.value = null;
+        tempEndDate.value = null;
+        break;
+    }
+  }
+
+  /// Filtreleme iptal edildiğinde çağrılır
+  void cancelFiltering() {
+    // Geçici değerleri sıfırla, değişiklik yapmadan çık
+    tempStartDate.value = selectedStartDate.value;
+    tempEndDate.value = selectedEndDate.value;
+    tempAccount.value = selectedAccount.value;
+    tempCategory.value = selectedCategory.value;
+    tempType.value = selectedType.value;
+    tempQuickDate.value = selectedQuickDate.value;
+    tempSortCriteria.value = sortCriteria.value;
   }
 
   /// Belirli bir işlemi siler.
@@ -404,78 +541,6 @@ class TransactionsController extends GetxController {
     print('Edit transaction tıklandı: ${transaction.id}');
   }
 
-  // Sıralama kriterini ayarla
-  void setSortingCriteria(String criteria) {
-    sortCriteria.value = criteria;
-    applyFilters();
-  }
-
-  // Hızlı tarih filtresi ayarla
-  void setQuickDateFilter(String? period) {
-    selectedQuickDate.value = period; // Seçilen değeri güncelle
-
-    final now = DateTime.now();
-
-    switch (period) {
-      case 'today':
-        selectedStartDate.value = DateTime(now.year, now.month, now.day);
-        selectedEndDate.value =
-            DateTime(now.year, now.month, now.day, 23, 59, 59);
-        break;
-
-      case 'yesterday':
-        final yesterday = now.subtract(const Duration(days: 1));
-        selectedStartDate.value =
-            DateTime(yesterday.year, yesterday.month, yesterday.day);
-        selectedEndDate.value = DateTime(
-            yesterday.year, yesterday.month, yesterday.day, 23, 59, 59);
-        break;
-
-      case 'thisWeek':
-        // Haftanın ilk günü (Pazartesi) olarak ayarla
-        final firstDayOfWeek = now.subtract(Duration(days: now.weekday - 1));
-        selectedStartDate.value = DateTime(
-            firstDayOfWeek.year, firstDayOfWeek.month, firstDayOfWeek.day);
-        selectedEndDate.value =
-            DateTime(now.year, now.month, now.day, 23, 59, 59);
-        break;
-
-      case 'thisMonth':
-        selectedStartDate.value = DateTime(now.year, now.month, 1);
-        selectedEndDate.value =
-            DateTime(now.year, now.month, now.day, 23, 59, 59);
-        break;
-
-      case 'lastMonth':
-        final lastMonth = DateTime(now.year, now.month - 1, 1);
-        selectedStartDate.value = DateTime(lastMonth.year, lastMonth.month, 1);
-        selectedEndDate.value =
-            DateTime(lastMonth.year, lastMonth.month + 1, 0, 23, 59, 59);
-        break;
-
-      case 'last3Months':
-        final threeMonthsAgo = DateTime(now.year, now.month - 3, 1);
-        selectedStartDate.value =
-            DateTime(threeMonthsAgo.year, threeMonthsAgo.month, 1);
-        selectedEndDate.value =
-            DateTime(now.year, now.month, now.day, 23, 59, 59);
-        break;
-      default:
-        selectedStartDate.value = null;
-        selectedEndDate.value = null;
-        break;
-    }
-
-    applyFilters();
-  }
-
-  /// Takvimden seçilen tarih aralığını ayarlar.
-  void selectDateRangeFromCalendar(DateTime startDate, DateTime endDate) {
-    selectedStartDate.value = startDate;
-    selectedEndDate.value = endDate;
-    applyFilters();
-  }
-
   // Verileri işlerken toplam gelir ve giderleri hesapla
   void _calculateTotals() {
     double income = 0;
@@ -500,5 +565,174 @@ class TransactionsController extends GetxController {
         selectedType.value != null ||
         selectedStartDate.value != null ||
         selectedQuickDate.value != null;
+  }
+
+  /// Özet kart için hızlı tarih filtresi ayarla (doğrudan gerçek değişkenleri günceller)
+  Future<void> applyQuickDateFilter(String? period) async {
+    // Eski değerleri kaydet (eğer işlem iptal edilirse geri dönmek için)
+    final oldStartDate = selectedStartDate.value;
+    final oldEndDate = selectedEndDate.value;
+    final oldQuickDate = selectedQuickDate.value;
+
+    // Yeni değerleri ayarla
+    selectedQuickDate.value = period;
+    final now = DateTime.now();
+
+    try {
+      switch (period) {
+        case 'today':
+          selectedStartDate.value = DateTime(now.year, now.month, now.day);
+          selectedEndDate.value =
+              DateTime(now.year, now.month, now.day, 23, 59, 59);
+          break;
+
+        case 'yesterday':
+          final yesterday = now.subtract(const Duration(days: 1));
+          selectedStartDate.value =
+              DateTime(yesterday.year, yesterday.month, yesterday.day);
+          selectedEndDate.value = DateTime(
+              yesterday.year, yesterday.month, yesterday.day, 23, 59, 59);
+          break;
+
+        case 'thisWeek':
+          // Haftanın ilk günü (Pazartesi) olarak ayarla
+          final firstDayOfWeek = now.subtract(Duration(days: now.weekday - 1));
+          selectedStartDate.value = DateTime(
+              firstDayOfWeek.year, firstDayOfWeek.month, firstDayOfWeek.day);
+          selectedEndDate.value =
+              DateTime(now.year, now.month, now.day, 23, 59, 59);
+          break;
+
+        case 'thisMonth':
+          selectedStartDate.value = DateTime(now.year, now.month, 1);
+          selectedEndDate.value =
+              DateTime(now.year, now.month, now.day, 23, 59, 59);
+          break;
+
+        case 'lastMonth':
+          final lastMonth = DateTime(now.year, now.month - 1, 1);
+          selectedStartDate.value =
+              DateTime(lastMonth.year, lastMonth.month, 1);
+          selectedEndDate.value =
+              DateTime(lastMonth.year, lastMonth.month + 1, 0, 23, 59, 59);
+          break;
+
+        case 'last3Months':
+          final threeMonthsAgo = DateTime(now.year, now.month - 3, 1);
+          selectedStartDate.value =
+              DateTime(threeMonthsAgo.year, threeMonthsAgo.month, 1);
+          selectedEndDate.value =
+              DateTime(now.year, now.month, now.day, 23, 59, 59);
+          break;
+
+        case 'lastYear':
+          final lastYear = DateTime(now.year - 1, now.month, now.day);
+          selectedStartDate.value =
+              DateTime(lastYear.year, lastYear.month, lastYear.day);
+          selectedEndDate.value =
+              DateTime(now.year, now.month, now.day, 23, 59, 59);
+          break;
+
+        case 'all':
+        default:
+          selectedStartDate.value = null;
+          selectedEndDate.value = null;
+          selectedQuickDate.value = null;
+          break;
+      }
+
+      // Verileri yükle
+      await fetchTransactions(isInitialLoad: true);
+    } catch (e) {
+      // Hata durumunda eski değerlere geri dön
+      selectedStartDate.value = oldStartDate;
+      selectedEndDate.value = oldEndDate;
+      selectedQuickDate.value = oldQuickDate;
+      rethrow;
+    }
+  }
+
+  /// Özet kart için tarih aralığı seçim popup menüsünü gösterir
+  void showQuickDateMenu(BuildContext context, Offset position) {
+    // Ekran ölçülerini al
+    final RenderBox overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox;
+
+    // Menünün tam butonun altında başlaması için
+    final RelativeRect rect = RelativeRect.fromLTRB(
+        position.dx, // Sol
+        position.dy + 40, // Üst - butonun alt kısmından başlat
+        overlay.size.width -
+            position.dx, // Sağ - ekran genişliğinden sol pozisyonu çıkar
+        overlay.size.height -
+            position.dy -
+            40 // Alt - ekran yüksekliğinden üst pozisyonu çıkar
+        );
+
+    showMenu<String>(
+      context: context,
+      position: rect,
+      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      items: [
+        _buildPopupMenuItem('all', 'Tüm Zamanlar', Icons.all_inclusive),
+        _buildPopupMenuItem('today', 'Bugün', Icons.today),
+        _buildPopupMenuItem('yesterday', 'Dün', Icons.history),
+        _buildPopupMenuItem('thisWeek', 'Bu Hafta', Icons.view_week),
+        _buildPopupMenuItem('thisMonth', 'Bu Ay', Icons.calendar_view_month),
+        _buildPopupMenuItem('lastMonth', 'Geçen Ay', Icons.calendar_month),
+        _buildPopupMenuItem('last3Months', 'Son 3 Ay', Icons.date_range),
+        _buildPopupMenuItem('lastYear', 'Son 1 Yıl', Icons.calendar_today),
+        PopupMenuItem<String>(
+          value: 'custom',
+          child: Row(
+            children: [
+              Icon(Icons.calendar_month, color: AppColors.primary, size: 20),
+              const SizedBox(width: 12),
+              Text('Özel Tarih Aralığı'),
+            ],
+          ),
+        ),
+      ],
+    ).then((value) {
+      if (value == null) return;
+
+      if (value == 'custom') {
+        selectDateRange(context); // Özel tarih seçimi için takvimi göster
+      } else {
+        applyQuickDateFilter(value); // Hızlı tarih filtresi uygula
+      }
+    });
+  }
+
+  /// Popup menü öğesi oluşturur
+  PopupMenuItem<String> _buildPopupMenuItem(
+      String value, String text, IconData icon) {
+    final bool isSelected = selectedQuickDate.value == value;
+    return PopupMenuItem<String>(
+      value: value,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Icon(icon,
+                  color:
+                      isSelected ? AppColors.primary : AppColors.textSecondary,
+                  size: 20),
+              const SizedBox(width: 12),
+              Text(
+                text,
+                style: TextStyle(
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          if (isSelected) Icon(Icons.check, color: AppColors.primary, size: 20),
+        ],
+      ),
+    );
   }
 }
