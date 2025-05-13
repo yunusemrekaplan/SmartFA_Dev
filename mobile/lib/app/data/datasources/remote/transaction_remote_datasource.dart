@@ -1,20 +1,30 @@
 // API endpoint yolları
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:mobile/app/data/models/request/transaction_request_models.dart';
 import 'package:mobile/app/data/models/response/transaction_response_model.dart';
 import 'package:mobile/app/data/network/dio_client.dart';
+import 'package:mobile/app/data/network/exceptions.dart';
 
 const String _transactionsEndpoint = '/transactions'; // Ana endpoint
 
 abstract class ITransactionRemoteDataSource {
-  Future<List<TransactionModel>> getUserTransactions(TransactionFilterDto filter);
+  /// Kullanıcının işlemlerini filtreye göre getirir
+  Future<List<TransactionModel>> getUserTransactions(
+      TransactionFilterDto filter);
 
+  /// ID ile belirli bir işlemi getirir
   Future<TransactionModel> getTransactionById(int transactionId);
 
-  Future<TransactionModel> createTransaction(CreateTransactionRequestModel transactionData);
+  /// Yeni işlem oluşturur
+  Future<TransactionModel> createTransaction(
+      CreateTransactionRequestModel transactionData);
 
-  Future<void> updateTransaction(int transactionId, UpdateTransactionRequestModel transactionData);
+  /// Var olan işlemi günceller
+  Future<void> updateTransaction(
+      int transactionId, UpdateTransactionRequestModel transactionData);
 
+  /// İşlemi siler
   Future<void> deleteTransaction(int transactionId);
 }
 
@@ -24,7 +34,8 @@ class TransactionRemoteDataSource implements ITransactionRemoteDataSource {
   TransactionRemoteDataSource(this._dioClient);
 
   @override
-  Future<List<TransactionModel>> getUserTransactions(TransactionFilterDto filter) async {
+  Future<List<TransactionModel>> getUserTransactions(
+      TransactionFilterDto filter) async {
     try {
       // Filtre DTO'sunu query parametrelerine çevir
       final queryParams = filter.toQueryParameters();
@@ -33,44 +44,56 @@ class TransactionRemoteDataSource implements ITransactionRemoteDataSource {
         queryParameters: queryParams,
       );
       final List<dynamic> data = response.data as List<dynamic>;
-      return data.map((json) => TransactionModel.fromJson(json as Map<String, dynamic>)).toList();
-    } on DioException catch (e) {
-      print('TransactionRemoteDataSource GetUserTransactions Error: $e');
-      rethrow; // Repository katmanı ele alacak
+      return data
+          .map(
+              (json) => TransactionModel.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } on DioException {
+      // ErrorInterceptor tarafından işlenecek
+      rethrow;
     } catch (e) {
-      print('TransactionRemoteDataSource GetUserTransactions Unexpected Error: $e');
-      throw Exception('İşlemler getirilirken beklenmedik bir hata oluştu.');
+      _logError('GetUserTransactions', e);
+      throw UnexpectedException(
+        message: 'İşlemler getirilirken beklenmedik bir hata oluştu',
+        details: e,
+      );
     }
   }
 
   @override
   Future<TransactionModel> getTransactionById(int transactionId) async {
     try {
-      final response = await _dioClient.get('$_transactionsEndpoint/$transactionId');
+      final response =
+          await _dioClient.get('$_transactionsEndpoint/$transactionId');
       return TransactionModel.fromJson(response.data as Map<String, dynamic>);
-    } on DioException catch (e) {
-      print('TransactionRemoteDataSource GetTransactionById Error: $e');
+    } on DioException {
       rethrow;
     } catch (e) {
-      print('TransactionRemoteDataSource GetTransactionById Unexpected Error: $e');
-      throw Exception('İşlem detayı getirilirken beklenmedik bir hata oluştu.');
+      _logError('GetTransactionById', e);
+      throw UnexpectedException(
+        message: 'İşlem detayı getirilirken beklenmedik bir hata oluştu',
+        details: e,
+      );
     }
   }
 
   @override
-  Future<TransactionModel> createTransaction(CreateTransactionRequestModel transactionData) async {
+  Future<TransactionModel> createTransaction(
+      CreateTransactionRequestModel transactionData) async {
     try {
       final response = await _dioClient.post(
         _transactionsEndpoint,
         data: transactionData.toJson(),
       );
       return TransactionModel.fromJson(response.data as Map<String, dynamic>);
-    } on DioException catch (e) {
-      print('TransactionRemoteDataSource CreateTransaction Error: $e');
+    } on DioException {
       rethrow;
     } catch (e) {
-      print('TransactionRemoteDataSource CreateTransaction Unexpected Error: $e');
-      throw Exception('İşlem oluşturulurken beklenmedik bir hata oluştu.');
+      _logError('CreateTransaction', e);
+      throw UnexpectedException(
+        message: 'İşlem oluşturulurken beklenmedik bir hata oluştu',
+        details: e,
+      );
     }
   }
 
@@ -82,12 +105,14 @@ class TransactionRemoteDataSource implements ITransactionRemoteDataSource {
         '$_transactionsEndpoint/$transactionId',
         data: transactionData.toJson(),
       );
-    } on DioException catch (e) {
-      print('TransactionRemoteDataSource UpdateTransaction Error: $e');
+    } on DioException {
       rethrow;
     } catch (e) {
-      print('TransactionRemoteDataSource UpdateTransaction Unexpected Error: $e');
-      throw Exception('İşlem güncellenirken beklenmedik bir hata oluştu.');
+      _logError('UpdateTransaction', e);
+      throw UnexpectedException(
+        message: 'İşlem güncellenirken beklenmedik bir hata oluştu',
+        details: e,
+      );
     }
   }
 
@@ -95,12 +120,21 @@ class TransactionRemoteDataSource implements ITransactionRemoteDataSource {
   Future<void> deleteTransaction(int transactionId) async {
     try {
       await _dioClient.delete('$_transactionsEndpoint/$transactionId');
-    } on DioException catch (e) {
-      print('TransactionRemoteDataSource DeleteTransaction Error: $e');
+    } on DioException {
       rethrow;
     } catch (e) {
-      print('TransactionRemoteDataSource DeleteTransaction Unexpected Error: $e');
-      throw Exception('İşlem silinirken beklenmedik bir hata oluştu.');
+      _logError('DeleteTransaction', e);
+      throw UnexpectedException(
+        message: 'İşlem silinirken beklenmedik bir hata oluştu',
+        details: e,
+      );
+    }
+  }
+
+  /// Debug modunda hata loglar
+  void _logError(String operation, Object error) {
+    if (kDebugMode) {
+      print('TransactionRemoteDataSource $operation Error: $error');
     }
   }
 }

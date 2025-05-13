@@ -1,23 +1,29 @@
 // API endpoint yolları
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:mobile/app/data/models/enums/category_type.dart';
 import 'package:mobile/app/data/models/request/category_request_models.dart';
 import 'package:mobile/app/data/models/response/category_response_model.dart';
 import 'package:mobile/app/data/network/dio_client.dart';
+import 'package:mobile/app/data/network/exceptions.dart';
 
 const String _categoriesEndpoint = '/categories'; // Ana endpoint
 
 abstract class ICategoryRemoteDataSource {
+  /// Belirli bir tipteki kategorileri getirir
   Future<List<CategoryModel>> getCategories(CategoryType type);
 
+  /// Yeni kategori oluşturur
   Future<CategoryModel> createCategory(CreateCategoryRequestModel categoryData);
 
+  /// Varolan kategoriyi günceller
   Future<void> updateCategory(
       int categoryId, UpdateCategoryRequestModel categoryData);
 
+  /// Kategori siler
   Future<void> deleteCategory(int categoryId);
 
-  /// Kullanıcının kategorilerini getirir.
+  /// Kullanıcının kategorilerini getirir
   Future<List<CategoryModel>> getUserCategories();
 }
 
@@ -29,7 +35,7 @@ class CategoryRemoteDataSource implements ICategoryRemoteDataSource {
   @override
   Future<List<CategoryModel>> getCategories(CategoryType type) async {
     try {
-      // Enum'ı query parametresi olarak gönder (backend'deki değerleri kullan)
+      // Enum'ı query parametresi olarak gönder
       final queryParams = {'type': categoryTypeToJson(type)};
       final response = await _dioClient.get(
         _categoriesEndpoint,
@@ -39,12 +45,17 @@ class CategoryRemoteDataSource implements ICategoryRemoteDataSource {
       return data
           .map((json) => CategoryModel.fromJson(json as Map<String, dynamic>))
           .toList();
-    } on DioException catch (e) {
-      print('CategoryRemoteDataSource GetCategories Error: $e');
+    } on DioException {
+      // Dio hataları ErrorInterceptor tarafından işleneceği için tekrar fırlatıyoruz
       rethrow;
     } catch (e) {
-      print('CategoryRemoteDataSource GetCategories Unexpected Error: $e');
-      throw Exception('Kategoriler getirilirken beklenmedik bir hata oluştu.');
+      // Hata ayıklama modunda log
+      _logError('GetCategories', e);
+      // Diğer hataları UnexpectedException olarak sarmalayıp fırlatıyoruz
+      throw UnexpectedException(
+        message: 'Kategoriler getirilirken beklenmedik bir hata oluştu',
+        details: e,
+      );
     }
   }
 
@@ -57,12 +68,14 @@ class CategoryRemoteDataSource implements ICategoryRemoteDataSource {
         data: categoryData.toJson(),
       );
       return CategoryModel.fromJson(response.data as Map<String, dynamic>);
-    } on DioException catch (e) {
-      print('CategoryRemoteDataSource CreateCategory Error: $e');
+    } on DioException {
       rethrow;
     } catch (e) {
-      print('CategoryRemoteDataSource CreateCategory Unexpected Error: $e');
-      throw Exception('Kategori oluşturulurken beklenmedik bir hata oluştu.');
+      _logError('CreateCategory', e);
+      throw UnexpectedException(
+        message: 'Kategori oluşturulurken beklenmedik bir hata oluştu',
+        details: e,
+      );
     }
   }
 
@@ -74,12 +87,14 @@ class CategoryRemoteDataSource implements ICategoryRemoteDataSource {
         '$_categoriesEndpoint/$categoryId',
         data: categoryData.toJson(),
       );
-    } on DioException catch (e) {
-      print('CategoryRemoteDataSource UpdateCategory Error: $e');
+    } on DioException {
       rethrow;
     } catch (e) {
-      print('CategoryRemoteDataSource UpdateCategory Unexpected Error: $e');
-      throw Exception('Kategori güncellenirken beklenmedik bir hata oluştu.');
+      _logError('UpdateCategory', e);
+      throw UnexpectedException(
+        message: 'Kategori güncellenirken beklenmedik bir hata oluştu',
+        details: e,
+      );
     }
   }
 
@@ -87,29 +102,40 @@ class CategoryRemoteDataSource implements ICategoryRemoteDataSource {
   Future<void> deleteCategory(int categoryId) async {
     try {
       await _dioClient.delete('$_categoriesEndpoint/$categoryId');
-    } on DioException catch (e) {
-      print('CategoryRemoteDataSource DeleteCategory Error: $e');
+    } on DioException {
       rethrow;
     } catch (e) {
-      print('CategoryRemoteDataSource DeleteCategory Unexpected Error: $e');
-      throw Exception('Kategori silinirken beklenmedik bir hata oluştu.');
+      _logError('DeleteCategory', e);
+      throw UnexpectedException(
+        message: 'Kategori silinirken beklenmedik bir hata oluştu',
+        details: e,
+      );
     }
   }
 
   @override
   Future<List<CategoryModel>> getUserCategories() async {
     try {
-      final response = await _dioClient.get('/categories');
+      final response = await _dioClient.get(_categoriesEndpoint);
       final List<dynamic> data = response.data as List<dynamic>;
       return data
           .map((json) => CategoryModel.fromJson(json as Map<String, dynamic>))
           .toList();
-    } on DioException catch (e) {
-      print('CategoryRemoteDataSource GetUserCategories Error: $e');
+    } on DioException {
       rethrow;
     } catch (e) {
-      print('CategoryRemoteDataSource GetUserCategories Unexpected Error: $e');
-      throw Exception('Kategoriler getirilirken beklenmedik bir hata oluştu.');
+      _logError('GetUserCategories', e);
+      throw UnexpectedException(
+        message: 'Kategoriler getirilirken beklenmedik bir hata oluştu',
+        details: e,
+      );
+    }
+  }
+
+  /// Debug modunda hata bilgisini loglar
+  void _logError(String operation, Object error) {
+    if (kDebugMode) {
+      print('CategoryRemoteDataSource $operation Error: $error');
     }
   }
 }

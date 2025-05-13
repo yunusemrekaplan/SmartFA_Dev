@@ -1,18 +1,24 @@
 // API endpoint yolları
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:mobile/app/data/models/request/budget_request_models.dart';
 import 'package:mobile/app/data/models/response/budget_response_model.dart';
 import 'package:mobile/app/data/network/dio_client.dart';
+import 'package:mobile/app/data/network/exceptions.dart';
 
 const String _budgetsEndpoint = '/budgets'; // Ana endpoint
 
 abstract class IBudgetRemoteDataSource {
+  /// Belirli bir döneme ait bütçeleri getirir
   Future<List<BudgetModel>> getUserBudgetsByPeriod(int year, int month);
 
+  /// Yeni bütçe oluşturur
   Future<BudgetModel> createBudget(CreateBudgetRequestModel budgetData);
 
+  /// Var olan bütçeyi günceller
   Future<void> updateBudget(int budgetId, UpdateBudgetRequestModel budgetData);
 
+  /// Bütçeyi siler
   Future<void> deleteBudget(int budgetId);
 }
 
@@ -34,13 +40,18 @@ class BudgetRemoteDataSource implements IBudgetRemoteDataSource {
         queryParameters: queryParams,
       );
       final List<dynamic> data = response.data as List<dynamic>;
-      return data.map((json) => BudgetModel.fromJson(json as Map<String, dynamic>)).toList();
-    } on DioException catch (e) {
-      print('BudgetRemoteDataSource GetUserBudgetsByPeriod Error: $e');
-      rethrow; // Repository katmanı ele alacak
+      return data
+          .map((json) => BudgetModel.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } on DioException {
+      // ErrorInterceptor tarafından işlenecek
+      rethrow;
     } catch (e) {
-      print('BudgetRemoteDataSource GetUserBudgetsByPeriod Unexpected Error: $e');
-      throw Exception('Bütçeler getirilirken beklenmedik bir hata oluştu.');
+      _logError('GetUserBudgetsByPeriod', e);
+      throw UnexpectedException(
+        message: 'Bütçeler getirilirken beklenmedik bir hata oluştu',
+        details: e,
+      );
     }
   }
 
@@ -52,28 +63,33 @@ class BudgetRemoteDataSource implements IBudgetRemoteDataSource {
         data: budgetData.toJson(),
       );
       return BudgetModel.fromJson(response.data as Map<String, dynamic>);
-    } on DioException catch (e) {
-      print('BudgetRemoteDataSource CreateBudget Error: $e');
+    } on DioException {
       rethrow;
     } catch (e) {
-      print('BudgetRemoteDataSource CreateBudget Unexpected Error: $e');
-      throw Exception('Bütçe oluşturulurken beklenmedik bir hata oluştu.');
+      _logError('CreateBudget', e);
+      throw UnexpectedException(
+        message: 'Bütçe oluşturulurken beklenmedik bir hata oluştu',
+        details: e,
+      );
     }
   }
 
   @override
-  Future<void> updateBudget(int budgetId, UpdateBudgetRequestModel budgetData) async {
+  Future<void> updateBudget(
+      int budgetId, UpdateBudgetRequestModel budgetData) async {
     try {
       await _dioClient.put(
         '$_budgetsEndpoint/$budgetId',
         data: budgetData.toJson(),
       );
-    } on DioException catch (e) {
-      print('BudgetRemoteDataSource UpdateBudget Error: $e');
+    } on DioException {
       rethrow;
     } catch (e) {
-      print('BudgetRemoteDataSource UpdateBudget Unexpected Error: $e');
-      throw Exception('Bütçe güncellenirken beklenmedik bir hata oluştu.');
+      _logError('UpdateBudget', e);
+      throw UnexpectedException(
+        message: 'Bütçe güncellenirken beklenmedik bir hata oluştu',
+        details: e,
+      );
     }
   }
 
@@ -81,12 +97,21 @@ class BudgetRemoteDataSource implements IBudgetRemoteDataSource {
   Future<void> deleteBudget(int budgetId) async {
     try {
       await _dioClient.delete('$_budgetsEndpoint/$budgetId');
-    } on DioException catch (e) {
-      print('BudgetRemoteDataSource DeleteBudget Error: $e');
+    } on DioException {
       rethrow;
     } catch (e) {
-      print('BudgetRemoteDataSource DeleteBudget Unexpected Error: $e');
-      throw Exception('Bütçe silinirken beklenmedik bir hata oluştu.');
+      _logError('DeleteBudget', e);
+      throw UnexpectedException(
+        message: 'Bütçe silinirken beklenmedik bir hata oluştu',
+        details: e,
+      );
+    }
+  }
+
+  /// Debug modunda hata loglar
+  void _logError(String operation, Object error) {
+    if (kDebugMode) {
+      print('BudgetRemoteDataSource $operation Error: $error');
     }
   }
 }

@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile/app/modules/budgets/Widgets/filter_chip.dart';
 import 'package:mobile/app/modules/budgets/controllers/budgets_controller.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+
+import 'budget_filter_chip.dart';
 
 /// Aktif filtreleri gösteren bar widget'ı
 class ActiveFiltersBar extends StatelessWidget {
   final BudgetsController controller;
 
-  const ActiveFiltersBar({
-    Key? key,
-    required this.controller,
-  }) : super(key: key);
+  const ActiveFiltersBar({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {

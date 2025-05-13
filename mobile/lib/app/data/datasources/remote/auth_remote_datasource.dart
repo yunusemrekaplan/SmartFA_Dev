@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:mobile/app/data/models/request/auth_request_models.dart';
 import 'package:mobile/app/data/models/response/auth_response_model.dart';
 import 'package:mobile/app/data/network/dio_client.dart';
+import 'package:mobile/app/data/network/exceptions.dart';
 
 // Auth API endpoint yolları
 const String _loginEndpoint = '/auth/login';
@@ -10,63 +12,66 @@ const String _refreshEndpoint = '/auth/refresh';
 const String _revokeEndpoint = '/auth/revoke';
 
 abstract class IAuthRemoteDataSource {
+  /// Kullanıcı girişi yapar
   Future<AuthResponseModel> login(LoginRequestModel loginRequest);
 
+  /// Yeni kullanıcı kaydı oluşturur
   Future<AuthResponseModel> register(RegisterRequestModel registerRequest);
 
+  /// Access token yenilemek için refresh token kullanır
   Future<AuthResponseModel> refreshToken(
       RefreshTokenRequestModel refreshRequest);
 
-  Future<void> revokeToken(
-      RefreshTokenRequestModel revokeRequest); // Genellikle bir şey döndürmez
+  /// Refresh token'ı iptal eder (logout)
+  Future<void> revokeToken(RefreshTokenRequestModel revokeRequest);
 }
 
 class AuthRemoteDataSource implements IAuthRemoteDataSource {
   final DioClient _dioClient;
 
-  AuthRemoteDataSource(this._dioClient); // DioClient'ı inject et
+  AuthRemoteDataSource(this._dioClient);
 
   @override
   Future<AuthResponseModel> login(LoginRequestModel loginRequest) async {
     try {
-      print(
-          '>>> AuthRemoteDataSource: Sending login request to endpoint: $_loginEndpoint');
-      print('>>> AuthRemoteDataSource: Login data: ${loginRequest.toJson()}');
+      _logDebug('Sending login request: ${loginRequest.email}');
 
       final response = await _dioClient.post(
         _loginEndpoint,
-        data: loginRequest.toJson(), // İstek modelini JSON'a çevir
+        data: loginRequest.toJson(),
       );
 
-      print(
-          '>>> AuthRemoteDataSource: Login response status: ${response.statusCode}');
-      print('>>> AuthRemoteDataSource: Login response received');
+      _logDebug('Login response received');
 
       if (response.data == null) {
-        throw Exception('Login response data is null');
+        throw UnexpectedException(message: 'Login yanıtı boş');
       }
 
-      // Yanıtı parse et ve kontrol et
+      // Yanıtı parse et
       try {
         final authResponse = AuthResponseModel.fromJson(response.data);
-        print(
-            '>>> AuthRemoteDataSource: Access token received: ${authResponse.accessToken.substring(0, min(10, authResponse.accessToken.length))}...');
+        _logDebug('Access token received successfully');
         return authResponse;
       } catch (parseError) {
-        print(
-            '>>> AuthRemoteDataSource: Error parsing login response: $parseError');
-        print('>>> AuthRemoteDataSource: Response data: ${response.data}');
+        _logError('Error parsing login response', parseError);
+        throw UnexpectedException(
+          message: 'Giriş yanıtı işlenirken hata oluştu',
+          details: parseError,
+        );
+      }
+    } on DioException {
+      // Dio hataları interceptor tarafından işlenecek
+      rethrow;
+    } catch (e) {
+      if (e is AppException) {
+        // Zaten AppException fırlatılmışsa tekrar sarmalama
         rethrow;
       }
-    } on DioException catch (e) {
-      // Hata yönetimi (ErrorInterceptor ele alacak ama burada loglama/özel hata fırlatma yapılabilir)
-      print('>>> AuthRemoteDataSource: Login DioException: ${e.message}');
-      print('>>> AuthRemoteDataSource: Status code: ${e.response?.statusCode}');
-      print('>>> AuthRemoteDataSource: Response data: ${e.response?.data}');
-      rethrow; // Şimdilik tekrar fırlat
-    } catch (e) {
-      print('>>> AuthRemoteDataSource: Login Unexpected Error: $e');
-      rethrow;
+      _logError('Login unexpected error', e);
+      throw UnexpectedException(
+        message: 'Giriş yapılırken beklenmeyen bir hata oluştu',
+        details: e,
+      );
     }
   }
 
@@ -74,18 +79,24 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
   Future<AuthResponseModel> register(
       RegisterRequestModel registerRequest) async {
     try {
+      _logDebug('Sending register request');
+
       final response = await _dioClient.post(
         _registerEndpoint,
         data: registerRequest.toJson(),
       );
+
+      _logDebug('Register response received');
+
       return AuthResponseModel.fromJson(response.data);
-    } on DioException catch (e) {
-      print('AuthRemoteDataSource Register Error: $e');
-      // throw RegisterException(message: e.message ?? 'Kayıt sırasında hata.');
+    } on DioException {
       rethrow;
     } catch (e) {
-      print('AuthRemoteDataSource Register Unexpected Error: $e');
-      rethrow;
+      _logError('Register unexpected error', e);
+      throw UnexpectedException(
+        message: 'Kayıt işlemi sırasında beklenmeyen bir hata oluştu',
+        details: e,
+      );
     }
   }
 
@@ -93,47 +104,64 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
   Future<AuthResponseModel> refreshToken(
       RefreshTokenRequestModel refreshRequest) async {
     try {
-      print(
-          '>>> AuthRemoteDataSource: Sending refresh token request to: $_refreshEndpoint');
+      _logDebug('Sending refresh token request');
 
       final response = await _dioClient.post(
         _refreshEndpoint,
         data: refreshRequest.toJson(),
       );
 
-      print(
-          '>>> AuthRemoteDataSource: Refresh token response received: ${response.statusCode}');
+      _logDebug('Refresh token response received');
+
       return AuthResponseModel.fromJson(response.data);
-    } on DioException catch (e) {
-      print(
-          '>>> AuthRemoteDataSource: Refresh Token DioException: ${e.message}');
-      print('>>> AuthRemoteDataSource: Status code: ${e.response?.statusCode}');
+    } on DioException {
       rethrow;
     } catch (e) {
-      print('>>> AuthRemoteDataSource: Refresh Token Unexpected Error: $e');
-      rethrow;
+      _logError('Refresh token unexpected error', e);
+      throw UnexpectedException(
+        message: 'Token yenilenirken beklenmeyen bir hata oluştu',
+        details: e,
+      );
     }
   }
 
   @override
   Future<void> revokeToken(RefreshTokenRequestModel revokeRequest) async {
     try {
+      _logDebug('Sending revoke token request');
+
       await _dioClient.post(
         _revokeEndpoint,
         data: revokeRequest.toJson(),
       );
-      // Başarılı yanıt genellikle 204 No Content olur, bir şey döndürmeye gerek yok.
-    } on DioException catch (e) {
-      print('AuthRemoteDataSource Revoke Error: $e');
-      // throw RevokeTokenException(message: e.message ?? 'Token iptal hatası.');
+
+      _logDebug('Token revoked successfully');
+    } on DioException {
       rethrow;
     } catch (e) {
-      print('AuthRemoteDataSource Revoke Unexpected Error: $e');
-      rethrow;
+      _logError('Revoke token unexpected error', e);
+      throw UnexpectedException(
+        message: 'Token iptal edilirken beklenmeyen bir hata oluştu',
+        details: e,
+      );
     }
   }
 
-  // Yararlı yardımcı metod
+  /// Debug modunda log çıktısı verir
+  void _logDebug(String message) {
+    if (kDebugMode) {
+      print('>>> AuthRemoteDataSource: $message');
+    }
+  }
+
+  /// Debug modunda hata log çıktısı verir
+  void _logError(String operation, Object error) {
+    if (kDebugMode) {
+      print('>>> AuthRemoteDataSource ERROR [$operation]: $error');
+    }
+  }
+
+  // Yardımcı metod
   int min(int a, int b) => a < b ? a : b;
 }
 

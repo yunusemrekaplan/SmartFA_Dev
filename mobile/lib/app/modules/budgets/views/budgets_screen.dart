@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile/app/modules/budgets/Widgets/active_filters_bar.dart';
-import 'package:mobile/app/modules/budgets/Widgets/budget_card.dart';
-import 'package:mobile/app/modules/budgets/Widgets/budget_filter_bottom_sheet.dart';
-import 'package:mobile/app/modules/budgets/Widgets/month_selector.dart';
 import 'package:mobile/app/modules/budgets/controllers/budgets_controller.dart';
+import 'package:mobile/app/modules/budgets/widgets/budgets/active_filters_bar/active_filters_bar.dart';
+import 'package:mobile/app/modules/budgets/widgets/budgets/budget_card/budget_card.dart';
+import 'package:mobile/app/modules/budgets/widgets/budgets/budget_filter_bottom_sheet/budget_filter_bottom_sheet.dart';
+import 'package:mobile/app/modules/budgets/widgets/budgets/month_selector.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/app/widgets/error_view.dart';
 import 'package:mobile/app/widgets/custom_home_app_bar.dart';
@@ -66,17 +66,10 @@ class BudgetsScreen extends GetView<BudgetsController> {
             );
           }),
           IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Yenile',
+            icon: const Icon(Icons.add_circle_outline_rounded),
+            tooltip: 'Bütçe Ekle',
             onPressed: () {
-              controller.refreshBudgets();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Bütçeler yenileniyor...'),
-                  duration: Duration(seconds: 1),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
+              controller.goToAddBudget();
             },
           ),
         ],
@@ -129,8 +122,7 @@ class BudgetsScreen extends GetView<BudgetsController> {
                     message: 'Henüz bütçeniz yok.',
                     actionText: 'Bütçe Ekle',
                     onAction: () {
-                      // Bütçe ekleme sayfasına yönlendir
-                      Get.toNamed('/budgets/add');
+                      controller.goToAddBudget();
                     },
                     icon: Icons.pie_chart_rounded,
                   );

@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile/app/modules/budgets/Widgets/filter_option.dart';
-import 'package:mobile/app/modules/budgets/Widgets/sort_chip.dart';
 import 'package:mobile/app/modules/budgets/controllers/budgets_controller.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/app/theme/app_theme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
+import 'filter_option.dart';
+import 'sort_chip.dart';
+
 /// Bütçe filtreleme için bottom sheet widget'ı
 class BudgetFilterBottomSheet extends StatelessWidget {
   final BudgetsController controller;
 
-  const BudgetFilterBottomSheet({
-    Key? key,
-    required this.controller,
-  }) : super(key: key);
+  const BudgetFilterBottomSheet({super.key, required this.controller});
 
   static void show(BuildContext context, BudgetsController controller) {
     showModalBottomSheet(
@@ -106,14 +104,12 @@ class BudgetFilterBottomSheet extends StatelessWidget {
                     decoration: InputDecoration(
                       hintText: 'Kategori adına göre ara',
                       prefixIcon: const Icon(Icons.search),
-                      suffixIcon:
-                          Obx(() => controller.searchQuery.value.isNotEmpty
-                              ? IconButton(
-                                  icon: const Icon(Icons.clear),
-                                  onPressed: () =>
-                                      controller.updateSearchQuery(''),
-                                )
-                              : const SizedBox.shrink()),
+                      suffixIcon: Obx(() => controller.searchQuery.value.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () => controller.updateSearchQuery(''),
+                            )
+                          : const SizedBox.shrink()),
                       filled: true,
                       fillColor: AppColors.surfaceVariant,
                       border: OutlineInputBorder(
@@ -159,10 +155,7 @@ class BudgetFilterBottomSheet extends StatelessWidget {
                         child: Center(
                           child: Text(
                             'Filtrelenecek kategori bulunamadı',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                   color: AppColors.textSecondary,
                                 ),
                           ),
@@ -174,8 +167,7 @@ class BudgetFilterBottomSheet extends StatelessWidget {
                       spacing: 8,
                       runSpacing: 8,
                       children: categories.entries.map((entry) {
-                        final isSelected =
-                            controller.selectedCategoryIds.contains(entry.key);
+                        final isSelected = controller.selectedCategoryIds.contains(entry.key);
                         return FilterChip(
                           label: Text(entry.value),
                           selected: isSelected,
@@ -183,19 +175,13 @@ class BudgetFilterBottomSheet extends StatelessWidget {
                           selectedColor: AppColors.primary,
                           backgroundColor: AppColors.surfaceVariant,
                           labelStyle: TextStyle(
-                            color: isSelected
-                                ? Colors.white
-                                : AppColors.textPrimary,
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.normal,
+                            color: isSelected ? Colors.white : AppColors.textPrimary,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                             side: BorderSide(
-                              color: isSelected
-                                  ? AppColors.primary
-                                  : AppColors.border,
+                              color: isSelected ? AppColors.primary : AppColors.border,
                               width: 1,
                             ),
                           ),
@@ -227,41 +213,34 @@ class BudgetFilterBottomSheet extends StatelessWidget {
                             title: 'Tüm Bütçeler',
                             subtitle: 'Herhangi bir filtre uygulanmaz',
                             icon: Icons.all_inclusive,
-                            isSelected: controller.activeFilter.value ==
-                                BudgetFilterType.all,
+                            isSelected: controller.activeFilter.value == BudgetFilterType.all,
                             color: AppColors.primary,
-                            onTap: () =>
-                                controller.changeFilter(BudgetFilterType.all),
+                            onTap: () => controller.changeFilter(BudgetFilterType.all),
                           ),
                           FilterOption(
                             title: 'Bütçe Aşımı Olanlar',
                             subtitle: 'Limit aşılmış bütçeler',
                             icon: Icons.error_outline_rounded,
-                            isSelected: controller.activeFilter.value ==
-                                BudgetFilterType.overLimit,
+                            isSelected: controller.activeFilter.value == BudgetFilterType.overLimit,
                             color: AppColors.error,
-                            onTap: () => controller
-                                .changeFilter(BudgetFilterType.overLimit),
+                            onTap: () => controller.changeFilter(BudgetFilterType.overLimit),
                           ),
                           FilterOption(
                             title: 'Limite Yaklaşanlar',
                             subtitle: 'Bütçenin %85 ve üzerini kullananlar',
                             icon: Icons.warning_amber_rounded,
-                            isSelected: controller.activeFilter.value ==
-                                BudgetFilterType.nearLimit,
+                            isSelected: controller.activeFilter.value == BudgetFilterType.nearLimit,
                             color: AppColors.warning,
-                            onTap: () => controller
-                                .changeFilter(BudgetFilterType.nearLimit),
+                            onTap: () => controller.changeFilter(BudgetFilterType.nearLimit),
                           ),
                           FilterOption(
                             title: 'Normal Bütçeler',
                             subtitle: 'Bütçenin %85\'inden azını kullananlar',
                             icon: Icons.check_circle_outline_rounded,
-                            isSelected: controller.activeFilter.value ==
-                                BudgetFilterType.underBudget,
+                            isSelected:
+                                controller.activeFilter.value == BudgetFilterType.underBudget,
                             color: AppColors.success,
-                            onTap: () => controller
-                                .changeFilter(BudgetFilterType.underBudget),
+                            onTap: () => controller.changeFilter(BudgetFilterType.underBudget),
                           ),
                         ],
                       )),
@@ -285,59 +264,53 @@ class BudgetFilterBottomSheet extends StatelessWidget {
                         children: [
                           SortChip(
                             label: 'Kategori A-Z',
-                            isSelected: controller.activeSortType.value ==
-                                BudgetSortType.categoryAZ,
-                            onTap: () => controller
-                                .changeSortType(BudgetSortType.categoryAZ),
+                            isSelected:
+                                controller.activeSortType.value == BudgetSortType.categoryAZ,
+                            onTap: () => controller.changeSortType(BudgetSortType.categoryAZ),
                           ),
                           SortChip(
                             label: 'Kategori Z-A',
-                            isSelected: controller.activeSortType.value ==
-                                BudgetSortType.categoryZA,
-                            onTap: () => controller
-                                .changeSortType(BudgetSortType.categoryZA),
+                            isSelected:
+                                controller.activeSortType.value == BudgetSortType.categoryZA,
+                            onTap: () => controller.changeSortType(BudgetSortType.categoryZA),
                           ),
                           SortChip(
                             label: 'Bütçe ↓',
-                            isSelected: controller.activeSortType.value ==
-                                BudgetSortType.amountHighToLow,
-                            onTap: () => controller
-                                .changeSortType(BudgetSortType.amountHighToLow),
+                            isSelected:
+                                controller.activeSortType.value == BudgetSortType.amountHighToLow,
+                            onTap: () => controller.changeSortType(BudgetSortType.amountHighToLow),
                           ),
                           SortChip(
                             label: 'Bütçe ↑',
-                            isSelected: controller.activeSortType.value ==
-                                BudgetSortType.amountLowToHigh,
-                            onTap: () => controller
-                                .changeSortType(BudgetSortType.amountLowToHigh),
+                            isSelected:
+                                controller.activeSortType.value == BudgetSortType.amountLowToHigh,
+                            onTap: () => controller.changeSortType(BudgetSortType.amountLowToHigh),
                           ),
                           SortChip(
                             label: 'Harcanan ↓',
-                            isSelected: controller.activeSortType.value ==
-                                BudgetSortType.spentHighToLow,
-                            onTap: () => controller
-                                .changeSortType(BudgetSortType.spentHighToLow),
+                            isSelected:
+                                controller.activeSortType.value == BudgetSortType.spentHighToLow,
+                            onTap: () => controller.changeSortType(BudgetSortType.spentHighToLow),
                           ),
                           SortChip(
                             label: 'Harcanan ↑',
-                            isSelected: controller.activeSortType.value ==
-                                BudgetSortType.spentLowToHigh,
-                            onTap: () => controller
-                                .changeSortType(BudgetSortType.spentLowToHigh),
+                            isSelected:
+                                controller.activeSortType.value == BudgetSortType.spentLowToHigh,
+                            onTap: () => controller.changeSortType(BudgetSortType.spentLowToHigh),
                           ),
                           SortChip(
                             label: 'Kalan ↓',
                             isSelected: controller.activeSortType.value ==
                                 BudgetSortType.remainingHighToLow,
-                            onTap: () => controller.changeSortType(
-                                BudgetSortType.remainingHighToLow),
+                            onTap: () =>
+                                controller.changeSortType(BudgetSortType.remainingHighToLow),
                           ),
                           SortChip(
                             label: 'Kalan ↑',
                             isSelected: controller.activeSortType.value ==
                                 BudgetSortType.remainingLowToHigh,
-                            onTap: () => controller.changeSortType(
-                                BudgetSortType.remainingLowToHigh),
+                            onTap: () =>
+                                controller.changeSortType(BudgetSortType.remainingLowToHigh),
                           ),
                         ],
                       )),
@@ -359,8 +332,7 @@ class BudgetFilterBottomSheet extends StatelessWidget {
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(AppTheme.kBorderRadius),
+                        borderRadius: BorderRadius.circular(AppTheme.kBorderRadius),
                       ),
                     ),
                     child: const Text('Tamam'),

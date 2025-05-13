@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:mobile/app/domain/repositories/account_repository.dart';
-import 'package:mobile/app/utils/exceptions.dart';
+import 'package:mobile/app/data/network/exceptions.dart';
 import 'package:mobile/app/utils/result.dart';
 
 /// Dashboard ana verilerini yönetmek için servis sınıfı.

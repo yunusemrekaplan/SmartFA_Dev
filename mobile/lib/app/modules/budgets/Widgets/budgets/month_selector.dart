@@ -9,11 +9,7 @@ class MonthSelector extends StatelessWidget {
   final BudgetsController controller;
   final String Function(DateTime) formatMonth;
 
-  const MonthSelector({
-    super.key,
-    required this.controller,
-    required this.formatMonth,
-  });
+  const MonthSelector({super.key, required this.controller, required this.formatMonth});
 
   /// Ay seçici alt sayfa
   void _showMonthPicker(BuildContext context) {
@@ -72,39 +68,32 @@ class MonthSelector extends StatelessWidget {
               // Aylar listesi
               Expanded(
                 child: ListView.builder(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   itemCount: 12, // Son 6 ay + gelecek 5 ay + mevcut ay
                   itemBuilder: (context, index) {
                     // Mevcut aydan 6 ay öncesinden başlayarak 12 ay listele
                     final month = DateTime(
-                      currentPeriod.year +
-                          ((currentPeriod.month + index - 7) ~/ 12),
+                      currentPeriod.year + ((currentPeriod.month + index - 7) ~/ 12),
                       ((currentPeriod.month + index - 7) % 12) + 1,
                     );
 
-                    final isSelected = month.month == currentPeriod.month &&
-                        month.year == currentPeriod.year;
+                    final isSelected =
+                        month.month == currentPeriod.month && month.year == currentPeriod.year;
 
                     return AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 4, horizontal: 8),
+                      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                       decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppColors.primary.withOpacity(0.15)
-                            : Colors.transparent,
+                        color:
+                            isSelected ? AppColors.primary.withOpacity(0.15) : Colors.transparent,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: isSelected
-                              ? AppColors.primary
-                              : Colors.transparent,
+                          color: isSelected ? AppColors.primary : Colors.transparent,
                           width: 1.5,
                         ),
                       ),
                       child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -120,29 +109,19 @@ class MonthSelector extends StatelessWidget {
                           child: Center(
                             child: Text(
                               '${month.month}',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium
-                                  ?.copyWith(
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.bold,
-                                    color: isSelected
-                                        ? AppColors.primary
-                                        : AppColors.textSecondary,
+                                    color: isSelected ? AppColors.primary : AppColors.textSecondary,
                                   ),
                             ),
                           ),
                         ),
                         title: Text(
                           formatMonth(month),
-                          style:
-                              Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: isSelected
-                                        ? FontWeight.bold
-                                        : FontWeight.w500,
-                                    color: isSelected
-                                        ? AppColors.primary
-                                        : AppColors.textPrimary,
-                                  ),
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                              ),
                         ),
                         trailing: isSelected
                             ? Icon(
@@ -205,8 +184,7 @@ class MonthSelector extends StatelessWidget {
             child: GestureDetector(
               onTap: () => _showMonthPicker(context),
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                    vertical: 10.0, horizontal: 20.0),
+                padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
@@ -229,11 +207,10 @@ class MonthSelector extends StatelessWidget {
                         const SizedBox(width: 10),
                         Text(
                           formatMonth(controller.selectedPeriod.value),
-                          style:
-                              Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.textPrimary,
-                                  ),
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
                         ),
                         const SizedBox(width: 6),
                         Icon(

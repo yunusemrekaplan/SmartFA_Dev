@@ -3,7 +3,8 @@ import 'package:get/get.dart';
 import 'package:mobile/app/domain/repositories/auth_repository.dart';
 import 'package:mobile/app/modules/auth/controllers/auth_base_controller.dart';
 import 'package:mobile/app/navigation/app_routes.dart';
-import 'package:mobile/app/utils/exceptions.dart';
+import 'package:mobile/app/data/network/exceptions.dart';
+import 'package:mobile/app/utils/snackbar_helper.dart';
 
 /// Login ekranının state'ini ve iş mantığını yöneten GetX controller.
 class LoginController extends AuthBaseController {
@@ -16,8 +17,7 @@ class LoginController extends AuthBaseController {
   final RxBool isPasswordVisible = false.obs;
 
   // Dependency Injection kullanarak constructor injection
-  LoginController({required IAuthRepository authRepository})
-      : super(repository: authRepository);
+  LoginController({required IAuthRepository authRepository}) : super(repository: authRepository);
 
   @override
   void onClose() {
@@ -48,7 +48,7 @@ class LoginController extends AuthBaseController {
         success: _handleLoginSuccess,
         failure: _handleLoginFailure,
       );
-    } catch (e) {
+    } on UnexpectedException catch (e) {
       _handleUnexpectedError(e);
     } finally {
       completeProcessing();
@@ -58,7 +58,10 @@ class LoginController extends AuthBaseController {
   /// Başarılı login işlemini yönetir
   void _handleLoginSuccess(final authResponse) {
     // Başarılı login işleminden sonra ana sayfaya yönlendir
-    errorHandler.showSuccessMessage('Giriş yapıldı');
+    SnackbarHelper.showSuccess(
+      title: 'Giriş Başarılı',
+      message: 'Hoş geldiniz ${authResponse.user?.name ?? ''}',
+    );
     Get.offAllNamed(AppRoutes.HOME);
   }
 
@@ -71,7 +74,11 @@ class LoginController extends AuthBaseController {
       _handleValidationErrors(error);
     } else {
       // Validasyon hatası değilse, standart hata yönetimi kullan
-      errorHandler.handleError(error, customTitle: 'Giriş Yapılamadı');
+      errorHandler.handleError(
+        error,
+        message: error.message,
+        customTitle: 'Giriş Yapılamadı',
+      );
     }
   }
 
@@ -97,11 +104,11 @@ class LoginController extends AuthBaseController {
     }
 
     // Hata yöneticisini kullanarak kullanıcıya bildir
-    errorHandler.handleError(error, customTitle: 'Giriş Yapılamadı');
+    errorHandler.handleError(error, message: errorMessage.value, customTitle: 'Giriş Yapılamadı');
   }
 
   /// Beklenmeyen hataları yönetir
-  void _handleUnexpectedError(dynamic e) {
+  void _handleUnexpectedError(AppException e) {
     errorMessage.value = 'Beklenmedik bir hata oluştu.';
     handleGeneralError(e, customTitle: 'Giriş Yapılamadı');
   }

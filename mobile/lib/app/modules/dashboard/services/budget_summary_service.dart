@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:mobile/app/data/models/response/budget_response_model.dart';
 import 'package:mobile/app/domain/repositories/budget_repository.dart';
-import 'package:mobile/app/utils/exceptions.dart';
+import 'package:mobile/app/data/network/exceptions.dart';
 import 'package:mobile/app/utils/result.dart';
 
 /// Bütçe özeti servis sınıfı.

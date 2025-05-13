@@ -11,14 +11,14 @@ class FilterOption extends StatelessWidget {
   final VoidCallback onTap;
 
   const FilterOption({
-    Key? key,
+    super.key,
     required this.title,
     required this.subtitle,
     required this.icon,
     required this.isSelected,
     required this.color,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,12 +33,9 @@ class FilterOption extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: isSelected
-                    ? color.withOpacity(0.15)
-                    : AppColors.surfaceVariant,
+                color: isSelected ? color.withOpacity(0.15) : AppColors.surfaceVariant,
                 shape: BoxShape.circle,
-                border:
-                    isSelected ? Border.all(color: color, width: 1.5) : null,
+                border: isSelected ? Border.all(color: color, width: 1.5) : null,
               ),
               child: Icon(
                 icon,
@@ -54,8 +51,7 @@ class FilterOption extends StatelessWidget {
                   Text(
                     title,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.w500,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                           color: isSelected ? color : AppColors.textPrimary,
                         ),
                   ),

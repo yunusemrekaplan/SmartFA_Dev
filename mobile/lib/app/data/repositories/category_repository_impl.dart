@@ -3,8 +3,8 @@ import 'package:mobile/app/data/datasources/remote/category_remote_datasource.da
 import 'package:mobile/app/data/models/enums/category_type.dart';
 import 'package:mobile/app/data/models/request/category_request_models.dart';
 import 'package:mobile/app/data/models/response/category_response_model.dart';
+import 'package:mobile/app/data/network/exceptions.dart';
 import 'package:mobile/app/domain/repositories/category_repository.dart';
-import 'package:mobile/app/utils/exceptions.dart';
 import 'package:mobile/app/utils/result.dart';
 
 class CategoryRepositoryImpl implements ICategoryRepository {

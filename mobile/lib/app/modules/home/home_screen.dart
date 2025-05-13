@@ -43,7 +43,7 @@ class HomeScreen extends GetView<HomeController> {
       drawer: const AppDrawer(),
 
       // Hızlı işlemler için FAB
-      floatingActionButton: _buildFAB(context),
+      //floatingActionButton: _buildFAB(context),
 
       // FAB konum ayarı
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

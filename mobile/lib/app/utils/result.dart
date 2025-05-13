@@ -1,3 +1,7 @@
+import 'dart:async';
+
+import 'package:mobile/app/data/network/exceptions.dart';
+
 /// Asenkron operasyonların sonucunu temsil eden soyut temel sınıf.
 /// Ya bir başarı değeri (Success) ya da bir hata (Failure) içerir.
 abstract class Result<T, E extends Exception> {
@@ -42,6 +46,61 @@ abstract class Result<T, E extends Exception> {
     }
     return null;
   }
+
+  /// Future değeri Result'a dönüştürmek için yardımcı metot
+  static Future<Result<T, AppException>> fromFuture<T>(
+    Future<T> future,
+  ) async {
+    try {
+      final data = await future;
+      return Success<T, AppException>(data);
+    } on AppException catch (e) {
+      return Failure<T, AppException>(e);
+    } catch (e) {
+      return Failure<T, AppException>(
+        UnexpectedException(
+          message: 'Beklenmeyen hata: ${e.toString()}',
+          details: e,
+        ),
+      );
+    }
+  }
+
+  /// Result üzerinde işlem yapmak ve sonucu başka bir Result döndürmek için yardımcı metot
+  Future<Result<R, E>> asyncMap<R>(
+    Future<R> Function(T data) transform,
+  ) async {
+    if (isSuccess) {
+      try {
+        final result = await transform(data as T);
+        return Success<R, E>(result);
+      } on Exception catch (e) {
+        if (e is E) {
+          return Failure<R, E>(e);
+        }
+        throw e; // Transform sırasında beklenmeyen bir hata oluştu
+      }
+    } else {
+      return Failure<R, E>(error as E);
+    }
+  }
+
+  /// Result üzerinde senkron işlem yapmak ve sonucu başka bir Result döndürmek için yardımcı metot
+  Result<R, E> map<R>(R Function(T data) transform) {
+    if (isSuccess) {
+      try {
+        final result = transform(data as T);
+        return Success<R, E>(result);
+      } on Exception catch (e) {
+        if (e is E) {
+          return Failure<R, E>(e);
+        }
+        throw e; // Transform sırasında beklenmeyen bir hata oluştu
+      }
+    } else {
+      return Failure<R, E>(error as E);
+    }
+  }
 }
 
 /// Başarılı bir sonucu temsil eden sınıf.
@@ -61,6 +120,9 @@ class Success<T, E extends Exception> extends Result<T, E> {
 
   @override
   int get hashCode => data.hashCode;
+
+  @override
+  String toString() => 'Success(data: $data)';
 }
 
 /// Başarısız bir sonucu temsil eden sınıf.
@@ -80,6 +142,25 @@ class Failure<T, E extends Exception> extends Result<T, E> {
 
   @override
   int get hashCode => error.hashCode;
+
+  @override
+  String toString() => 'Failure(error: $error)';
+}
+
+// Repository veya servis katmanında Result kullanımı için extension
+extension ResultExtensions<T> on Future<T> {
+  /// Future'ı Result'a çevirir
+  Future<Result<T, AppException>> asResult() async {
+    return Result.fromFuture(this);
+  }
+}
+
+// Repository veya servis katmanında Result listesi kullanımı için extension
+extension ListResultExtensions<T> on Future<List<T>> {
+  /// Future listesini Result'a çevirir
+  Future<Result<List<T>, AppException>> asResult() async {
+    return Result.fromFuture(this);
+  }
 }
 
 // --- Kullanım Örneği (Repository veya Servis içinde) ---

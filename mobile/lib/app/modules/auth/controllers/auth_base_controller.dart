@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile/app/data/network/exceptions.dart';
 import 'package:mobile/app/domain/repositories/auth_repository.dart';
 import 'package:mobile/app/utils/error_handler.dart';
 
@@ -32,9 +33,8 @@ abstract class AuthBaseController extends GetxController {
   }
 
   /// Genel hatanın işlenmesi
-  void handleGeneralError(dynamic error, {String customTitle = 'Hata'}) {
-    errorMessage.value = error.toString();
-    errorHandler.handleUnexpectedError(error);
+  void handleGeneralError(AppException error, {String customTitle = 'Hata'}) {
+    errorHandler.handleError(error, message: errorMessage.value);
   }
 
   /// Form inputları için ortak temizleme metodu

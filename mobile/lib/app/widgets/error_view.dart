@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:mobile/app/utils/exceptions.dart';
+import 'package:mobile/app/data/network/exceptions.dart';
 
 /// Hata durumlarını görüntülemek için kullanılan widget.
 /// Farklı hata türleri için özelleştirilmiş görünümler sunar.
@@ -42,7 +42,8 @@ class ErrorView extends StatelessWidget {
     this.onSecondaryButtonPressed,
     this.isLarge = false,
     this.height,
-  })  : assert(error != null || message != null, 'error veya message verilmelidir'),
+  })  : assert(error != null || message != null,
+            'error veya message verilmelidir'),
         super(key: key);
 
   /// Özel network hatası görünümü
@@ -57,7 +58,8 @@ class ErrorView extends StatelessWidget {
     return ErrorView(
       key: key,
       error: error,
-      message: message ?? 'İnternet bağlantısı sağlanamadı. Lütfen bağlantınızı kontrol edin.',
+      message: message ??
+          'İnternet bağlantısı sağlanamadı. Lütfen bağlantınızı kontrol edin.',
       onRetry: onRetry,
       icon: Icons.wifi_off_rounded,
       isLarge: isLarge,

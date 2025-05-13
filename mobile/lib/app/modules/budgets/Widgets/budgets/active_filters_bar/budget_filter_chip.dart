@@ -7,11 +7,11 @@ class BudgetFilterChip extends StatelessWidget {
   final Color color;
 
   const BudgetFilterChip({
-    Key? key,
+    super.key,
     required this.label,
     required this.onTap,
     required this.color,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

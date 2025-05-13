@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:mobile/app/modules/home/home_controller.dart';
 import 'package:mobile/app/navigation/app_routes.dart';
 import 'package:mobile/app/utils/error_handler.dart';
-import 'package:mobile/app/utils/exceptions.dart';
+import 'package:mobile/app/data/network/exceptions.dart';
 
 /// Dashboard ekranının UI durumunu yöneten servis sınıfı.
 /// Yükleme, hata durumları ve navigasyon işlevlerini yönetir.
@@ -41,6 +41,7 @@ class DashboardStateManager {
   void handleError(AppException error, String title, VoidCallback onRetry) {
     _errorHandler.handleError(
       error,
+      message: 'Dashboard verileri yüklenirken bir hata oluştu.',
       onRetry: onRetry,
       customTitle: title,
     );

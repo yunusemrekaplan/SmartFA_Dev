@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile/app/modules/accounts/bindings/add_edit_account_binding.dart';
 import 'package:mobile/app/modules/accounts/views/add_edit_account_screen.dart';
-import 'package:mobile/app/modules/budgets/bindings/add_edit_budget_binding.dart';
+import 'package:mobile/app/modules/budgets/bindings/budget_add_edit_binding.dart';
 import 'package:mobile/app/modules/budgets/bindings/budgets_binding.dart';
-import 'package:mobile/app/modules/budgets/views/add_edit_budget_screen.dart';
+import 'package:mobile/app/modules/budgets/views/budget_add_edit_screen.dart';
 import 'package:mobile/app/modules/budgets/views/budgets_screen.dart';
 import 'package:mobile/app/modules/splash/splash_binding.dart';
 import 'package:mobile/app/modules/splash/splash_screen.dart';
@@ -97,8 +97,8 @@ class AppPages {
     ),
     GetPage(
       name: AppRoutes.ADD_EDIT_BUDGET,
-      page: () => const AddEditBudgetScreen(),
-      binding: AddEditBudgetBinding(), // Bütçe ekleme/düzenleme bağımlılıkları
+      page: () => const BudgetAddEditScreen(),
+      binding: BudgetAddEditBinding(), // Bütçe ekleme/düzenleme bağımlılıkları
       fullscreenDialog: true,
     ),
     /*GetPage(

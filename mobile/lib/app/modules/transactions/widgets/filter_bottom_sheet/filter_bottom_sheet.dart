@@ -123,19 +123,23 @@ class FilterBottomSheet extends StatelessWidget {
                           _buildTypeFilterButton(
                             context: context,
                             label: 'Gelir',
-                            selected: controller.tempType.value == CategoryType.Income,
+                            selected: controller.tempType.value ==
+                                CategoryType.Income,
                             icon: Icons.arrow_upward_rounded,
                             color: AppColors.income,
-                            onTap: () => controller.selectTypeFilter(CategoryType.Income),
+                            onTap: () => controller
+                                .selectTypeFilter(CategoryType.Income),
                           ),
                           const SizedBox(width: 8),
                           _buildTypeFilterButton(
                             context: context,
                             label: 'Gider',
-                            selected: controller.tempType.value == CategoryType.Expense,
+                            selected: controller.tempType.value ==
+                                CategoryType.Expense,
                             icon: Icons.arrow_downward_rounded,
                             color: AppColors.expense,
-                            onTap: () => controller.selectTypeFilter(CategoryType.Expense),
+                            onTap: () => controller
+                                .selectTypeFilter(CategoryType.Expense),
                           ),
                         ],
                       )).animate().fadeIn(duration: 300.ms),
@@ -164,28 +168,38 @@ class FilterBottomSheet extends StatelessWidget {
                           ),
                           _buildDateFilterChip(
                             label: 'Dün',
-                            selected: controller.tempQuickDate.value == 'yesterday',
-                            onTap: () => controller.setQuickDateFilter('yesterday'),
+                            selected:
+                                controller.tempQuickDate.value == 'yesterday',
+                            onTap: () =>
+                                controller.setQuickDateFilter('yesterday'),
                           ),
                           _buildDateFilterChip(
                             label: 'Bu Hafta',
-                            selected: controller.tempQuickDate.value == 'thisWeek',
-                            onTap: () => controller.setQuickDateFilter('thisWeek'),
+                            selected:
+                                controller.tempQuickDate.value == 'thisWeek',
+                            onTap: () =>
+                                controller.setQuickDateFilter('thisWeek'),
                           ),
                           _buildDateFilterChip(
                             label: 'Bu Ay',
-                            selected: controller.tempQuickDate.value == 'thisMonth',
-                            onTap: () => controller.setQuickDateFilter('thisMonth'),
+                            selected:
+                                controller.tempQuickDate.value == 'thisMonth',
+                            onTap: () =>
+                                controller.setQuickDateFilter('thisMonth'),
                           ),
                           _buildDateFilterChip(
                             label: 'Geçen Ay',
-                            selected: controller.tempQuickDate.value == 'lastMonth',
-                            onTap: () => controller.setQuickDateFilter('lastMonth'),
+                            selected:
+                                controller.tempQuickDate.value == 'lastMonth',
+                            onTap: () =>
+                                controller.setQuickDateFilter('lastMonth'),
                           ),
                           _buildDateFilterChip(
                             label: 'Son 3 Ay',
-                            selected: controller.tempQuickDate.value == 'last3Months',
-                            onTap: () => controller.setQuickDateFilter('last3Months'),
+                            selected:
+                                controller.tempQuickDate.value == 'last3Months',
+                            onTap: () =>
+                                controller.setQuickDateFilter('last3Months'),
                           ),
                         ],
                       )).animate().fadeIn(duration: 300.ms, delay: 100.ms),
@@ -201,9 +215,11 @@ class FilterBottomSheet extends StatelessWidget {
                       foregroundColor: AppColors.primary,
                       side: BorderSide(color: AppColors.primary),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppTheme.kBorderRadius),
+                        borderRadius:
+                            BorderRadius.circular(AppTheme.kBorderRadius),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 12, horizontal: 16),
                     ),
                   ).animate().fadeIn(duration: 300.ms, delay: 150.ms),
 
@@ -254,7 +270,10 @@ class FilterBottomSheet extends StatelessWidget {
                         child: Center(
                           child: Text(
                             'Kategori bulunamadı',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
                                   color: AppColors.textSecondary,
                                 ),
                           ),
@@ -266,9 +285,11 @@ class FilterBottomSheet extends StatelessWidget {
                       spacing: 8,
                       runSpacing: 8,
                       children: controller.filterCategories.map((category) {
-                        final isSelected = controller.tempCategory.value?.id == category.id;
+                        final isSelected =
+                            controller.tempCategory.value?.id == category.id;
                         final isIncome = category.type == CategoryType.Income;
-                        final chipColor = isIncome ? AppColors.income : AppColors.expense;
+                        final chipColor =
+                            isIncome ? AppColors.income : AppColors.expense;
 
                         return FilterChip(
                           label: Text(category.name),
@@ -277,11 +298,16 @@ class FilterBottomSheet extends StatelessWidget {
                           selectedColor: chipColor,
                           backgroundColor: AppColors.surfaceVariant,
                           labelStyle: TextStyle(
-                            color: isSelected ? Colors.white : AppColors.textPrimary,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            color: isSelected
+                                ? Colors.white
+                                : AppColors.textPrimary,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                           ),
                           avatar: Icon(
-                            category.iconName != null && category.iconName!.isNotEmpty
+                            category.iconName != null &&
+                                    category.iconName!.isNotEmpty
                                 ? IconData(int.parse(category.iconName!),
                                     fontFamily: 'MaterialIcons')
                                 : Icons.category_outlined,
@@ -331,7 +357,10 @@ class FilterBottomSheet extends StatelessWidget {
                         child: Center(
                           child: Text(
                             'Hesap bulunamadı',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
                                   color: AppColors.textSecondary,
                                 ),
                           ),
@@ -343,7 +372,8 @@ class FilterBottomSheet extends StatelessWidget {
                       spacing: 8,
                       runSpacing: 8,
                       children: controller.filterAccounts.map((account) {
-                        final isSelected = controller.tempAccount.value?.id == account.id;
+                        final isSelected =
+                            controller.tempAccount.value?.id == account.id;
 
                         return FilterChip(
                           label: Text(account.name),
@@ -352,18 +382,25 @@ class FilterBottomSheet extends StatelessWidget {
                           selectedColor: AppColors.primary,
                           backgroundColor: AppColors.surfaceVariant,
                           labelStyle: TextStyle(
-                            color: isSelected ? Colors.white : AppColors.textPrimary,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            color: isSelected
+                                ? Colors.white
+                                : AppColors.textPrimary,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                           ),
                           avatar: Icon(
                             Icons.account_balance_wallet_outlined,
                             size: 16,
-                            color: isSelected ? Colors.white : AppColors.primary,
+                            color:
+                                isSelected ? Colors.white : AppColors.primary,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
                             side: BorderSide(
-                              color: isSelected ? AppColors.primary : AppColors.border,
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.border,
                               width: 1,
                             ),
                           ),
@@ -398,23 +435,31 @@ class FilterBottomSheet extends StatelessWidget {
                         children: [
                           _buildSortChip(
                             label: 'En Yeni',
-                            isSelected: controller.tempSortCriteria.value == 'date_desc',
-                            onTap: () => controller.setSortingCriteria('date_desc'),
+                            isSelected: controller.tempSortCriteria.value ==
+                                'date_desc',
+                            onTap: () =>
+                                controller.setSortingCriteria('date_desc'),
                           ),
                           _buildSortChip(
                             label: 'En Eski',
-                            isSelected: controller.tempSortCriteria.value == 'date_asc',
-                            onTap: () => controller.setSortingCriteria('date_asc'),
+                            isSelected:
+                                controller.tempSortCriteria.value == 'date_asc',
+                            onTap: () =>
+                                controller.setSortingCriteria('date_asc'),
                           ),
                           _buildSortChip(
                             label: 'Tutar (↑)',
-                            isSelected: controller.tempSortCriteria.value == 'amount_asc',
-                            onTap: () => controller.setSortingCriteria('amount_asc'),
+                            isSelected: controller.tempSortCriteria.value ==
+                                'amount_asc',
+                            onTap: () =>
+                                controller.setSortingCriteria('amount_asc'),
                           ),
                           _buildSortChip(
                             label: 'Tutar (↓)',
-                            isSelected: controller.tempSortCriteria.value == 'amount_desc',
-                            onTap: () => controller.setSortingCriteria('amount_desc'),
+                            isSelected: controller.tempSortCriteria.value ==
+                                'amount_desc',
+                            onTap: () =>
+                                controller.setSortingCriteria('amount_desc'),
                           ),
                         ],
                       )).animate().fadeIn(duration: 300.ms, delay: 350.ms),
@@ -439,7 +484,8 @@ class FilterBottomSheet extends StatelessWidget {
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppTheme.kBorderRadius),
+                        borderRadius:
+                            BorderRadius.circular(AppTheme.kBorderRadius),
                       ),
                     ),
                     child: const Text('Tamam'),
@@ -469,7 +515,8 @@ class FilterBottomSheet extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
           decoration: BoxDecoration(
-            color: selected ? color.withOpacity(0.15) : AppColors.surfaceVariant,
+            color:
+                selected ? color.withOpacity(0.15) : AppColors.surfaceVariant,
             borderRadius: BorderRadius.circular(AppTheme.kBorderRadius),
             border: Border.all(
               color: selected ? color : AppColors.border,
@@ -489,7 +536,8 @@ class FilterBottomSheet extends StatelessWidget {
                 label,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: selected ? color : AppColors.textSecondary,
-                      fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight:
+                          selected ? FontWeight.bold : FontWeight.normal,
                     ),
               ),
             ],

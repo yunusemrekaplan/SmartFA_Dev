@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/app/theme/app_colors.dart';
 
 /// Login/Register ekranlarının alt kısmında yer alan alternatif aksiyon bağlantısı
 class AuthFooter extends StatelessWidget {

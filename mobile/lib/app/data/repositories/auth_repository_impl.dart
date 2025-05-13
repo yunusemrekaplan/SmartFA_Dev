@@ -4,7 +4,7 @@ import 'package:mobile/app/data/datasources/remote/auth_remote_datasource.dart';
 import 'package:mobile/app/data/models/request/auth_request_models.dart';
 import 'package:mobile/app/data/models/response/auth_response_model.dart';
 import 'package:mobile/app/domain/repositories/auth_repository.dart';
-import 'package:mobile/app/utils/exceptions.dart';
+import 'package:mobile/app/data/network/exceptions.dart';
 import 'package:mobile/app/utils/result.dart';
 
 class AuthRepositoryImpl implements IAuthRepository {

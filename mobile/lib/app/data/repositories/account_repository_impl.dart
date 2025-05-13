@@ -3,7 +3,7 @@ import 'package:mobile/app/data/datasources/remote/account_remote_datasource.dar
 import 'package:mobile/app/data/models/request/account_request_models.dart';
 import 'package:mobile/app/data/models/response/account_response_model.dart';
 import 'package:mobile/app/domain/repositories/account_repository.dart';
-import 'package:mobile/app/utils/exceptions.dart'; // Yeni exception sınıflarını import et
+import 'package:mobile/app/data/network/exceptions.dart'; // Yeni exception sınıflarını import et
 import 'package:mobile/app/utils/result.dart';
 
 class AccountRepositoryImpl implements IAccountRepository {

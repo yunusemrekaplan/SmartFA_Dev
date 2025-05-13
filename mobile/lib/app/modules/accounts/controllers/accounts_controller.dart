@@ -3,6 +3,7 @@ import 'package:mobile/app/data/models/response/account_response_model.dart';
 import 'package:mobile/app/domain/repositories/account_repository.dart';
 import 'package:mobile/app/navigation/app_routes.dart';
 import 'package:mobile/app/utils/error_handler.dart';
+import 'package:mobile/app/data/network/exceptions.dart';
 
 /// Hesaplar ekranının state'ini ve iş mantığını yöneten GetX controller.
 class AccountsController extends GetxController {
@@ -57,17 +58,18 @@ class AccountsController extends GetxController {
 
           _errorHandler.handleError(
             error,
+            message: errorMessage.value,
             onRetry: () => fetchAccounts(),
             customTitle: 'Hesaplar Yüklenemedi',
           );
         },
       );
-    } catch (e) {
+    } on UnexpectedException catch (e) {
       // Beklenmedik genel hatalar
       print('>>> Fetch accounts unexpected error: $e');
       errorMessage.value = 'Hesaplar yüklenirken beklenmedik bir hata oluştu.';
 
-      _errorHandler.handleUnexpectedError(e);
+      _errorHandler.handleError(e, message: errorMessage.value);
     } finally {
       isLoading.value = false;
     }
@@ -94,8 +96,6 @@ class AccountsController extends GetxController {
           accountList.removeWhere((account) => account.id == accountId);
           print('>>> Account deleted successfully: ID $accountId');
 
-          _errorHandler.showSuccessMessage('Hesap başarıyla silindi.');
-
           // Hesap silindikten sonra toplam bakiye vb. güncellenebilir (DashboardController'a haber verilebilir)
         },
         failure: (error) {
@@ -105,15 +105,16 @@ class AccountsController extends GetxController {
 
           _errorHandler.handleError(
             error,
+            message: errorMessage.value,
             customTitle: 'Hesap Silinemedi',
           );
         },
       );
-    } catch (e) {
+    } on UnexpectedException catch (e) {
       print('>>> Delete account unexpected error: $e');
       errorMessage.value = 'Hesap silinirken beklenmedik bir hata oluştu.';
 
-      _errorHandler.handleUnexpectedError(e);
+      _errorHandler.handleError(e, message: errorMessage.value);
     } finally {
       isLoading.value = false;
     }

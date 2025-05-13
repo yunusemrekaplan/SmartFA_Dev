@@ -3,7 +3,8 @@ import 'package:get/get.dart';
 import 'package:mobile/app/domain/repositories/auth_repository.dart';
 import 'package:mobile/app/modules/auth/controllers/auth_base_controller.dart';
 import 'package:mobile/app/navigation/app_routes.dart';
-import 'package:mobile/app/utils/exceptions.dart';
+import 'package:mobile/app/data/network/exceptions.dart';
+import 'package:mobile/app/utils/snackbar_helper.dart';
 
 /// Register ekranının state'ini ve iş mantığını yöneten GetX controller.
 class RegisterController extends AuthBaseController {
@@ -11,20 +12,17 @@ class RegisterController extends AuthBaseController {
   final GlobalKey<FormState> registerFormKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
 
   // UI state
   final RxBool isPasswordVisible = false.obs;
   final RxBool isConfirmPasswordVisible = false.obs;
 
-  RegisterController({required IAuthRepository authRepository})
-      : super(repository: authRepository);
+  RegisterController({required IAuthRepository authRepository}) : super(repository: authRepository);
 
   @override
   void onClose() {
-    clearFormInputs(
-        [emailController, passwordController, confirmPasswordController]);
+    clearFormInputs([emailController, passwordController, confirmPasswordController]);
     super.onClose();
   }
 
@@ -64,7 +62,10 @@ class RegisterController extends AuthBaseController {
 
   /// Başarılı kayıt işlemini yönetir
   void _handleRegisterSuccess(final authResponse) {
-    errorHandler.showSuccessMessage('Kayıt işlemi başarılı');
+    SnackbarHelper.showSuccess(
+      title: 'Kayıt Başarılı',
+      message: 'Kayıt işleminiz başarıyla tamamlandı.',
+    );
     Get.offAllNamed(AppRoutes.HOME); // Ana sayfaya yönlendir
   }
 
@@ -77,7 +78,7 @@ class RegisterController extends AuthBaseController {
       _handleValidationErrors(error);
     } else {
       // Validasyon hatası değilse, standart hata yönetimi kullan
-      errorHandler.handleError(error, customTitle: 'Kayıt Başarısız');
+      errorHandler.handleError(error, message: errorMessage.value, customTitle: 'Kayıt Başarısız');
     }
   }
 
@@ -94,8 +95,7 @@ class RegisterController extends AuthBaseController {
     }
 
     if (error.fieldErrors!.containsKey('confirmPassword')) {
-      errorMessages
-          .add('Şifre Tekrarı: ${error.fieldErrors!['confirmPassword']}');
+      errorMessages.add('Şifre Tekrarı: ${error.fieldErrors!['confirmPassword']}');
     }
 
     // Diğer genel hatalar varsa ekle
@@ -108,7 +108,7 @@ class RegisterController extends AuthBaseController {
     }
 
     // Hata yöneticisini kullanarak kullanıcıya bildir
-    errorHandler.handleError(error, customTitle: 'Kayıt Başarısız');
+    errorHandler.handleError(error, message: errorMessage.value, customTitle: 'Kayıt Başarısız');
   }
 
   /// Beklenmeyen hataları yönetir

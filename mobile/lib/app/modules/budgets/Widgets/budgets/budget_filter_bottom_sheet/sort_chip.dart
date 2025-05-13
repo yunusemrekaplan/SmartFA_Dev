@@ -7,12 +7,7 @@ class SortChip extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  const SortChip({
-    Key? key,
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  }) : super(key: key);
+  const SortChip({super.key, required this.label, required this.isSelected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -22,13 +17,9 @@ class SortChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary.withOpacity(0.15)
-              : AppColors.surfaceVariant,
+          color: isSelected ? AppColors.primary.withOpacity(0.15) : AppColors.surfaceVariant,
           borderRadius: BorderRadius.circular(50),
-          border: isSelected
-              ? Border.all(color: AppColors.primary, width: 1.5)
-              : null,
+          border: isSelected ? Border.all(color: AppColors.primary, width: 1.5) : null,
         ),
         child: Text(
           label,

@@ -1,21 +1,28 @@
 // API endpoint yolları
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:mobile/app/data/models/request/debt_request_models.dart';
 import 'package:mobile/app/data/models/response/debt_response_model.dart';
 import 'package:mobile/app/data/network/dio_client.dart';
+import 'package:mobile/app/data/network/exceptions.dart';
 
 const String _debtsEndpoint = '/debts'; // Ana endpoint
 
 /// Borçlarla ilgili API isteklerini yapan arayüz.
 abstract class IDebtRemoteDataSource {
+  /// Kullanıcının aktif borçlarını getirir
   Future<List<DebtModel>> getUserActiveDebts();
 
+  /// ID ile belirli bir borcu getirir
   Future<DebtModel> getDebtById(int debtId);
 
+  /// Yeni borç oluşturur
   Future<DebtModel> createDebt(CreateDebtRequestModel debtData);
 
+  /// Var olan borcu günceller
   Future<void> updateDebt(int debtId, UpdateDebtRequestModel debtData);
 
+  /// Borcu siler
   Future<void> deleteDebt(int debtId);
 }
 
@@ -31,13 +38,18 @@ class DebtRemoteDataSource implements IDebtRemoteDataSource {
       // Backend'deki endpoint'e GET isteği (aktif borçları döndürür)
       final response = await _dioClient.get(_debtsEndpoint);
       final List<dynamic> data = response.data as List<dynamic>;
-      return data.map((json) => DebtModel.fromJson(json as Map<String, dynamic>)).toList();
-    } on DioException catch (e) {
-      print('DebtRemoteDataSource GetUserActiveDebts Error: $e');
+      return data
+          .map((json) => DebtModel.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } on DioException {
+      // ErrorInterceptor tarafından işlenecek
       rethrow;
     } catch (e) {
-      print('DebtRemoteDataSource GetUserActiveDebts Unexpected Error: $e');
-      throw Exception('Aktif borçlar getirilirken beklenmedik bir hata oluştu.');
+      _logError('GetUserActiveDebts', e);
+      throw UnexpectedException(
+        message: 'Aktif borçlar getirilirken beklenmedik bir hata oluştu',
+        details: e,
+      );
     }
   }
 
@@ -46,12 +58,14 @@ class DebtRemoteDataSource implements IDebtRemoteDataSource {
     try {
       final response = await _dioClient.get('$_debtsEndpoint/$debtId');
       return DebtModel.fromJson(response.data as Map<String, dynamic>);
-    } on DioException catch (e) {
-      print('DebtRemoteDataSource GetDebtById Error: $e');
+    } on DioException {
       rethrow;
     } catch (e) {
-      print('DebtRemoteDataSource GetDebtById Unexpected Error: $e');
-      throw Exception('Borç detayı getirilirken beklenmedik bir hata oluştu.');
+      _logError('GetDebtById', e);
+      throw UnexpectedException(
+        message: 'Borç detayı getirilirken beklenmedik bir hata oluştu',
+        details: e,
+      );
     }
   }
 
@@ -63,12 +77,14 @@ class DebtRemoteDataSource implements IDebtRemoteDataSource {
         data: debtData.toJson(),
       );
       return DebtModel.fromJson(response.data as Map<String, dynamic>);
-    } on DioException catch (e) {
-      print('DebtRemoteDataSource CreateDebt Error: $e');
+    } on DioException {
       rethrow;
     } catch (e) {
-      print('DebtRemoteDataSource CreateDebt Unexpected Error: $e');
-      throw Exception('Borç oluşturulurken beklenmedik bir hata oluştu.');
+      _logError('CreateDebt', e);
+      throw UnexpectedException(
+        message: 'Borç oluşturulurken beklenmedik bir hata oluştu',
+        details: e,
+      );
     }
   }
 
@@ -79,12 +95,14 @@ class DebtRemoteDataSource implements IDebtRemoteDataSource {
         '$_debtsEndpoint/$debtId',
         data: debtData.toJson(),
       );
-    } on DioException catch (e) {
-      print('DebtRemoteDataSource UpdateDebt Error: $e');
+    } on DioException {
       rethrow;
     } catch (e) {
-      print('DebtRemoteDataSource UpdateDebt Unexpected Error: $e');
-      throw Exception('Borç güncellenirken beklenmedik bir hata oluştu.');
+      _logError('UpdateDebt', e);
+      throw UnexpectedException(
+        message: 'Borç güncellenirken beklenmedik bir hata oluştu',
+        details: e,
+      );
     }
   }
 
@@ -92,12 +110,21 @@ class DebtRemoteDataSource implements IDebtRemoteDataSource {
   Future<void> deleteDebt(int debtId) async {
     try {
       await _dioClient.delete('$_debtsEndpoint/$debtId');
-    } on DioException catch (e) {
-      print('DebtRemoteDataSource DeleteDebt Error: $e');
+    } on DioException {
       rethrow;
     } catch (e) {
-      print('DebtRemoteDataSource DeleteDebt Unexpected Error: $e');
-      throw Exception('Borç silinirken beklenmedik bir hata oluştu.');
+      _logError('DeleteDebt', e);
+      throw UnexpectedException(
+        message: 'Borç silinirken beklenmedik bir hata oluştu',
+        details: e,
+      );
+    }
+  }
+
+  /// Debug modunda hata loglar
+  void _logError(String operation, Object error) {
+    if (kDebugMode) {
+      print('DebtRemoteDataSource $operation Error: $error');
     }
   }
 }

@@ -1,6 +1,6 @@
 import 'package:mobile/app/data/models/request/budget_request_models.dart';
 import 'package:mobile/app/data/models/response/budget_response_model.dart';
-import 'package:mobile/app/utils/exceptions.dart';
+import 'package:mobile/app/data/network/exceptions.dart';
 import 'package:mobile/app/utils/result.dart';
 
 abstract class IBudgetRepository {
