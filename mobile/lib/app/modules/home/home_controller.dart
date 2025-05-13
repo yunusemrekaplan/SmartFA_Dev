@@ -12,6 +12,10 @@ class HomeController extends GetxController {
   final RxInt selectedIndex = 0.obs;
   late final PageController pageController;
 
+  // Animasyon durumları
+  final RxBool isChangingTab = false.obs;
+  final Rx<double> navigationBarAnimationValue = 1.0.obs;
+
   // Alt sekmelerin controller'larını saklamak için değişkenler
   late final DashboardController _dashboardController;
   late final AccountsController _accountsController;
@@ -59,17 +63,35 @@ class HomeController extends GetxController {
   }
 
   /// Sekme değiştirildiğinde çağrılacak metot.
+  /// Animasyonlu geçiş için sayfa geçişlerini yönetir.
   void changeTabIndex(int index) {
-    selectedIndex.value = index;
-
-    // PageView'i de güncelle (eğer dışarıdan değiştirilmişse)
-    if (pageController.hasClients && pageController.positions.length == 1) {
-      if (pageController.page?.round() != index) {
-        pageController.jumpToPage(index);
-      }
-    } else {
-      printError(info: 'Multiple PageViews are attached to the same PageController.');
+    if (selectedIndex.value == index) {
+      return; // Zaten seçili sekme seçilirse işlem yapma
     }
+
+    // Animasyonu başlat
+    isChangingTab.value = true;
+    navigationBarAnimationValue.value = 0.8; // Küçült
+
+    // Kısa gecikme ile tam animasyonu görünür yap
+    Future.delayed(const Duration(milliseconds: 100), () {
+      selectedIndex.value = index;
+
+      // PageView'i de güncelle
+      if (pageController.hasClients) {
+        pageController.animateToPage(
+          index,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+
+      // Animasyonu tamamla
+      Future.delayed(const Duration(milliseconds: 200), () {
+        navigationBarAnimationValue.value = 1.0; // Geri büyüt
+        isChangingTab.value = false;
+      });
+    });
   }
 
   /// Sekme değiştiğinde yapılacak işlemleri yönetir

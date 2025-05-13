@@ -4,86 +4,133 @@ import 'package:mobile/app/modules/settings/settings_screen.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/app/widgets/loading_logo.dart';
 
-/// Uygulamanın modern drawer menüsü
+/// Uygulamanın modern ve animasyonlu drawer menüsü
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-      elevation: 0,
-      backgroundColor: AppColors.background,
-      child: SafeArea(
-        child: Column(
+    return ClipRRect(
+      borderRadius: const BorderRadius.only(
+        topRight: Radius.circular(24),
+        bottomRight: Radius.circular(24),
+      ),
+      child: Drawer(
+        elevation: 16,
+        backgroundColor: Colors.white,
+        child: Stack(
           children: [
-            _buildHeader(context),
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
+            // Arka plan dekorasyon elemanı
+            Positioned(
+              top: -120,
+              left: -100,
+              child: Container(
+                width: 250,
+                height: 250,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primary.withOpacity(0.08),
+                ),
+              ),
+            ),
+
+            // Ana içerik
+            SafeArea(
+              child: Column(
                 children: [
-                  const SizedBox(height: 8),
+                  _buildHeader(context),
+                  Expanded(
+                    child: ListView(
+                      padding: EdgeInsets.zero,
+                      children: [
+                        const SizedBox(height: 12),
 
-                  // Ana menü öğeleri
-                  _buildDrawerHeader(context, 'Uygulama'),
-                  _buildMenuTile(
-                    context: context,
-                    icon: Icons.settings_rounded,
-                    title: 'Ayarlar',
-                    onTap: () {
-                      Get.to(() => const SettingsScreen());
-                      Navigator.pop(context);
-                    },
-                  ),
+                        // Ana menü öğeleri
+                        _buildDrawerHeader(context, 'UYGULAMA'),
+                        _buildMenuTile(
+                          context: context,
+                          icon: Icons.settings_rounded,
+                          title: 'Ayarlar',
+                          onTap: () {
+                            Get.to(
+                              () => const SettingsScreen(),
+                              transition: Transition.rightToLeft,
+                              duration: const Duration(milliseconds: 250),
+                            );
+                            Navigator.pop(context);
+                          },
+                        ),
 
-                  const Divider(),
+                        _buildDivider(),
 
-                  // Destek menü öğeleri
-                  _buildDrawerHeader(context, 'Destek'),
-                  _buildMenuTile(
-                    context: context,
-                    icon: Icons.help_outline_rounded,
-                    title: 'Yardım ve Destek',
-                    onTap: () {
-                      _showNotImplementedMessage(context);
-                      Navigator.pop(context);
-                    },
-                  ),
-                  _buildMenuTile(
-                    context: context,
-                    icon: Icons.info_outline_rounded,
-                    title: 'Hakkında',
-                    onTap: () {
-                      _showNotImplementedMessage(context);
-                      Navigator.pop(context);
-                    },
-                  ),
+                        // Destek menü öğeleri
+                        _buildDrawerHeader(context, 'DESTEK'),
+                        _buildMenuTile(
+                          context: context,
+                          icon: Icons.help_outline_rounded,
+                          title: 'Yardım ve Destek',
+                          onTap: () {
+                            _showNotImplementedMessage(context);
+                            Navigator.pop(context);
+                          },
+                        ),
+                        _buildMenuTile(
+                          context: context,
+                          icon: Icons.info_outline_rounded,
+                          title: 'Hakkında',
+                          onTap: () {
+                            _showNotImplementedMessage(context);
+                            Navigator.pop(context);
+                          },
+                        ),
 
-                  const Divider(),
+                        _buildDivider(),
 
-                  // Hesap menü öğeleri
-                  _buildDrawerHeader(context, 'Hesap'),
-                  _buildMenuTile(
-                    context: context,
-                    icon: Icons.person_outline_rounded,
-                    title: 'Profil',
-                    onTap: () {
-                      _showNotImplementedMessage(context);
-                      Navigator.pop(context);
-                    },
+                        // Hesap menü öğeleri
+                        _buildDrawerHeader(context, 'HESAP'),
+                        _buildMenuTile(
+                          context: context,
+                          icon: Icons.person_outline_rounded,
+                          title: 'Profil',
+                          onTap: () {
+                            _showNotImplementedMessage(context);
+                            Navigator.pop(context);
+                          },
+                        ),
+                        _buildMenuTile(
+                          context: context,
+                          icon: Icons.logout_rounded,
+                          title: 'Çıkış Yap',
+                          isDestructive: true,
+                          onTap: () {
+                            _showLogoutDialog(context);
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                  _buildMenuTile(
-                    context: context,
-                    icon: Icons.logout_rounded,
-                    title: 'Çıkış Yap',
-                    onTap: () {
-                      _showLogoutDialog(context);
-                    },
-                  ),
+                  _buildFooter(context),
                 ],
               ),
             ),
-            _buildFooter(context),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// Özel ayraç widget'ı
+  Widget _buildDivider() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: Container(
+        height: 1,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(colors: [
+            AppColors.divider.withOpacity(0.1),
+            AppColors.divider,
+            AppColors.divider.withOpacity(0.1),
+          ]),
         ),
       ),
     );
@@ -92,23 +139,52 @@ class AppDrawer extends StatelessWidget {
   /// Drawer üst kısmını (header) oluşturur
   Widget _buildHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: AppColors.primaryGradient,
+          colors: [
+            AppColors.primaryGradient[0],
+            AppColors.primaryGradient[1],
+          ],
         ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          LogoWithAnimation(
-            size: 60,
-            animate: false,
-            backgroundColor: Colors.white.withOpacity(0.2),
+          Row(
+            children: [
+              Hero(
+                tag: 'app_logo',
+                child: LogoWithAnimation(
+                  size: 58,
+                  animate: false,
+                  backgroundColor: Colors.white.withOpacity(0.2),
+                ),
+              ),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(
+                  Icons.close_rounded,
+                  color: Colors.white,
+                  size: 24,
+                ),
+                onPressed: () => Navigator.of(context).pop(),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.white.withOpacity(0.2),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Text(
             'SmartFA',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -116,7 +192,7 @@ class AppDrawer extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           Text(
             'Akıllı Finansal Asistan',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -131,14 +207,13 @@ class AppDrawer extends StatelessWidget {
   /// Drawer bölüm başlığını oluşturur
   Widget _buildDrawerHeader(BuildContext context, String title) {
     return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 4),
+      padding: const EdgeInsets.only(left: 24, right: 24, top: 12, bottom: 8),
       child: Text(
         title,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              // fontSize: 12, // labelSmall muhtemelen daha küçük, 12'ye ayarlıyoruz
               fontWeight: FontWeight.bold,
               color: AppColors.textSecondary,
-              letterSpacing: 0.5,
+              letterSpacing: 0.8,
             ),
       ),
     );
@@ -150,35 +225,88 @@ class AppDrawer extends StatelessWidget {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
+    bool isDestructive = false,
   }) {
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: AppColors.primary,
-        size: 22,
-      ),
-      title: Text(
-        title,
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              fontWeight: FontWeight.w500,
+    final Color iconColor = isDestructive ? AppColors.error : AppColors.primary;
+    final Color textColor =
+        isDestructive ? AppColors.error : AppColors.textPrimary;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          splashColor: AppColors.primary.withOpacity(0.1),
+          highlightColor: AppColors.primary.withOpacity(0.05),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: iconColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: iconColor,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: textColor,
+                      ),
+                ),
+              ],
             ),
+          ),
+        ),
       ),
-      onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 2),
-      visualDensity: VisualDensity.compact,
     );
   }
 
   /// Drawer alt kısmını (footer) oluşturur
   Widget _buildFooter(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
-      child: Text(
-        'Sürüm 1.0.0',
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.textSecondary,
-            ),
-        textAlign: TextAlign.center,
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadowLight,
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            'Sürüm 1.0.0',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '© 2023 SmartFA',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.textTertiary,
+                  fontSize: 10,
+                ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -186,10 +314,20 @@ class AppDrawer extends StatelessWidget {
   /// Uygulanmamış özellikler için bildirim gösterir
   void _showNotImplementedMessage(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Bu özellik henüz uygulanmadı'),
-        duration: Duration(seconds: 2),
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.info_outline, color: Colors.white),
+            const SizedBox(width: 12),
+            const Text('Bu özellik henüz uygulanmadı'),
+          ],
+        ),
+        duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.info,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
       ),
     );
   }
@@ -215,9 +353,17 @@ class AppDrawer extends StatelessWidget {
                 Navigator.of(context).pop(); // Drawer'ı da kapat
                 _showNotImplementedMessage(context);
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.error,
+                foregroundColor: Colors.white,
+              ),
               child: const Text('Çıkış Yap'),
             ),
           ],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 24,
         );
       },
     );

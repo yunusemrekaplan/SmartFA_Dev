@@ -1,120 +1,92 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile/app/domain/repositories/auth_repository.dart';
-import 'package:mobile/app/modules/auth/controllers/auth_base_controller.dart';
-import 'package:mobile/app/navigation/app_routes.dart';
-import 'package:mobile/app/data/network/exceptions.dart';
-import 'package:mobile/app/utils/snackbar_helper.dart';
+import 'package:mobile/app/modules/auth/services/auth_data_service.dart';
+import 'package:mobile/app/modules/auth/services/auth_form_service.dart';
+import 'package:mobile/app/modules/auth/services/auth_navigation_service.dart';
+import 'package:mobile/app/modules/auth/services/auth_ui_service.dart';
 
 /// Register ekranının state'ini ve iş mantığını yöneten GetX controller.
-class RegisterController extends AuthBaseController {
-  // Form ve input kontrolleri
-  final GlobalKey<FormState> registerFormKey = GlobalKey<FormState>();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+/// DIP (Dependency Inversion Principle) - Yüksek seviyeli modüller düşük seviyeli modüllere bağlı değil
+/// ISP (Interface Segregation Principle) - Kullanılmayan arayüzlere bağımlı olunmamalı
+class RegisterController extends GetxController {
+  // Servisler - Bağımlılık Enjeksiyonu
+  final AuthDataService _dataService;
+  final AuthFormService _formService;
+  final AuthNavigationService _navigationService;
+  final AuthUIService _uiService;
 
-  // UI state
-  final RxBool isPasswordVisible = false.obs;
-  final RxBool isConfirmPasswordVisible = false.obs;
+  RegisterController({
+    required AuthDataService dataService,
+    required AuthFormService formService,
+    required AuthNavigationService navigationService,
+    required AuthUIService uiService,
+  })  : _dataService = dataService,
+        _formService = formService,
+        _navigationService = navigationService,
+        _uiService = uiService;
 
-  RegisterController({required IAuthRepository authRepository}) : super(repository: authRepository);
+  // --- Convenience Getters (Delegasyon Paterni) ---
+
+  // Form Servisi Delegasyonları
+  GlobalKey<FormState> get registerFormKey => _formService.registerFormKey;
+  TextEditingController get emailController =>
+      _formService.registerEmailController;
+  TextEditingController get passwordController =>
+      _formService.registerPasswordController;
+  TextEditingController get confirmPasswordController =>
+      _formService.confirmPasswordController;
+  RxBool get isPasswordVisible => _formService.isRegisterPasswordVisible;
+  RxBool get isConfirmPasswordVisible => _formService.isConfirmPasswordVisible;
+
+  // Veri Servisi Delegasyonları
+  RxBool get isLoading => _dataService.isLoading;
+  RxString get errorMessage => _dataService.errorMessage;
+
+  // --- Lifecycle Metotları ---
 
   @override
   void onClose() {
-    clearFormInputs([emailController, passwordController, confirmPasswordController]);
+    // TextEditingController'ları dispose etmeye gerek yok
+    // _formService fenix: true ile kaydedildiği için ve
+    // controller'lar farklı ekranlarda kullanıldığından
+    // burada dispose çağrısını kaldırıyoruz
     super.onClose();
   }
 
-  /// Şifre alanının görünürlüğünü değiştirir.
+  // --- Metotlar ---
+
+  /// Şifre alanının görünürlüğünü değiştirir
   void togglePasswordVisibility() {
-    isPasswordVisible.value = !isPasswordVisible.value;
+    _formService.toggleRegisterPasswordVisibility();
   }
 
-  /// Şifre tekrarı alanının görünürlüğünü değiştirir.
+  /// Şifre tekrarı alanının görünürlüğünü değiştirir
   void toggleConfirmPasswordVisibility() {
-    isConfirmPasswordVisible.value = !isConfirmPasswordVisible.value;
+    _formService.toggleConfirmPasswordVisibility();
   }
 
-  /// Register işlemini gerçekleştirir.
+  /// Register işlemini gerçekleştirir
   Future<void> register() async {
-    if (!prepareForProcessing(registerFormKey)) {
+    // Form doğrulama
+    if (!_formService.validateRegisterForm()) {
       return;
     }
 
-    try {
-      final result = await repository.register(
-        emailController.text.trim(),
-        passwordController.text,
-        confirmPasswordController.text,
-      );
-
-      result.when(
-        success: _handleRegisterSuccess,
-        failure: _handleRegisterFailure,
-      );
-    } catch (e) {
-      _handleUnexpectedError(e);
-    } finally {
-      completeProcessing();
-    }
-  }
-
-  /// Başarılı kayıt işlemini yönetir
-  void _handleRegisterSuccess(final authResponse) {
-    SnackbarHelper.showSuccess(
-      title: 'Kayıt Başarılı',
-      message: 'Kayıt işleminiz başarıyla tamamlandı.',
+    // Register işlemini gerçekleştir
+    final success = await _dataService.register(
+      emailController.text.trim(),
+      passwordController.text,
+      confirmPasswordController.text,
     );
-    Get.offAllNamed(AppRoutes.HOME); // Ana sayfaya yönlendir
-  }
 
-  /// Başarısız kayıt işlemini yönetir
-  void _handleRegisterFailure(final error) {
-    errorMessage.value = error.message;
-
-    // ValidationException için form alanlarında hataları göster
-    if (error is ValidationException && error.fieldErrors != null) {
-      _handleValidationErrors(error);
-    } else {
-      // Validasyon hatası değilse, standart hata yönetimi kullan
-      errorHandler.handleError(error, message: errorMessage.value, customTitle: 'Kayıt Başarısız');
+    if (success) {
+      _uiService.showRegisterSuccessMessage();
+      _navigationService.goToHomeAfterAuth();
     }
   }
 
-  /// Validasyon hatalarını işler
-  void _handleValidationErrors(ValidationException error) {
-    final errorMessages = <String>[];
-
-    if (error.fieldErrors!.containsKey('email')) {
-      errorMessages.add('E-posta: ${error.fieldErrors!['email']}');
-    }
-
-    if (error.fieldErrors!.containsKey('password')) {
-      errorMessages.add('Şifre: ${error.fieldErrors!['password']}');
-    }
-
-    if (error.fieldErrors!.containsKey('confirmPassword')) {
-      errorMessages.add('Şifre Tekrarı: ${error.fieldErrors!['confirmPassword']}');
-    }
-
-    // Diğer genel hatalar varsa ekle
-    if (errorMessages.isEmpty) {
-      // Spesifik alan hatası yoksa genel hata mesajını kullan
-      errorMessage.value = error.message;
-    } else {
-      // Alan hatalarını göster
-      errorMessage.value = errorMessages.join('\n');
-    }
-
-    // Hata yöneticisini kullanarak kullanıcıya bildir
-    errorHandler.handleError(error, message: errorMessage.value, customTitle: 'Kayıt Başarısız');
-  }
-
-  /// Beklenmeyen hataları yönetir
-  void _handleUnexpectedError(dynamic e) {
-    errorMessage.value =
-        'Kayıt işlemi sırasında beklenmedik bir hata oluştu. Lütfen tekrar deneyin.';
-    handleGeneralError(e, customTitle: 'Kayıt Başarısız');
+  /// Login ekranına geri dön
+  void goToLogin() {
+    _navigationService.goBack();
   }
 }

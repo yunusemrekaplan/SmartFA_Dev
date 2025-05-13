@@ -8,7 +8,6 @@ import 'package:mobile/app/modules/auth/widgets/auth_form_field.dart';
 import 'package:mobile/app/modules/auth/widgets/auth_header.dart';
 import 'package:mobile/app/modules/auth/widgets/error_message.dart';
 import 'package:mobile/app/modules/auth/widgets/password_field.dart';
-import 'package:mobile/app/navigation/app_routes.dart';
 
 /// Kullanıcı giriş ekranı.
 class LoginScreen extends GetView<LoginController> {
@@ -73,7 +72,8 @@ class LoginScreen extends GetView<LoginController> {
                   _buildForgotPasswordLink(context),
 
                   // Hata Mesajı Alanı
-                  Obx(() => ErrorMessageBox(message: controller.errorMessage.value)),
+                  Obx(() =>
+                      ErrorMessageBox(message: controller.errorMessage.value)),
 
                   const SizedBox(height: 32.0),
 
@@ -91,7 +91,7 @@ class LoginScreen extends GetView<LoginController> {
                   AuthFooter(
                     question: 'Hesabın yok mu?',
                     actionText: 'Kayıt Ol',
-                    onActionPressed: () => Get.toNamed(AppRoutes.REGISTER),
+                    onActionPressed: controller.goToRegister,
                   ),
 
                   const SizedBox(height: 16),
@@ -110,23 +110,13 @@ class LoginScreen extends GetView<LoginController> {
       alignment: Alignment.centerRight,
       padding: const EdgeInsets.only(top: 12),
       child: TextButton(
-        onPressed: () => _showFeatureNotImplementedSnackbar(context),
+        onPressed: () => controller.showForgotPassword(context),
         style: TextButton.styleFrom(
           padding: EdgeInsets.zero,
           minimumSize: const Size(50, 30),
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
         child: const Text('Şifremi Unuttum'),
-      ),
-    );
-  }
-
-  /// Uygulanmamış özellikler için snackbar gösterimi
-  void _showFeatureNotImplementedSnackbar(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Bu özellik henüz uygulanmadı'),
-        duration: Duration(seconds: 2),
       ),
     );
   }

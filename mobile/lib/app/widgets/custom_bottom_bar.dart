@@ -15,38 +15,55 @@ class CustomBottomBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomAppBar(
-      elevation: 8,
-      notchMargin: 8.0,
+      elevation: 12,
+      notchMargin: 10.0,
       shape: const CircularNotchedRectangle(),
       clipBehavior: Clip.antiAlias,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 0),
-        height: 64,
+        height: 68,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.white, Color(0xFFF8F9FC)],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.shadowLight,
+              blurRadius: 6,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
             _buildNavItem(
               context: context,
               icon: Icons.dashboard_rounded,
+              selectedIcon: Icons.dashboard_rounded,
               index: 0,
               label: 'Özet',
             ),
             _buildNavItem(
               context: context,
-              icon: Icons.account_balance_wallet_rounded,
+              icon: Icons.account_balance_wallet_outlined,
+              selectedIcon: Icons.account_balance_wallet_rounded,
               index: 1,
               label: 'Hesaplar',
             ),
-            const SizedBox(width: 56), // FAB için daha geniş boşluk
+            const SizedBox(width: 64), // FAB için daha geniş boşluk
             _buildNavItem(
               context: context,
-              icon: Icons.sync_alt_rounded,
+              icon: Icons.sync_alt_outlined,
+              selectedIcon: Icons.sync_alt_rounded,
               index: 2,
               label: 'İşlemler',
             ),
             _buildNavItem(
               context: context,
-              icon: Icons.pie_chart_rounded,
+              icon: Icons.pie_chart_outline_rounded,
+              selectedIcon: Icons.pie_chart_rounded,
               index: 3,
               label: 'Bütçeler',
             ),
@@ -60,6 +77,7 @@ class CustomBottomBar extends StatelessWidget {
   Widget _buildNavItem({
     required BuildContext context,
     required IconData icon,
+    required IconData selectedIcon,
     required int index,
     required String label,
   }) {
@@ -67,31 +85,43 @@ class CustomBottomBar extends StatelessWidget {
       final isSelected = controller.selectedIndex.value == index;
 
       return InkWell(
-        customBorder: const CircleBorder(),
+        customBorder: const StadiumBorder(),
         onTap: () => controller.changeTabIndex(index),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: isSelected
+              ? BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: AppColors.primary.withOpacity(0.1),
+                )
+              : null,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                icon,
-                size: 24,
-                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  return ScaleTransition(scale: animation, child: child);
+                },
+                child: Icon(
+                  isSelected ? selectedIcon : icon,
+                  key: ValueKey<bool>(isSelected),
+                  size: 24,
+                  color:
+                      isSelected ? AppColors.primary : AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: 2),
-              Text(
-                label,
-                style: (isSelected
-                        ? Theme.of(context)
-                            .bottomNavigationBarTheme
-                            .selectedLabelStyle
-                        : Theme.of(context)
-                            .bottomNavigationBarTheme
-                            .unselectedLabelStyle)
-                    ?.copyWith(
-                        fontSize:
-                            12), // Temadan alıp font boyutunu 12 yapıyoruz (tema 13)
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 200),
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  color:
+                      isSelected ? AppColors.primary : AppColors.textSecondary,
+                ),
+                child: Text(label),
               ),
             ],
           ),

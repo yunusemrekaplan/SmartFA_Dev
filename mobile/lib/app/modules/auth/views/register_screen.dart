@@ -36,7 +36,8 @@ class RegisterScreen extends GetView<RegisterController> {
                   // Logo ve Başlık
                   const AuthHeader(
                     title: 'Yeni Hesap Oluştur',
-                    subtitle: 'Finansal yolculuğunuza başlamak için hesabınızı oluşturun',
+                    subtitle:
+                        'Finansal yolculuğunuza başlamak için hesabınızı oluşturun',
                     logoSize: 80,
                   ),
 
@@ -72,9 +73,11 @@ class RegisterScreen extends GetView<RegisterController> {
                     labelText: 'Şifre Tekrarı',
                     hintText: '••••••••',
                     isPasswordVisible: controller.isConfirmPasswordVisible,
-                    toggleVisibility: controller.toggleConfirmPasswordVisibility,
+                    toggleVisibility:
+                        controller.toggleConfirmPasswordVisibility,
                     textInputAction: TextInputAction.done,
-                    validator: (value) => AuthValidators.validateConfirmPassword(
+                    validator: (value) =>
+                        AuthValidators.validateConfirmPassword(
                       value,
                       controller.passwordController.text,
                     ),
@@ -105,7 +108,7 @@ class RegisterScreen extends GetView<RegisterController> {
                   AuthFooter(
                     question: 'Zaten hesabın var mı?',
                     actionText: 'Giriş Yap',
-                    onActionPressed: () => Get.back(),
+                    onActionPressed: controller.goToLogin,
                   ),
 
                   const SizedBox(height: 16),
@@ -123,7 +126,7 @@ class RegisterScreen extends GetView<RegisterController> {
     return Padding(
       padding: const EdgeInsets.only(top: 20.0),
       child: IconButton(
-        onPressed: () => Get.back(),
+        onPressed: controller.goToLogin,
         icon: const Icon(Icons.arrow_back_ios),
         color: AppColors.textPrimary,
         padding: EdgeInsets.zero,

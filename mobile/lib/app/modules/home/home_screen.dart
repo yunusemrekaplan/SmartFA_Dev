@@ -24,46 +24,115 @@ class HomeScreen extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      // Seçili sekmeye göre body'yi değiştirmek için Obx ve PageView
-      body: PageView(
-        physics:
-            const NeverScrollableScrollPhysics(), // Sayfa kaydırmayı devre dışı bırak
-        controller: controller.pageController,
-        onPageChanged: controller.changeTabIndex,
-        children: const [
-          DashboardScreen(), // Index 0
-          AccountsScreen(), // Index 1
-          TransactionsScreen(), // Index 2
-          BudgetsScreen(), // Index 3
-        ],
-      ),
+    return Obx(() {
+      return AnimatedScale(
+        scale: controller.navigationBarAnimationValue.value,
+        duration: const Duration(milliseconds: 200),
+        child: Scaffold(
+          extendBody: true,
+          // FAB ve bottom bar için body'yi uzat
 
-      // Drawer menüsü
-      drawer: const AppDrawer(),
+          // Seçili sekmeye göre body'yi değiştirmek için PageView
+          body: PageView(
+            physics: const NeverScrollableScrollPhysics(), // Sayfa kaydırmayı devre dışı bırak
+            controller: controller.pageController,
+            onPageChanged: controller.changeTabIndex,
+            children: [
+              _buildAnimatedPage(const DashboardScreen(), 0), // Index 0
+              _buildAnimatedPage(const AccountsScreen(), 1), // Index 1
+              _buildAnimatedPage(const TransactionsScreen(), 2), // Index 2
+              _buildAnimatedPage(const BudgetsScreen(), 3), // Index 3
+            ],
+          ),
 
-      // Hızlı işlemler için FAB
-      //floatingActionButton: _buildFAB(context),
+          // Drawer menüsü
+          drawer: const AppDrawer(),
 
-      // FAB konum ayarı
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+          // Hızlı işlemler için FAB
+          floatingActionButton: _buildFAB(context),
 
-      // Alt navigasyon çubuğu
-      bottomNavigationBar: CustomBottomBar(controller: controller),
-    );
+          // FAB konum ayarı
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+
+          // Alt navigasyon çubuğu
+          bottomNavigationBar: AnimatedOpacity(
+            opacity: controller.isChangingTab.value ? 0.8 : 1.0,
+            duration: const Duration(milliseconds: 200),
+            child: CustomBottomBar(controller: controller),
+          ),
+        ),
+      );
+    });
+  }
+
+  /// Sekme sayfalarını animasyonlu olarak oluşturur
+  Widget _buildAnimatedPage(Widget page, int index) {
+    return Obx(() {
+      final isActive = controller.selectedIndex.value == index;
+
+      return AnimatedOpacity(
+        duration: const Duration(milliseconds: 300),
+        opacity: isActive ? 1.0 : 0.0,
+        child: AnimatedScale(
+          duration: const Duration(milliseconds: 300),
+          scale: isActive ? 1.0 : 0.92,
+          child: page,
+        ),
+      );
+    });
   }
 
   /// Seçili sekmeye göre FAB oluşturur
   Widget _buildFAB(BuildContext context) {
     return Obx(() {
-      // FAB renkleri ve gölge efekti
-      return FloatingActionButton(
-        elevation: 4,
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        tooltip: _getFABTooltip(),
-        onPressed: () => _handleFABPressed(),
-        child: const Icon(Icons.add, size: 28),
+      // FAB içeriği ve özellikleri
+      IconData fabIcon;
+      String fabTooltip = _getFABTooltip();
+      Color fabColor;
+
+      switch (controller.selectedIndex.value) {
+        case 0: // Dashboard
+          fabIcon = Icons.add_chart;
+          fabColor = AppColors.primary;
+          break;
+        case 1: // Accounts
+          fabIcon = Icons.account_balance_wallet_outlined;
+          fabColor = AppColors.primary;
+          break;
+        case 2: // Transactions
+          fabIcon = Icons.receipt_long_outlined;
+          fabColor = AppColors.primary;
+          break;
+        case 3: // Budgets
+          fabIcon = Icons.pie_chart_outline;
+          fabColor = AppColors.primary;
+          break;
+        default:
+          fabIcon = Icons.add;
+          fabColor = AppColors.primary;
+      }
+
+      return AnimatedScale(
+        duration: const Duration(milliseconds: 200),
+        scale: controller.isChangingTab.value ? 0.8 : 1.0,
+        child: AnimatedRotation(
+          duration: const Duration(milliseconds: 300),
+          turns: controller.isChangingTab.value ? 0.05 : 0,
+          child: FloatingActionButton(
+            elevation: 8,
+            backgroundColor: fabColor,
+            foregroundColor: Colors.white,
+            tooltip: fabTooltip,
+            onPressed: _handleFABPressed,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(
+              fabIcon,
+              size: 28,
+            ),
+          ),
+        ),
       );
     });
   }

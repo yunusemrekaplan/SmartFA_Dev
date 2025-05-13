@@ -158,8 +158,7 @@ class DashboardScreen extends GetView<DashboardController> {
         // --- Hesap Bilgisi ---
         Obx(() => InfoPanel.info(
               title: 'Hesap Bilgisi',
-              message:
-                  '${controller.accountCount} aktif hesabınız bulunmaktadır.',
+              message: '${controller.accountCount} aktif hesabınız bulunmaktadır.',
               onActionPressed: controller.navigateToAccounts,
               actionText: 'Hesapları Yönet',
             )).animate(delay: 400.ms).fadeIn().slideY(begin: 0.2, end: 0),
@@ -197,8 +196,7 @@ class DashboardScreen extends GetView<DashboardController> {
 
           // Bütçe listesi
           Obx(() {
-            if (controller.budgetSummaries.isEmpty &&
-                !controller.isLoading.value) {
+            if (controller.budgetSummaries.isEmpty && !controller.isLoading.value) {
               return EmptyStateView(
                 title: 'Henüz bütçe yok',
                 message:
@@ -209,8 +207,7 @@ class DashboardScreen extends GetView<DashboardController> {
               );
             }
 
-            if (controller.budgetSummaries.isEmpty &&
-                controller.isLoading.value) {
+            if (controller.budgetSummaries.isEmpty && controller.isLoading.value) {
               return const SizedBox(
                 height: 200,
                 child: Center(child: CircularProgressIndicator()),
@@ -227,9 +224,7 @@ class DashboardScreen extends GetView<DashboardController> {
                   final budget = controller.budgetSummaries[index];
                   return Padding(
                     padding: EdgeInsets.only(
-                      right: index == controller.budgetSummaries.length - 1
-                          ? 0
-                          : 12,
+                      right: index == controller.budgetSummaries.length - 1 ? 0 : 12,
                     ),
                     child: BudgetSummaryCard(
                       budget: budget,
@@ -273,8 +268,7 @@ class DashboardScreen extends GetView<DashboardController> {
 
           // İşlem listesi
           Obx(() {
-            if (controller.recentTransactions.isEmpty &&
-                !controller.isLoading.value) {
+            if (controller.recentTransactions.isEmpty && !controller.isLoading.value) {
               return EmptyStateView(
                 title: 'İşlem kaydı yok',
                 message:
@@ -285,8 +279,7 @@ class DashboardScreen extends GetView<DashboardController> {
               );
             }
 
-            if (controller.recentTransactions.isEmpty &&
-                controller.isLoading.value) {
+            if (controller.recentTransactions.isEmpty && controller.isLoading.value) {
               return const SizedBox(
                 height: 200,
                 child: Center(child: CircularProgressIndicator()),

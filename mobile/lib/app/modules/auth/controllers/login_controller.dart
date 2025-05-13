@@ -1,115 +1,88 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile/app/domain/repositories/auth_repository.dart';
-import 'package:mobile/app/modules/auth/controllers/auth_base_controller.dart';
-import 'package:mobile/app/navigation/app_routes.dart';
-import 'package:mobile/app/data/network/exceptions.dart';
-import 'package:mobile/app/utils/snackbar_helper.dart';
+import 'package:mobile/app/modules/auth/services/auth_data_service.dart';
+import 'package:mobile/app/modules/auth/services/auth_form_service.dart';
+import 'package:mobile/app/modules/auth/services/auth_navigation_service.dart';
+import 'package:mobile/app/modules/auth/services/auth_ui_service.dart';
 
 /// Login ekranının state'ini ve iş mantığını yöneten GetX controller.
-class LoginController extends AuthBaseController {
-  // Form ve UI kontrolleri
-  final GlobalKey<FormState> loginFormKey = GlobalKey<FormState>();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+/// DIP (Dependency Inversion Principle) - Yüksek seviyeli modüller düşük seviyeli modüllere bağlı değil
+/// ISP (Interface Segregation Principle) - Kullanılmayan arayüzlere bağımlı olunmamalı
+class LoginController extends GetxController {
+  // Servisler - Bağımlılık Enjeksiyonu
+  final AuthDataService _dataService;
+  final AuthFormService _formService;
+  final AuthNavigationService _navigationService;
+  final AuthUIService _uiService;
 
-  // UI state
-  final RxBool isPasswordVisible = false.obs;
+  LoginController({
+    required AuthDataService dataService,
+    required AuthFormService formService,
+    required AuthNavigationService navigationService,
+    required AuthUIService uiService,
+  })  : _dataService = dataService,
+        _formService = formService,
+        _navigationService = navigationService,
+        _uiService = uiService;
 
-  // Dependency Injection kullanarak constructor injection
-  LoginController({required IAuthRepository authRepository}) : super(repository: authRepository);
+  // --- Convenience Getters (Delegasyon Paterni) ---
+
+  // Form Servisi Delegasyonları
+  GlobalKey<FormState> get loginFormKey => _formService.loginFormKey;
+  TextEditingController get emailController =>
+      _formService.loginEmailController;
+  TextEditingController get passwordController =>
+      _formService.loginPasswordController;
+  RxBool get isPasswordVisible => _formService.isLoginPasswordVisible;
+
+  // Veri Servisi Delegasyonları
+  RxBool get isLoading => _dataService.isLoading;
+  RxString get errorMessage => _dataService.errorMessage;
+
+  // --- Lifecycle Metotları ---
 
   @override
   void onClose() {
-    // TextEditingController'ların dispose edilmesi
-    clearFormInputs([emailController, passwordController]);
+    // TextEditingController'ları dispose etmeye gerek yok
+    // _formService fenix: true ile kaydedildiği için ve
+    // controller'lar farklı ekranlarda kullanıldığından
+    // burada dispose çağrısını kaldırıyoruz
     super.onClose();
   }
 
+  // --- Metotlar ---
+
   /// Şifre alanının görünürlüğünü değiştirir
   void togglePasswordVisibility() {
-    isPasswordVisible.value = !isPasswordVisible.value;
+    _formService.toggleLoginPasswordVisibility();
   }
 
   /// Login işlemini gerçekleştirir
   Future<void> login() async {
-    // Form doğrulama ve hazırlık
-    if (!prepareForProcessing(loginFormKey)) {
+    // Form doğrulama
+    if (!_formService.validateLoginForm()) {
       return;
     }
 
-    try {
-      final result = await repository.login(
-        emailController.text.trim(),
-        passwordController.text,
-      );
-
-      result.when(
-        success: _handleLoginSuccess,
-        failure: _handleLoginFailure,
-      );
-    } on UnexpectedException catch (e) {
-      _handleUnexpectedError(e);
-    } finally {
-      completeProcessing();
-    }
-  }
-
-  /// Başarılı login işlemini yönetir
-  void _handleLoginSuccess(final authResponse) {
-    // Başarılı login işleminden sonra ana sayfaya yönlendir
-    SnackbarHelper.showSuccess(
-      title: 'Giriş Başarılı',
-      message: 'Hoş geldiniz ${authResponse.user?.name ?? ''}',
+    // Login işlemini gerçekleştir
+    final success = await _dataService.login(
+      emailController.text.trim(),
+      passwordController.text,
     );
-    Get.offAllNamed(AppRoutes.HOME);
-  }
 
-  /// Başarısız login işlemini yönetir
-  void _handleLoginFailure(final error) {
-    errorMessage.value = error.message;
-
-    // ValidationException için form alanlarında hataları göster
-    if (error is ValidationException && error.fieldErrors != null) {
-      _handleValidationErrors(error);
-    } else {
-      // Validasyon hatası değilse, standart hata yönetimi kullan
-      errorHandler.handleError(
-        error,
-        message: error.message,
-        customTitle: 'Giriş Yapılamadı',
-      );
+    if (success) {
+      _uiService.showLoginSuccessMessage(null);
+      _navigationService.goToHomeAfterAuth();
     }
   }
 
-  /// Validasyon hatalarını işler
-  void _handleValidationErrors(ValidationException error) {
-    final errorMessages = <String>[];
-
-    if (error.fieldErrors!.containsKey('email')) {
-      errorMessages.add('E-posta: ${error.fieldErrors!['email']}');
-    }
-
-    if (error.fieldErrors!.containsKey('password')) {
-      errorMessages.add('Şifre: ${error.fieldErrors!['password']}');
-    }
-
-    // Diğer genel hatalar varsa ekle
-    if (errorMessages.isEmpty) {
-      // Spesifik alan hatası yoksa genel hata mesajını kullan
-      errorMessage.value = error.message;
-    } else {
-      // Alan hatalarını göster
-      errorMessage.value = errorMessages.join('\n');
-    }
-
-    // Hata yöneticisini kullanarak kullanıcıya bildir
-    errorHandler.handleError(error, message: errorMessage.value, customTitle: 'Giriş Yapılamadı');
+  /// Register ekranına yönlendirir
+  void goToRegister() {
+    _navigationService.goToRegister();
   }
 
-  /// Beklenmeyen hataları yönetir
-  void _handleUnexpectedError(AppException e) {
-    errorMessage.value = 'Beklenmedik bir hata oluştu.';
-    handleGeneralError(e, customTitle: 'Giriş Yapılamadı');
+  /// Şifremi unuttum özelliğini gösterir
+  void showForgotPassword(BuildContext context) {
+    _uiService.showFeatureNotImplementedMessage(context);
   }
 }

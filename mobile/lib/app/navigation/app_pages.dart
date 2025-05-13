@@ -61,7 +61,7 @@ class AppPages {
       name: AppRoutes.REGISTER,
       page: () => const RegisterScreen(),
       binding: AuthBinding(), // AuthBinding Login ve Register için
-      transition: Transition.rightToLeft,
+      transition: Transition.fadeIn,
     ),
 
     // --- Ana Rota ---
@@ -75,6 +75,8 @@ class AppPages {
       // Şimdilik HomeBinding yeterli, çünkü alt controller'lar kendi binding'lerinde
       // lazyPut ile kaydediliyor ve Get.find() ile bulunabiliyorlar.
       binding: HomeBinding(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
     ),
 
     // --- Detay/Ekleme/Düzenleme Rotaları ---
@@ -83,22 +85,31 @@ class AppPages {
       name: AppRoutes.ADD_EDIT_TRANSACTION,
       page: () => const AddEditTransactionScreen(),
       binding: AddEditTransactionBinding(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+      fullscreenDialog: true,
     ),
     GetPage(
       name: AppRoutes.ADD_EDIT_ACCOUNT,
       page: () => const AddEditAccountScreen(),
       binding: AddEditAccountBinding(), // Hesapla ilgili bağımlılıklar
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
       fullscreenDialog: true,
     ),
     GetPage(
       name: AppRoutes.BUDGETS,
       page: () => const BudgetsScreen(),
       binding: BudgetsBinding(), // Bütçeyle ilgili bağımlılıklar
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
     ),
     GetPage(
       name: AppRoutes.ADD_EDIT_BUDGET,
       page: () => const BudgetAddEditScreen(),
       binding: BudgetAddEditBinding(), // Bütçe ekleme/düzenleme bağımlılıkları
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
       fullscreenDialog: true,
     ),
     /*GetPage(
