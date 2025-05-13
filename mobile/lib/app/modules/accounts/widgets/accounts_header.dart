@@ -21,37 +21,44 @@ class AccountsHeader extends StatelessWidget {
       symbol: '₺',
     );
 
-    // Bakiye rengini belirle
+    // Renkler ve gradientler
+    final bool isPositive = totalBalance >= 0;
+    final List<Color> gradientColors = isPositive
+        ? [
+            AppColors.primary.withOpacity(0.8),
+            AppColors.primary,
+            AppColors.primaryDark,
+          ]
+        : [
+            AppColors.error.withOpacity(0.7),
+            AppColors.error,
+            AppColors.error.withOpacity(0.9),
+          ];
 
     return Card(
       clipBehavior: Clip.antiAlias,
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+      elevation: 4, // Daha belirgin gölge
+      shadowColor: isPositive
+          ? AppColors.primary.withOpacity(0.4)
+          : AppColors.error.withOpacity(0.4),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.0)),
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: totalBalance >= 0
-                ? [
-                    AppColors.primary.withOpacity(0.95),
-                    AppColors.primaryDark,
-                  ]
-                : [
-                    AppColors.error.withOpacity(0.8),
-                    AppColors.error.withOpacity(0.95),
-                  ],
+            colors: gradientColors,
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
         ),
         child: Stack(
           children: [
-            // Arka plan süslemeleri
+            // Arka plan süslemeleri - daha modern ve animasyonlu görünüm
             Positioned(
-              top: -20,
+              top: -30,
               right: -20,
               child: Container(
-                width: 100,
-                height: 100,
+                width: 120,
+                height: 120,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.1),
                   shape: BoxShape.circle,
@@ -59,13 +66,38 @@ class AccountsHeader extends StatelessWidget {
               ),
             ),
             Positioned(
-              bottom: -50,
-              left: -10,
+              bottom: -60,
+              left: -30,
               child: Container(
-                width: 150,
-                height: 150,
+                width: 180,
+                height: 180,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.07),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+            // Küçük daire efektleri
+            Positioned(
+              top: 30,
+              left: 80,
+              child: Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 40,
+              right: 60,
+              child: Container(
+                width: 15,
+                height: 15,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
               ),
@@ -73,7 +105,8 @@ class AccountsHeader extends StatelessWidget {
 
             // Ana içerik
             Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 28.0, horizontal: 24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -85,7 +118,7 @@ class AccountsHeader extends StatelessWidget {
                         'Toplam Bakiye',
                         style:
                             Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  color: Colors.white.withOpacity(0.85),
+                                  color: Colors.white.withOpacity(0.9),
                                   fontWeight: FontWeight.w500,
                                 ),
                       ),
@@ -95,6 +128,10 @@ class AccountsHeader extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(30),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.1),
+                            width: 1,
+                          ),
                         ),
                         child: Row(
                           children: [
@@ -110,10 +147,9 @@ class AccountsHeader extends StatelessWidget {
                                   .textTheme
                                   .bodyMedium
                                   ?.copyWith(
-                                    fontSize:
-                                        13, // bodyMedium 14, 13'e çekiyoruz
+                                    fontSize: 13,
                                     fontWeight: FontWeight.w500,
-                                    color: Colors.white, // Rengi override
+                                    color: Colors.white,
                                   ),
                             ),
                           ],
@@ -122,9 +158,9 @@ class AccountsHeader extends StatelessWidget {
                     ],
                   ),
 
-                  const SizedBox(height: 20.0),
+                  const SizedBox(height: 24.0),
 
-                  // Ana bakiye tutarı
+                  // Ana bakiye tutarı - daha büyük ve belirgin
                   FittedBox(
                     fit: BoxFit.scaleDown,
                     alignment: Alignment.centerLeft,
@@ -132,23 +168,41 @@ class AccountsHeader extends StatelessWidget {
                       currencyFormatter.format(totalBalance),
                       style:
                           Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
-                              ),
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 10,
+                            color: Colors.black.withOpacity(0.2),
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
 
-                  const SizedBox(height: 6.0),
+                  const SizedBox(height: 8.0),
 
                   // Açıklama
-                  Text(
-                    'Tüm hesaplarınızdaki toplam bakiye',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontSize: 13, // bodyMedium 14, 13'e çekiyoruz
-                          color:
-                              Colors.white.withOpacity(0.7), // Rengi override
-                        ),
+                  Row(
+                    children: [
+                      Icon(
+                        isPositive ? Icons.trending_up : Icons.trending_down,
+                        size: 16,
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        isPositive
+                            ? 'Tüm hesaplarınızdaki toplam bakiye'
+                            : 'Hesaplarınızdaki toplam borç',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              fontSize: 13,
+                              color: Colors.white.withOpacity(0.8),
+                            ),
+                      ),
+                    ],
                   ),
                 ],
               ),

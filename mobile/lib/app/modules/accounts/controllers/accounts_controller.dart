@@ -1,35 +1,39 @@
 import 'package:get/get.dart';
 import 'package:mobile/app/data/models/response/account_response_model.dart';
-import 'package:mobile/app/domain/repositories/account_repository.dart';
-import 'package:mobile/app/navigation/app_routes.dart';
-import 'package:mobile/app/utils/error_handler.dart';
-import 'package:mobile/app/data/network/exceptions.dart';
+import 'package:mobile/app/modules/accounts/services/account_data_service.dart';
+import 'package:mobile/app/modules/accounts/services/account_navigation_service.dart';
+import 'package:mobile/app/modules/accounts/services/account_ui_service.dart';
 
-/// Hesaplar ekranının state'ini ve iş mantığını yöneten GetX controller.
+/// Hesaplar ekranının controller'ı
+/// DIP (Dependency Inversion Principle) - Yüksek seviyeli modüller düşük seviyeli modüllere bağlı değil
+/// Hem yüksek seviyeli hem de düşük seviyeli modüller soyutlamalara bağlı
 class AccountsController extends GetxController {
-  // Repository'yi inject et (Binding üzerinden)
-  final IAccountRepository _accountRepository;
-  final ErrorHandler _errorHandler = ErrorHandler();
+  // Servisler - Bağımlılık Enjeksiyonu
+  final AccountDataService _dataService;
+  final AccountNavigationService _navigationService;
+  final AccountUIService _uiService;
 
-  AccountsController(this._accountRepository);
+  AccountsController({
+    required AccountDataService dataService,
+    required AccountNavigationService navigationService,
+    required AccountUIService uiService,
+  })  : _dataService = dataService,
+        _navigationService = navigationService,
+        _uiService = uiService;
 
-  // --- State Değişkenleri ---
+  // --- Convenience Getters (Delegasyon Paterni) ---
 
-  // Yüklenme durumu
-  final RxBool isLoading = true.obs; // Başlangıçta yükleniyor
-
-  // Hata durumu
-  final RxString errorMessage = ''.obs;
-
-  // Hesap Listesi
-  final RxList<AccountModel> accountList = <AccountModel>[].obs;
+  // Veri Servisi Delegasyonları
+  RxBool get isLoading => _dataService.isLoading;
+  RxString get errorMessage => _dataService.errorMessage;
+  RxList<AccountModel> get accountList => _dataService.accountList;
+  double get totalBalance => _dataService.calculateTotalBalance();
 
   // --- Lifecycle Metotları ---
 
   @override
   void onInit() {
     super.onInit();
-    print('>>> AccountsController onInit called');
     // Controller ilk oluşturulduğunda hesapları çek
     fetchAccounts();
   }
@@ -38,41 +42,7 @@ class AccountsController extends GetxController {
 
   /// Kullanıcının hesaplarını API'den çeker ve state'i günceller.
   Future<void> fetchAccounts() async {
-    isLoading.value = true;
-    errorMessage.value = ''; // Hata mesajını temizle
-
-    try {
-      final result = await _accountRepository.getUserAccounts();
-
-      result.when(
-        success: (accounts) {
-          // Başarılı: Hesap listesini güncelle
-          accountList.assignAll(accounts);
-          print(
-              '>>> Accounts fetched successfully: ${accounts.length} accounts.');
-        },
-        failure: (error) {
-          // Başarısız: Hata mesajını state'e ata
-          print('>>> Failed to fetch accounts: ${error.message}');
-          errorMessage.value = error.message;
-
-          _errorHandler.handleError(
-            error,
-            message: errorMessage.value,
-            onRetry: () => fetchAccounts(),
-            customTitle: 'Hesaplar Yüklenemedi',
-          );
-        },
-      );
-    } on UnexpectedException catch (e) {
-      // Beklenmedik genel hatalar
-      print('>>> Fetch accounts unexpected error: $e');
-      errorMessage.value = 'Hesaplar yüklenirken beklenmedik bir hata oluştu.';
-
-      _errorHandler.handleError(e, message: errorMessage.value);
-    } finally {
-      isLoading.value = false;
-    }
+    await _dataService.fetchAccounts();
   }
 
   /// Verileri manuel olarak yenilemek için metot (Pull-to-refresh vb.).
@@ -82,51 +52,13 @@ class AccountsController extends GetxController {
 
   /// Belirli bir hesabı siler.
   Future<void> deleteAccount(int accountId) async {
-    // TODO: Kullanıcıya onay dialog'u gösterilebilir.
-
-    isLoading.value = true; // Silme işlemi sırasında indicator gösterilebilir
-    errorMessage.value = '';
-
-    try {
-      final result = await _accountRepository.deleteAccount(accountId);
-
-      result.when(
-        success: (_) {
-          // Başarılı: Listeden hesabı kaldır ve başarı mesajı göster
-          accountList.removeWhere((account) => account.id == accountId);
-          print('>>> Account deleted successfully: ID $accountId');
-
-          // Hesap silindikten sonra toplam bakiye vb. güncellenebilir (DashboardController'a haber verilebilir)
-        },
-        failure: (error) {
-          // Başarısız: Hata mesajını göster
-          print('>>> Failed to delete account: ${error.message}');
-          errorMessage.value = error.message;
-
-          _errorHandler.handleError(
-            error,
-            message: errorMessage.value,
-            customTitle: 'Hesap Silinemedi',
-          );
-        },
-      );
-    } on UnexpectedException catch (e) {
-      print('>>> Delete account unexpected error: $e');
-      errorMessage.value = 'Hesap silinirken beklenmedik bir hata oluştu.';
-
-      _errorHandler.handleError(e, message: errorMessage.value);
-    } finally {
-      isLoading.value = false;
-    }
+    await _dataService.deleteAccount(accountId);
   }
 
   /// Yeni hesap ekleme ekranına yönlendirir.
   void goToAddAccount() {
-    Get.toNamed(AppRoutes.ADD_EDIT_ACCOUNT)?.then((result) {
-      // Yeni hesap eklendikten sonra bu ekrana geri dönüldüğünde
-      // liste otomatik olarak güncellenebilir.
+    _navigationService.goToAddAccount().then((result) {
       if (result == true) {
-        // Örnek: Ekleme ekranı başarılı olursa true dönsün
         refreshAccounts();
       }
     });
@@ -134,12 +66,19 @@ class AccountsController extends GetxController {
 
   /// Hesap düzenleme ekranına yönlendirir.
   void goToEditAccount(AccountModel account) {
-    // TODO: Hesap düzenleme ekranına git (Get.toNamed ile account ID veya nesnesini gönder)
-    Get.toNamed(AppRoutes.ADD_EDIT_ACCOUNT, arguments: account)?.then((result) {
+    _navigationService.goToEditAccount(account).then((result) {
       if (result == true) {
         refreshAccounts();
       }
     });
-    print('Edit account tıklandı: ${account.id}');
+  }
+
+  /// Hesap silme onay dialogunu gösterir ve onaylanırsa hesabı siler
+  Future<void> confirmAndDeleteAccount(AccountModel account) async {
+    final result = await _uiService.showDeleteConfirmation(account);
+
+    if (result == true) {
+      await deleteAccount(account.id);
+    }
   }
 }

@@ -1,36 +1,41 @@
 import 'package:get/get.dart';
-import 'package:mobile/app/data/datasources/remote/account_remote_datasource.dart';
-import 'package:mobile/app/data/network/dio_client.dart';
-import 'package:mobile/app/data/repositories/account_repository_impl.dart';
 import 'package:mobile/app/domain/repositories/account_repository.dart';
 import 'package:mobile/app/modules/accounts/controllers/accounts_controller.dart';
+import 'package:mobile/app/modules/accounts/services/account_data_service.dart';
+import 'package:mobile/app/modules/accounts/services/account_navigation_service.dart';
+import 'package:mobile/app/modules/accounts/services/account_ui_service.dart';
 
-/// Accounts modülü için bağımlılıkları yönetir.
-class AccountsBinding extends Bindings {
+/// Accounts modülü için bağımlılık enjeksiyonu sağlayan binding sınıfı
+/// DIP (Dependency Inversion Principle) için gerekli bağımlılıkları bağlar
+class AccountsBinding implements Bindings {
   @override
   void dependencies() {
-    print('>>> AccountsBinding dependencies() called');
+    // Repositories
+    final accountRepository = Get.find<IAccountRepository>();
 
-    // --- Data Katmanı Bağımlılıkları ---
-    // DataSource (Eğer Initial veya Home binding'de değilse)
-    // HomeBinding'de kaydetmiştik, burada tekrar kaydetmeye gerek yok VEYA
-    // her özellik kendi bağımlılığını kaydedebilir. İkinci yaklaşımı seçelim:
-    Get.lazyPut<IAccountRemoteDataSource>(() => AccountRemoteDataSource(Get.find<DioClient>()),
-        fenix: true);
+    // Services
+    Get.lazyPut<AccountDataService>(
+      () => AccountDataService(accountRepository),
+      fenix: true,
+    );
 
-    // --- Domain Katmanı Bağımlılıkları (Repository) ---
-    // Repository (Eğer Initial veya Home binding'de değilse)
-    Get.lazyPut<IAccountRepository>(
-        () => AccountRepositoryImpl(Get.find<IAccountRemoteDataSource>()),
-        fenix: true);
+    Get.lazyPut<AccountNavigationService>(
+      () => AccountNavigationService(),
+      fenix: true,
+    );
 
-    // --- Presentation Katmanı (Controller) Bağımlılığı ---
-    // AccountsController'ı kaydet ve IAccountRepository'yi inject et.
+    Get.lazyPut<AccountUIService>(
+      () => AccountUIService(),
+      fenix: true,
+    );
+
+    // Controller
     Get.lazyPut<AccountsController>(
       () => AccountsController(
-        Get.find<IAccountRepository>(),
+        dataService: Get.find<AccountDataService>(),
+        navigationService: Get.find<AccountNavigationService>(),
+        uiService: Get.find<AccountUIService>(),
       ),
-      fenix: true, // Ekrandan çıkıldığında silinip tekrar girildiğinde oluşturulsun
     );
   }
 }

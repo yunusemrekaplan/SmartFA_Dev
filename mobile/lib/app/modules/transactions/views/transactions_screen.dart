@@ -15,7 +15,8 @@ class TransactionsScreen extends GetView<TransactionsController> {
   const TransactionsScreen({super.key});
 
   // Para formatlayıcı
-  NumberFormat get currencyFormatter => NumberFormat.currency(locale: 'tr_TR', symbol: '₺');
+  NumberFormat get currencyFormatter =>
+      NumberFormat.currency(locale: 'tr_TR', symbol: '₺');
 
   // Kategori ikonunu döndüren yardımcı fonksiyon
   IconData _getCategoryIcon(String? iconCode) {
@@ -42,17 +43,10 @@ class TransactionsScreen extends GetView<TransactionsController> {
             onPressed: () => _showFilterBottomSheet(context),
           ),
           IconButton(
-            icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Yenile',
+            icon: const Icon(Icons.add_circle_outline_rounded),
+            tooltip: 'İşlem Ekle',
             onPressed: () {
-              controller.fetchTransactions(isInitialLoad: false);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('İşlemler yenileniyor...'),
-                  duration: Duration(seconds: 1),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
+              controller.goToAddTransaction();
             },
           ),
         ],
@@ -72,7 +66,8 @@ class TransactionsScreen extends GetView<TransactionsController> {
               onRefresh: controller.fetchTransactions,
               child: Obx(() {
                 // Yükleme durumu
-                if (controller.isLoading.value && controller.transactionList.isEmpty) {
+                if (controller.isLoading.value &&
+                    controller.transactionList.isEmpty) {
                   return const LoadingStateView(
                     message: 'İşlemler yükleniyor...',
                   );
@@ -82,7 +77,8 @@ class TransactionsScreen extends GetView<TransactionsController> {
                     controller.transactionList.isEmpty) {
                   return ErrorView(
                     message: controller.errorMessage.value,
-                    onRetry: () => controller.fetchTransactions(isInitialLoad: true),
+                    onRetry: () =>
+                        controller.fetchTransactions(isInitialLoad: true),
                     isLarge: true,
                   );
                 }
@@ -113,10 +109,10 @@ class TransactionsScreen extends GetView<TransactionsController> {
                                     : Icons.add_circle_outline_rounded,
                               )
                             : TransactionListView(
-                          controller: controller,
-                          currencyFormatter: currencyFormatter,
-                          getCategoryIcon: _getCategoryIcon,
-                        ),
+                                controller: controller,
+                                currencyFormatter: currencyFormatter,
+                                getCategoryIcon: _getCategoryIcon,
+                              ),
                       ),
                     ],
                   );
@@ -138,9 +134,11 @@ class TransactionsScreen extends GetView<TransactionsController> {
             ? 'Seçtiğiniz filtrelere uygun işlem kaydı bulunamadı. Filtrelerinizi değiştirerek tekrar deneyin.'
             : 'Gelir ve giderlerinizi takip etmek için işlem ekleyin.',
         icon: Icons.sync_alt_rounded,
-        actionText: controller.hasActiveFilters ? 'Filtreleri Temizle' : 'İşlem Ekle',
-        onAction:
-            controller.hasActiveFilters ? controller.clearFilters : controller.goToAddTransaction,
+        actionText:
+            controller.hasActiveFilters ? 'Filtreleri Temizle' : 'İşlem Ekle',
+        onAction: controller.hasActiveFilters
+            ? controller.clearFilters
+            : controller.goToAddTransaction,
       ),
     );
   }

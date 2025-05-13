@@ -4,7 +4,7 @@ import 'package:mobile/app/data/models/enums/account_type.dart';
 import 'package:mobile/app/data/models/response/account_response_model.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 
-/// Tek bir hesabı gösteren minimal kart widget'ı
+/// Tek bir hesabı gösteren modern kart widget'ı
 class AccountCard extends StatelessWidget {
   final AccountModel account;
   final VoidCallback onTap;
@@ -29,105 +29,151 @@ class AccountCard extends StatelessWidget {
     final Color balanceColor =
         account.currentBalance >= 0 ? accountColor : AppColors.error;
 
+    // Arka plan rengi
+    final Color cardBackgroundColor = account.currentBalance >= 0
+        ? accountColor.withOpacity(0.05)
+        : AppColors.error.withOpacity(0.05);
+
     return Card(
-      elevation: 0,
+      elevation: 1,
+      shadowColor: accountColor.withOpacity(0.2),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade200),
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: account.currentBalance >= 0
+              ? accountColor.withOpacity(0.2)
+              : AppColors.error.withOpacity(0.2),
+          width: 1,
+        ),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              // Hesap ikonu
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: accountColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  accountIcon,
-                  color: accountColor,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 16),
-
-              // Hesap bilgileri
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      account.name,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          decoration: BoxDecoration(
+            color: cardBackgroundColor,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                // Hesap ikonu - daha modern tasarım
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: accountColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: accountColor.withOpacity(0.2),
+                      width: 1,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      currencyFormatter.format(account.currentBalance),
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    boxShadow: [
+                      BoxShadow(
+                        color: accountColor.withOpacity(0.05),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    accountIcon,
+                    color: accountColor,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 16),
+
+                // Hesap bilgileri
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        account.name,
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Icon(
+                            account.currentBalance >= 0
+                                ? Icons.arrow_upward_rounded
+                                : Icons.arrow_downward_rounded,
+                            size: 14,
                             color: balanceColor,
-                            fontWeight: FontWeight.w500,
                           ),
+                          const SizedBox(width: 4),
+                          Text(
+                            currencyFormatter.format(account.currentBalance),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(
+                                  color: balanceColor,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                // İşlem menüsü
+                PopupMenuButton<String>(
+                  offset: const Offset(0, 40),
+                  icon: Icon(
+                    Icons.more_vert,
+                    color: AppColors.textSecondary,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 4,
+                  onSelected: (value) {
+                    if (value == 'edit') {
+                      onTap();
+                    } else if (value == 'delete') {
+                      onDelete();
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.edit_outlined,
+                            size: 18,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text('Düzenle'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.delete_outline,
+                            size: 18,
+                            color: AppColors.error,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text('Sil'),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              ),
-
-              // İşlem menüsü
-              PopupMenuButton<String>(
-                icon: Icon(
-                  Icons.more_vert,
-                  color: AppColors.textSecondary,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                onSelected: (value) {
-                  if (value == 'edit') {
-                    onTap();
-                  } else if (value == 'delete') {
-                    onDelete();
-                  }
-                },
-                itemBuilder: (context) => [
-                  PopupMenuItem(
-                    value: 'edit',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.edit_outlined,
-                          size: 18,
-                          color: AppColors.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        const Text('Düzenle'),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.delete_outline,
-                          size: 18,
-                          color: AppColors.error,
-                        ),
-                        const SizedBox(width: 8),
-                        const Text('Sil'),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

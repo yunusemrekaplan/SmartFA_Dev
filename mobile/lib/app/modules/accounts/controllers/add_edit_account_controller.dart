@@ -1,30 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile/app/data/models/enums/account_type.dart';
-import 'package:mobile/app/data/models/request/account_request_models.dart';
 import 'package:mobile/app/data/models/response/account_response_model.dart';
-import 'package:mobile/app/domain/repositories/account_repository.dart';
+import 'package:mobile/app/modules/accounts/services/account_form_service.dart';
+import 'package:mobile/app/modules/accounts/services/account_navigation_service.dart';
+import 'package:mobile/app/modules/accounts/services/account_ui_service.dart';
+import 'package:mobile/app/modules/accounts/services/account_update_service.dart';
 
+/// Hesap ekleme ve düzenleme ekranının controller'ı
+/// DIP (Dependency Inversion Principle) - Yüksek seviyeli modüller düşük seviyeli modüllere bağlı değil
+/// ISP (Interface Segregation Principle) - Kullanılmayan arayüzlere bağımlı olunmamalı
 class AddEditAccountController extends GetxController {
-  final IAccountRepository _accountRepository;
+  // Servisler - Bağımlılık Enjeksiyonu
+  final AccountFormService _formService;
+  final AccountUpdateService _updateService;
+  final AccountNavigationService _navigationService;
+  final AccountUIService _uiService;
 
-  AddEditAccountController({required IAccountRepository accountRepository})
-      : _accountRepository = accountRepository;
+  AddEditAccountController({
+    required AccountFormService formService,
+    required AccountUpdateService updateService,
+    required AccountNavigationService navigationService,
+    required AccountUIService uiService,
+  })  : _formService = formService,
+        _updateService = updateService,
+        _navigationService = navigationService,
+        _uiService = uiService;
 
-  // Form control
-  final formKey = GlobalKey<FormState>();
-  final nameController = TextEditingController();
-  final balanceController = TextEditingController();
+  // --- Convenience Getters (Delegasyon Paterni) ---
 
-  // State
-  final RxBool isLoading = false.obs;
-  final RxBool isSubmitting = false.obs;
-  final RxBool isEditing = false.obs;
-  final Rx<AccountModel?> editingAccount = Rx<AccountModel?>(null);
-  final Rx<AccountType> selectedAccountType = AccountType.Cash.obs;
+  // Form Servisi Delegasyonları
+  GlobalKey<FormState> get formKey => _formService.formKey;
+  TextEditingController get nameController => _formService.nameController;
+  TextEditingController get balanceController => _formService.balanceController;
+  RxBool get isEditing => _formService.isEditing;
+  Rx<AccountModel?> get editingAccount => _formService.editingAccount;
+  Rx<AccountType> get selectedAccountType => _formService.selectedAccountType;
+  List<AccountType> get accountTypes => _formService.accountTypes;
+  RxBool get isSubmitting => _formService.isSubmitting;
 
-  // Hesap türleri listesi
-  final List<AccountType> accountTypes = AccountType.values;
+  // Güncelleme Servisi Delegasyonları
+  RxBool get isLoading => _updateService.isLoading;
+  RxString get errorMessage => _updateService.errorMessage;
+
+  // --- Lifecycle Metotları ---
 
   @override
   void onInit() {
@@ -34,178 +53,102 @@ class AddEditAccountController extends GetxController {
 
   @override
   void onClose() {
-    nameController.dispose();
-    balanceController.dispose();
+    _formService.dispose();
     super.onClose();
   }
 
   /// Ekranı başlatır ve düzenleme modunu kontrol eder
   Future<void> _initializeScreen() async {
-    isLoading.value = true;
+    // Get.arguments'dan düzenlenecek hesap verisini al (varsa)
+    final arguments = Get.arguments;
 
-    try {
-      // Get.arguments'dan düzenlenecek hesap verisini al (varsa)
-      final arguments = Get.arguments;
-
-      if (arguments != null && arguments is AccountModel) {
-        // Düzenleme modu
-        isEditing.value = true;
-        editingAccount.value = arguments;
-        _loadAccountData(arguments);
-      } else {
-        // Ekleme modu
-        isEditing.value = false;
-        selectedAccountType.value = AccountType.Cash;
-        balanceController.text = '0.00'; // Varsayılan bakiye
-      }
-    } catch (e) {
-      print('Error initializing account screen: $e');
-      Get.snackbar('Hata', 'Veriler yüklenirken bir sorun oluştu');
-    } finally {
-      isLoading.value = false;
+    if (arguments != null && arguments is AccountModel) {
+      // Düzenleme modu
+      _formService.setupEditMode(arguments);
+    } else {
+      // Ekleme modu
+      _formService.setupAddMode();
     }
   }
 
-  /// Düzenleme modunda hesap verilerini form alanlarına yükler
-  void _loadAccountData(AccountModel account) {
-    nameController.text = account.name;
-    balanceController.text = account.currency.toString();
-
-    // Hesap türünü seç, eşleşen yoksa ilk seçenek
-    selectedAccountType.value = account.type;
+  /// Hesap türünü seçer
+  void selectAccountType(AccountType type) {
+    _formService.selectAccountType(type);
   }
 
   /// Hesap verilerini kaydeder (ekle veya güncelle)
   Future<void> saveAccount() async {
     // Form validasyonu
-    if (!formKey.currentState!.validate()) {
+    if (!_formService.validateForm()) {
       return;
     }
 
-    isSubmitting.value = true;
+    _formService.startSubmitting();
 
     try {
-      // Girilen değerlerden verileri oluştur
-      final accountData = UpdateAccountRequestModel(
-        name: nameController.text.trim(),
-      );
+      bool success;
 
-      if (isEditing.value && editingAccount.value != null) {
+      if (_formService.isEditing.value &&
+          _formService.editingAccount.value != null) {
         // Hesabı güncelle
-        final result = await _accountRepository.updateAccount(
-          editingAccount.value!.id,
-          accountData,
-        );
-
-        result.when(
-          success: (_) {
-            Get.back(result: true); // Başarılı olarak geri dön
-            Get.snackbar('Başarılı', 'Hesap başarıyla güncellendi');
-          },
-          failure: (error) {
-            Get.snackbar('Hata',
-                'Hesap güncellenirken bir hata oluştu: ${error.message}');
-          },
+        success = await _updateService.updateAccount(
+          accountId: _formService.editingAccount.value!.id,
+          name: _formService.getName(),
         );
       } else {
-        final accountData = CreateAccountRequestModel(
-          name: nameController.text.trim(),
-          initialBalance:
-              double.parse(balanceController.text.replaceAll(',', '.')),
-          type: selectedAccountType.value,
-          currency: 'TRY',
-        );
-
         // Yeni hesap ekle
-        final result = await _accountRepository.createAccount(accountData);
-
-        result.when(
-          success: (_) {
-            Get.back(result: true); // Başarılı olarak geri dön
-            Get.snackbar('Başarılı', 'Hesap başarıyla eklendi');
-          },
-          failure: (error) {
-            Get.snackbar(
-                'Hata', 'Hesap eklenirken bir hata oluştu: ${error.message}');
-          },
+        success = await _updateService.createAccount(
+          name: _formService.getName(),
+          initialBalance: _formService.getInitialBalance(),
+          type: _formService.getAccountType(),
         );
       }
-    } catch (e) {
-      print('Error saving account: $e');
-      Get.snackbar('Hata', 'Beklenmeyen bir hata oluştu');
+
+      if (success) {
+        _navigationService.goBack(result: true);
+      }
     } finally {
-      isSubmitting.value = false;
+      _formService.finishSubmitting();
     }
   }
 
   /// Hesabı siler
   Future<void> deleteAccount() async {
-    if (!isEditing.value || editingAccount.value == null) {
+    if (!_formService.isEditing.value ||
+        _formService.editingAccount.value == null) {
       return;
     }
 
     // Silme onayı
-    final confirm = await Get.dialog<bool>(
-      AlertDialog(
-        title: const Text('Hesabı Sil'),
-        content: const Text(
-            'Bu hesabı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.'),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(result: false),
-            child: const Text('İptal'),
-          ),
-          TextButton(
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            onPressed: () => Get.back(result: true),
-            child: const Text('Sil'),
-          ),
-        ],
-      ),
+    final confirm = await _uiService.showConfirmDialog(
+      title: 'Hesabı Sil',
+      message:
+          'Bu hesabı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
+      confirmText: 'Sil',
+      cancelText: 'İptal',
     );
 
     if (confirm != true) {
       return;
     }
 
-    isSubmitting.value = true;
+    _formService.startSubmitting();
 
     try {
-      final result =
-          await _accountRepository.deleteAccount(editingAccount.value!.id);
-
-      result.when(
-        success: (_) {
-          Get.back(result: true); // Başarılı olarak geri dön
-          Get.snackbar('Başarılı', 'Hesap başarıyla silindi');
-        },
-        failure: (error) {
-          Get.snackbar(
-              'Hata', 'Hesap silinirken bir hata oluştu: ${error.message}');
-        },
+      final success = await _updateService.deleteAccount(
+        _formService.editingAccount.value!.id,
       );
-    } catch (e) {
-      print('Error deleting account: $e');
-      Get.snackbar('Hata', 'Beklenmeyen bir hata oluştu');
-    } finally {
-      isSubmitting.value = false;
-    }
-  }
 
-  /// Hesap türünü seçer
-  void selectAccountType(AccountType type) {
-    selectedAccountType.value = type;
+      if (success) {
+        _navigationService.goBack(result: true);
+      }
+    } finally {
+      _formService.finishSubmitting();
+    }
   }
 
   /// Hesap türünün görünen adını döndürür
   String getAccountTypeDisplayName(AccountType type) {
-    switch (type) {
-      case AccountType.Cash:
-        return 'Nakit';
-      case AccountType.Bank:
-        return 'Banka Hesabı';
-      case AccountType.CreditCard:
-        return 'Kredi Kartı';
-    }
+    return _formService.getAccountTypeDisplayName(type);
   }
 }
