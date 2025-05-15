@@ -10,11 +10,13 @@ import 'package:mobile/app/modules/dashboard/services/budget_summary_service.dar
 import 'package:mobile/app/modules/dashboard/services/dashboard_state_manager.dart';
 import 'package:mobile/app/modules/dashboard/services/dashboard_summary_service.dart';
 import 'package:mobile/app/modules/dashboard/services/financial_overview_service.dart';
+import 'package:mobile/app/services/base_controller_mixin.dart';
 import 'package:mobile/app/utils/result.dart';
 
 /// Dashboard ekranının koordinatörü.
 /// Servisleri yöneterek daha ince bir yapıya sahip.
-class DashboardController extends GetxController {
+class DashboardController extends GetxController
+    with RefreshableControllerMixin {
   // Servisler - Sorumluluklar farklı servislere dağıtıldı
   final DashboardSummaryService _summaryService;
   final FinancialOverviewService _financialService;
@@ -60,10 +62,31 @@ class DashboardController extends GetxController {
           errorHandler: errorHandler ?? ErrorHandler(),
         );
 
-  // Lifecycle metotları
+  /// İki-yönlü bağlama - Mixin'deki state'i StateManager ile senkronize tut
   @override
   void onInit() {
     super.onInit();
+
+    // İsLoading durumunu güncellemek için mixin'den StateManager'a
+    ever(super.isLoading, (value) {
+      _stateManager.setLoadingState(value);
+    });
+
+    // Hata mesajını güncellemek için mixin'den StateManager'a
+    ever(super.errorMessage, (value) {
+      _stateManager.errorMessage.value = value;
+    });
+
+    // StateManager'dan mixin'e güncellemeler için (çift yönlü bağlama)
+    ever(_stateManager.isLoading, (value) {
+      super.isLoading.value = value;
+    });
+
+    ever(_stateManager.errorMessage, (value) {
+      super.errorMessage.value = value;
+    });
+
+    // İlk verileri yükle
     loadDashboardData();
   }
 
@@ -71,53 +94,25 @@ class DashboardController extends GetxController {
 
   /// Dashboard verilerini yükler - Tüm servislerin verilerini toplar
   Future<void> loadDashboardData() async {
-    // Halihazırda yükleme yapılıyorsa çıkış yap, önce mevcut yüklemenin bitmesini bekle
-    if (isLoading.value) {
-      print(
-          '>>> DashboardController: Already loading data, ignoring new request');
-      return;
-    }
-
-    _stateManager.setLoadingState(true);
-    _stateManager.clearErrorMessage();
-
-    try {
-      await _fetchAllDashboardData();
-    } catch (e) {
-      _stateManager.handleUnexpectedError(e);
-    } finally {
-      _stateManager.setLoadingState(false);
-      print('>>> DashboardController: Loading completed');
-    }
+    await loadData(
+      fetchFunc: _fetchAllDashboardData,
+      loadingErrorMessage: 'Dashboard verileri yüklenirken bir hata oluştu',
+    );
   }
 
   /// Verileri yeniler - Pull-to-refresh için
-  Future<void> refreshData() async {
-    // Yükleme durumunu başlat
-    print('>>> DashboardController: Starting refresh operation');
-    _stateManager.setLoadingState(true);
-    _stateManager.clearErrorMessage();
-
-    try {
-      await _fetchAllDashboardData();
-      print('>>> DashboardController: Data fetched successfully');
-    } catch (e) {
-      print('>>> DashboardController: Error during refresh: $e');
-      _stateManager.handleUnexpectedError(e);
-    } finally {
-      // Yükleme durumunu kesinlikle kapat
-      _stateManager.setLoadingState(false);
-      print(
-          '>>> DashboardController: Refresh completed, loading state set to false');
-    }
-
-    // Future'ı her zaman başarılı olarak sonlandır ki RefreshIndicator kapansın
-    return Future.value();
+  Future<void> refreshDashboardData() async {
+    return await refreshData(
+      fetchFunc: _fetchAllDashboardData,
+      refreshErrorMessage: 'Dashboard verileri yenilenirken bir hata oluştu',
+    );
   }
 
   /// Yükleme durumunu sıfırlar - Token yenileme sonrası kullanılır
+  @override
   void resetLoadingState() {
-    print('>>> DashboardController: Manual reset of loading state');
+    super.resetLoadingState(); // Mixin'in metodu
+    // StateManager'ı da bilgilendir (UI için gerekli)
     _stateManager.setLoadingState(false);
   }
 

@@ -17,7 +17,8 @@ class TransactionsScreen extends GetView<TransactionsController> {
   const TransactionsScreen({super.key});
 
   // Para formatlayıcı
-  NumberFormat get currencyFormatter => NumberFormat.currency(locale: 'tr_TR', symbol: '₺');
+  NumberFormat get currencyFormatter =>
+      NumberFormat.currency(locale: 'tr_TR', symbol: '₺');
 
   // Kategori ikonunu döndüren yardımcı fonksiyon
   IconData _getCategoryIcon(String? iconCode) {
@@ -67,16 +68,19 @@ class TransactionsScreen extends GetView<TransactionsController> {
               onRefresh: controller.fetchTransactions,
               child: Obx(() {
                 // Yükleme durumu
-                if (controller.isLoading.value && controller.transactionList.isEmpty) {
+                if (controller.isLoading.value &&
+                    controller.transactionList.isEmpty) {
                   return const LoadingStateView(
                     message: 'İşlemler yükleniyor...',
                   );
                 }
                 // Hata durumu
-                else if (controller.errorMessage.isNotEmpty && controller.transactionList.isEmpty) {
+                else if (controller.errorMessage.isNotEmpty &&
+                    controller.transactionList.isEmpty) {
                   return ErrorView(
                     message: controller.errorMessage.value,
-                    onRetry: () => controller.fetchTransactions(isInitialLoad: true),
+                    onRetry: () =>
+                        controller.fetchTransactions(isInitialLoad: true),
                     isLarge: true,
                   );
                 }

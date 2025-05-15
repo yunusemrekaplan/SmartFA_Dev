@@ -113,7 +113,7 @@ class HomeController extends GetxController {
   void _refreshDashboard() {
     try {
       print('>>> HomeController: Refreshing dashboard data');
-      _dashboardController.refreshData().then((_) {
+      _dashboardController.refreshDashboardData().then((_) {
         print('>>> HomeController: Dashboard refresh completed');
       }).catchError((error) {
         printError(info: 'Error during dashboard refresh: $error');

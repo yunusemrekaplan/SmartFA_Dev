@@ -302,23 +302,28 @@ class ErrorInterceptor extends Interceptor {
     try {
       // Token yenileme işlemlerinin tamamen bitmesi için daha uzun bir gecikme ekle
       // Bu da kullanıcı arayüzündeki yükleme göstergelerinin doğru şekilde çalışmasını sağlar
-      Future.delayed(const Duration(milliseconds: 800), () {
-        if (Get.isRegistered<HomeController>()) {
-          final homeController = Get.find<HomeController>();
-          _logDebug('Triggering dashboard refresh after token refresh');
+      Future.delayed(const Duration(milliseconds: 1000), () {
+        // Öncelikle Dashboard controller'ını doğrudan bul
+        if (Get.isRegistered<DashboardController>()) {
+          final dashboardController = Get.find<DashboardController>();
+          // Önce yükleme durumunu güvenli bir şekilde sıfırla
+          dashboardController.resetLoadingState();
 
-          // Dashboard controller'ına direkt erişip önce yükleme durumunu sıfırla
-          if (Get.isRegistered<DashboardController>()) {
-            final dashboardController = Get.find<DashboardController>();
-            _logDebug('Resetting dashboard loading state before refresh');
-            dashboardController.resetLoadingState();
-          }
-
-          // Sonra tüm verileri yenile
-          homeController.refreshAllData();
+          // Token yenileme ve yükleme durumu sıfırlandıktan sonra,
+          // Verileri yenilemeden önce biraz daha gecikme ekle
+          Future.delayed(const Duration(milliseconds: 300), () {
+            // HomeController ile tüm verileri yenile
+            if (Get.isRegistered<HomeController>()) {
+              final homeController = Get.find<HomeController>();
+              homeController.refreshAllData();
+            } else {
+              // HomeController bulunamadıysa doğrudan dashboard'ı yenile
+              dashboardController.refreshDashboardData();
+            }
+          });
         } else {
           _logDebug(
-              'HomeController is not registered yet, cannot refresh dashboard');
+              'DashboardController is not registered yet, cannot refresh');
         }
       });
     } catch (e) {

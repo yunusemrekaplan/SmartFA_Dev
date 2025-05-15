@@ -17,7 +17,8 @@ class BudgetsScreen extends GetView<BudgetsController> {
   const BudgetsScreen({super.key});
 
   // Para formatlayıcı
-  NumberFormat get currencyFormatter => NumberFormat.currency(locale: 'tr_TR', symbol: '₺');
+  NumberFormat get currencyFormatter =>
+      NumberFormat.currency(locale: 'tr_TR', symbol: '₺');
 
   // Ay adını formatlayıcı
   String _formatMonth(DateTime date) {
@@ -53,9 +54,10 @@ class BudgetsScreen extends GetView<BudgetsController> {
         actions: [
           Obx(() {
             // Aktif filtre varsa butonları belirginleştir
-            final bool hasActiveFilters = controller.activeFilter.value != BudgetFilterType.all ||
-                controller.selectedCategoryIds.isNotEmpty ||
-                controller.searchQuery.isNotEmpty;
+            final bool hasActiveFilters =
+                controller.activeFilter.value != BudgetFilterType.all ||
+                    controller.selectedCategoryIds.isNotEmpty ||
+                    controller.searchQuery.isNotEmpty;
 
             return IconButton(
               icon: Icon(
@@ -63,7 +65,8 @@ class BudgetsScreen extends GetView<BudgetsController> {
                 color: hasActiveFilters ? AppColors.primary : null,
               ),
               tooltip: 'Filtrele',
-              onPressed: () => BudgetFilterBottomSheet.show(context, controller),
+              onPressed: () =>
+                  BudgetFilterBottomSheet.show(context, controller),
             );
           }),
           IconButton(
@@ -90,7 +93,8 @@ class BudgetsScreen extends GetView<BudgetsController> {
               child: Obx(() {
                 // State değişikliklerini dinle
                 // 1. Yüklenme Durumu
-                if (controller.isLoading.value && controller.budgetList.isEmpty) {
+                if (controller.isLoading.value &&
+                    controller.budgetList.isEmpty) {
                   return const Center(child: CircularProgressIndicator());
                 }
                 // 2. Hata Durumu
@@ -103,7 +107,8 @@ class BudgetsScreen extends GetView<BudgetsController> {
                   );
                 }
                 // 3. Boş Liste Durumu
-                else if (controller.filteredBudgetList.isEmpty && !controller.isLoading.value) {
+                else if (controller.filteredBudgetList.isEmpty &&
+                    !controller.isLoading.value) {
                   // Filtre uygulanmış ve sonuç boş mu kontrolü
                   if (controller.budgetList.isNotEmpty) {
                     // Filtreleme sonucu boş
@@ -144,7 +149,8 @@ class BudgetsScreen extends GetView<BudgetsController> {
                             delay: Duration(milliseconds: 50 * index),
                           );
                     },
-                    separatorBuilder: (context, index) => const SizedBox(height: 10),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 10),
                   );
                 }
               }),

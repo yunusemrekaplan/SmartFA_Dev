@@ -9,11 +9,10 @@ import 'package:mobile/app/widgets/info_panel.dart';
 import 'package:mobile/app/modules/dashboard/widgets/section_header.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/app/theme/app_theme.dart';
-import 'package:mobile/app/widgets/error_view.dart';
 import 'package:mobile/app/widgets/custom_app_bar.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:mobile/app/modules/dashboard/widgets/grouped_transactions/grouped_transaction_list.dart';
-import 'package:mobile/app/widgets/loading_state_view.dart';
+import 'package:mobile/app/widgets/refreshable_content_view.dart';
 
 /// Modern dashboard ekranı, finans özetini görsel öğelerle gösterir
 class DashboardScreen extends GetView<DashboardController> {
@@ -52,7 +51,7 @@ class DashboardScreen extends GetView<DashboardController> {
             icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Yenile',
             onPressed: () {
-              controller.refreshData();
+              controller.refreshDashboardData();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Veriler yenileniyor...'),
@@ -64,62 +63,30 @@ class DashboardScreen extends GetView<DashboardController> {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        color: AppColors.primary,
-        onRefresh: _handleRefresh,
-        child: Obx(() {
-          // Tamamen yükleme durumu
-          if (controller.isLoading.value &&
-              controller.recentTransactions.isEmpty &&
-              controller.budgetSummaries.isEmpty) {
-            return const LoadingStateView(
-              message: 'Finans verileri yükleniyor...',
-            );
-          }
-
-          // Tamamen hata durumu
-          if (controller.errorMessage.isNotEmpty &&
-              controller.recentTransactions.isEmpty &&
-              controller.budgetSummaries.isEmpty) {
-            return ErrorView(
-              message: controller.errorMessage.value,
-              onRetry: controller.refreshData,
-              isLarge: true,
-            );
-          }
-
-          // Ana içerik
-          return _buildDashboardContent(context);
-        }),
-      ),
+      body: Obx(() => RefreshableContentView<dynamic>(
+            isLoading: controller.isLoading,
+            errorMessage: controller.errorMessage,
+            onRefresh: controller.refreshDashboardData,
+            contentPadding: const EdgeInsets.all(AppTheme.kHorizontalPadding),
+            showLoadingOverlay: true,
+            progressColor: AppColors.primary,
+            loadingMessage: 'Finans verileri yükleniyor...',
+            items: _hasContent()
+                ? null // İçerik var, kontrol etmeye gerek yok
+                : RxList<int>.empty(), // İçerik yok, boş liste gönder
+            contentView: _buildDashboardContent(context),
+          )),
     );
   }
 
   /// Dashboard içeriğini oluşturur
   Widget _buildDashboardContent(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(AppTheme.kHorizontalPadding),
+      physics:
+          const NeverScrollableScrollPhysics(), // Ana scrolling RefreshableContentView tarafından yönetiliyor
+      shrinkWrap: true,
       children: [
-        // Yükleniyor göstergesi (ilk yüklemeden sonra)
-        if (controller.isLoading.value)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16.0),
-            child: LinearProgressIndicator(
-              backgroundColor: AppColors.primary.withOpacity(0.1),
-            ),
-          ).animate().fadeIn(),
-
-        // Hata mesajı (kısmi hata durumu için)
-        if (controller.errorMessage.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16.0),
-            child: InfoPanel.error(
-              title: 'Veri Yükleme Hatası',
-              message: controller.errorMessage.value,
-              onActionPressed: controller.refreshData,
-              actionText: 'Yenile',
-            ),
-          ).animate().fadeIn().slideY(begin: 0.2, end: 0),
+        // Yükleniyor veya hata durumları RefreshableContentView tarafından ele alınıyor
 
         // --- Gelir-Gider Özeti Grafik ---
         Obx(() => IncomeExpenseChart(
@@ -306,37 +273,8 @@ class DashboardScreen extends GetView<DashboardController> {
     );
   }
 
-  // Refresh indicator için özel işleyici
-  Future<void> _handleRefresh() async {
-    print('>>> DashboardScreen: Pull-to-refresh triggered');
-
-    // Daha önce başlatılmış bir token yenileme işlemi olup olmadığını kontrol et
-    bool isRefreshingAfterTokenRefresh = controller.isLoading.value;
-    if (isRefreshingAfterTokenRefresh) {
-      print(
-          '>>> DashboardScreen: Token refresh already in progress, waiting for completion');
-
-      // Token yenileme işleminin bitmesini beklemek için gecikme ekle
-      await Future.delayed(const Duration(milliseconds: 1000));
-
-      // Yükleme durumunu kontrol et ve hala devam ediyorsa, zorla kapat
-      if (controller.isLoading.value) {
-        print('>>> DashboardScreen: Forcing loading state to complete');
-        controller.resetLoadingState();
-      }
-
-      // RefreshIndicator'ı kapatmak için Future'ı tamamla
-      return Future.value();
-    }
-
-    // Normal yenileme işlemi
-    try {
-      await controller.refreshData();
-    } catch (e) {
-      print('>>> DashboardScreen: Error during refresh: $e');
-    }
-
-    // Future'ı tamamla - RefreshIndicator için önemli
-    return Future.value();
+  bool _hasContent() {
+    return controller.recentTransactions.isNotEmpty ||
+        controller.budgetSummaries.isNotEmpty;
   }
 }
