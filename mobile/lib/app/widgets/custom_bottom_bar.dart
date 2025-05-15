@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile/app/modules/home/home_controller.dart';
 import 'package:mobile/app/theme/app_colors.dart';
+import 'package:mobile/app/theme/app_theme.dart';
 
 /// Özelleştirilmiş ve modern Bottom Navigation Bar
 class CustomBottomBar extends StatelessWidget {
@@ -20,7 +21,6 @@ class CustomBottomBar extends StatelessWidget {
       shape: const CircularNotchedRectangle(),
       clipBehavior: Clip.antiAlias,
       child: Container(
-        height: 68,
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             begin: Alignment.topCenter,

@@ -4,6 +4,8 @@ import 'package:get/get.dart' hide Response;
 import 'package:mobile/app/data/network/exceptions.dart';
 import 'package:mobile/app/navigation/app_routes.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:mobile/app/modules/home/home_controller.dart';
+import 'package:mobile/app/modules/dashboard/dashboard_controller.dart';
 
 // Token'ları saklamak için kullanılacak key'ler
 const String _accessTokenKey = 'accessToken';
@@ -170,6 +172,10 @@ class ErrorInterceptor extends Interceptor {
 
           // Bekleyen diğer istekleri de yeni token ile tekrar dene
           await _retryPendingRequests(newAccessToken);
+
+          // Token yenileme başarılı olduktan sonra dashboard verilerini yenile
+          _refreshDashboardData();
+
           return;
         }
       }
@@ -289,6 +295,35 @@ class ErrorInterceptor extends Interceptor {
         response: originalError.response,
         type: originalError.type,
         message: authException.message));
+  }
+
+  /// Dashboard verilerini yenilemek için HomeController'ı çağırır
+  void _refreshDashboardData() {
+    try {
+      // Token yenileme işlemlerinin tamamen bitmesi için daha uzun bir gecikme ekle
+      // Bu da kullanıcı arayüzündeki yükleme göstergelerinin doğru şekilde çalışmasını sağlar
+      Future.delayed(const Duration(milliseconds: 800), () {
+        if (Get.isRegistered<HomeController>()) {
+          final homeController = Get.find<HomeController>();
+          _logDebug('Triggering dashboard refresh after token refresh');
+
+          // Dashboard controller'ına direkt erişip önce yükleme durumunu sıfırla
+          if (Get.isRegistered<DashboardController>()) {
+            final dashboardController = Get.find<DashboardController>();
+            _logDebug('Resetting dashboard loading state before refresh');
+            dashboardController.resetLoadingState();
+          }
+
+          // Sonra tüm verileri yenile
+          homeController.refreshAllData();
+        } else {
+          _logDebug(
+              'HomeController is not registered yet, cannot refresh dashboard');
+        }
+      });
+    } catch (e) {
+      _logDebug('Error refreshing dashboard data: $e');
+    }
   }
 
   /// Debug modunda log basar (Release modunda çalışmaz)

@@ -6,12 +6,12 @@ import 'package:mobile/app/modules/dashboard/widgets/budget_summary_card.dart';
 import 'package:mobile/app/modules/dashboard/widgets/income_expense_chart.dart';
 import 'package:mobile/app/widgets/info_panel.dart';
 import 'package:mobile/app/widgets/section_header.dart';
-import 'package:mobile/app/modules/dashboard/widgets/transaction_summary_card.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/app/theme/app_theme.dart';
 import 'package:mobile/app/widgets/error_view.dart';
 import 'package:mobile/app/widgets/custom_home_app_bar.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:mobile/app/modules/dashboard/widgets/grouped_transactions/grouped_transaction_list.dart';
 
 /// Modern dashboard ekranı, finans özetini görsel öğelerle gösterir
 class DashboardScreen extends GetView<DashboardController> {
@@ -64,7 +64,7 @@ class DashboardScreen extends GetView<DashboardController> {
       ),
       body: RefreshIndicator(
         color: AppColors.primary,
-        onRefresh: controller.refreshData,
+        onRefresh: _handleRefresh,
         child: Obx(() {
           // Tamamen yükleme durumu
           if (controller.isLoading.value &&
@@ -158,12 +158,11 @@ class DashboardScreen extends GetView<DashboardController> {
         // --- Hesap Bilgisi ---
         Obx(() => InfoPanel.info(
               title: 'Hesap Bilgisi',
-              message: '${controller.accountCount} aktif hesabınız bulunmaktadır.',
+              message:
+                  '${controller.accountCount} aktif hesabınız bulunmaktadır.',
               onActionPressed: controller.navigateToAccounts,
               actionText: 'Hesapları Yönet',
             )).animate(delay: 400.ms).fadeIn().slideY(begin: 0.2, end: 0),
-
-        const SizedBox(height: 50), // Alt boşluk
       ],
     );
   }
@@ -196,7 +195,8 @@ class DashboardScreen extends GetView<DashboardController> {
 
           // Bütçe listesi
           Obx(() {
-            if (controller.budgetSummaries.isEmpty && !controller.isLoading.value) {
+            if (controller.budgetSummaries.isEmpty &&
+                !controller.isLoading.value) {
               return EmptyStateView(
                 title: 'Henüz bütçe yok',
                 message:
@@ -207,7 +207,8 @@ class DashboardScreen extends GetView<DashboardController> {
               );
             }
 
-            if (controller.budgetSummaries.isEmpty && controller.isLoading.value) {
+            if (controller.budgetSummaries.isEmpty &&
+                controller.isLoading.value) {
               return const SizedBox(
                 height: 200,
                 child: Center(child: CircularProgressIndicator()),
@@ -224,7 +225,9 @@ class DashboardScreen extends GetView<DashboardController> {
                   final budget = controller.budgetSummaries[index];
                   return Padding(
                     padding: EdgeInsets.only(
-                      right: index == controller.budgetSummaries.length - 1 ? 0 : 12,
+                      right: index == controller.budgetSummaries.length - 1
+                          ? 0
+                          : 12,
                     ),
                     child: BudgetSummaryCard(
                       budget: budget,
@@ -260,7 +263,7 @@ class DashboardScreen extends GetView<DashboardController> {
           // Bölüm başlığı
           SectionHeader(
             title: 'Son İşlemler',
-            subtitle: 'En son gerçekleşen finansal hareketleriniz',
+            subtitle: 'Kategorilere göre düzenlenmiş finansal hareketleriniz',
             onActionPressed: controller.navigateToTransactions,
             actionText: 'Tümünü Gör',
             actionIcon: Icons.arrow_forward_rounded,
@@ -268,7 +271,8 @@ class DashboardScreen extends GetView<DashboardController> {
 
           // İşlem listesi
           Obx(() {
-            if (controller.recentTransactions.isEmpty && !controller.isLoading.value) {
+            if (controller.recentTransactions.isEmpty &&
+                !controller.isLoading.value) {
               return EmptyStateView(
                 title: 'İşlem kaydı yok',
                 message:
@@ -279,32 +283,58 @@ class DashboardScreen extends GetView<DashboardController> {
               );
             }
 
-            if (controller.recentTransactions.isEmpty && controller.isLoading.value) {
+            if (controller.recentTransactions.isEmpty &&
+                controller.isLoading.value) {
               return const SizedBox(
                 height: 200,
                 child: Center(child: CircularProgressIndicator()),
               );
             }
 
-            return ListView.separated(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: controller.recentTransactions.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 12),
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemBuilder: (context, index) {
-                final transaction = controller.recentTransactions[index];
-                return TransactionSummaryCard(
-                  transaction: transaction,
-                  onTap: () {
-                    // İşlem detay sayfasına git
-                  },
-                );
+            // Kategorilere göre gruplandırılmış işlem listesi
+            return GroupedTransactionList(
+              transactions: controller.recentTransactions,
+              onTransactionTap: (transaction) {
+                // İşlem detay sayfasına git
               },
             );
           }),
         ],
       ),
     );
+  }
+
+  // Refresh indicator için özel işleyici
+  Future<void> _handleRefresh() async {
+    print('>>> DashboardScreen: Pull-to-refresh triggered');
+
+    // Daha önce başlatılmış bir token yenileme işlemi olup olmadığını kontrol et
+    bool isRefreshingAfterTokenRefresh = controller.isLoading.value;
+    if (isRefreshingAfterTokenRefresh) {
+      print(
+          '>>> DashboardScreen: Token refresh already in progress, waiting for completion');
+
+      // Token yenileme işleminin bitmesini beklemek için gecikme ekle
+      await Future.delayed(const Duration(milliseconds: 1000));
+
+      // Yükleme durumunu kontrol et ve hala devam ediyorsa, zorla kapat
+      if (controller.isLoading.value) {
+        print('>>> DashboardScreen: Forcing loading state to complete');
+        controller.resetLoadingState();
+      }
+
+      // RefreshIndicator'ı kapatmak için Future'ı tamamla
+      return Future.value();
+    }
+
+    // Normal yenileme işlemi
+    try {
+      await controller.refreshData();
+    } catch (e) {
+      print('>>> DashboardScreen: Error during refresh: $e');
+    }
+
+    // Future'ı tamamla - RefreshIndicator için önemli
+    return Future.value();
   }
 }

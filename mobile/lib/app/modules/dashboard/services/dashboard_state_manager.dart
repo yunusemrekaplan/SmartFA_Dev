@@ -22,7 +22,17 @@ class DashboardStateManager {
 
   /// Yükleme durumunu ayarlar
   void setLoadingState(bool loading) {
-    isLoading.value = loading;
+    print(
+        '>>> DashboardStateManager: Setting loading state to $loading from ${StackTrace.current}');
+
+    // Eğer yükleme durumu false ise, her zaman güncellemek için izin ver
+    // (yükleme durumunun sonlandırılması kritik öneme sahiptir)
+    if (!loading || isLoading.value != loading) {
+      isLoading.value = loading;
+    } else {
+      print(
+          '>>> DashboardStateManager: Loading state already $loading, ignoring');
+    }
   }
 
   /// Hata mesajını temizler
@@ -35,10 +45,15 @@ class DashboardStateManager {
     print('>>> DashboardStateManager Unexpected Error: $error');
     errorMessage.value =
         'Dashboard verileri yüklenirken beklenmedik bir hata oluştu.';
+    // Hata durumunda yükleme göstergesini kapat
+    setLoadingState(false);
   }
 
   /// Hataları ErrorHandler ile işleyip hata mesajı oluşturur
   void handleError(AppException error, String title, VoidCallback onRetry) {
+    // Hata durumunda yükleme göstergesini kapat
+    setLoadingState(false);
+
     _errorHandler.handleError(
       error,
       message: 'Dashboard verileri yüklenirken bir hata oluştu.',

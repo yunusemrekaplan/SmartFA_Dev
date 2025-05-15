@@ -25,41 +25,37 @@ class HomeScreen extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      return AnimatedScale(
-        scale: controller.navigationBarAnimationValue.value,
-        duration: const Duration(milliseconds: 200),
-        child: Scaffold(
-          extendBody: true,
-          // FAB ve bottom bar için body'yi uzat
+      return Scaffold(
+        extendBody: false,
+        // FAB ve bottom bar için body'yi uzat
 
-          // Seçili sekmeye göre body'yi değiştirmek için PageView
-          body: PageView(
-            physics: const NeverScrollableScrollPhysics(), // Sayfa kaydırmayı devre dışı bırak
-            controller: controller.pageController,
-            onPageChanged: controller.changeTabIndex,
-            children: [
-              _buildAnimatedPage(const DashboardScreen(), 0), // Index 0
-              _buildAnimatedPage(const AccountsScreen(), 1), // Index 1
-              _buildAnimatedPage(const TransactionsScreen(), 2), // Index 2
-              _buildAnimatedPage(const BudgetsScreen(), 3), // Index 3
-            ],
-          ),
+        // Seçili sekmeye göre body'yi değiştirmek için PageView
+        body: PageView(
+          physics: const NeverScrollableScrollPhysics(), // Sayfa kaydırmayı devre dışı bırak
+          controller: controller.pageController,
+          onPageChanged: controller.changeTabIndex,
+          children: [
+            _buildAnimatedPage(const DashboardScreen(), 0), // Index 0
+            _buildAnimatedPage(const AccountsScreen(), 1), // Index 1
+            _buildAnimatedPage(const TransactionsScreen(), 2), // Index 2
+            _buildAnimatedPage(const BudgetsScreen(), 3), // Index 3
+          ],
+        ),
 
-          // Drawer menüsü
-          drawer: const AppDrawer(),
+        // Drawer menüsü
+        drawer: const AppDrawer(),
 
-          // Hızlı işlemler için FAB
-          floatingActionButton: _buildFAB(context),
+        // Hızlı işlemler için FAB
+        floatingActionButton: _buildFAB(context),
 
-          // FAB konum ayarı
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        // FAB konum ayarı
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
-          // Alt navigasyon çubuğu
-          bottomNavigationBar: AnimatedOpacity(
-            opacity: controller.isChangingTab.value ? 0.8 : 1.0,
-            duration: const Duration(milliseconds: 200),
-            child: CustomBottomBar(controller: controller),
-          ),
+        // Alt navigasyon çubuğu
+        bottomNavigationBar: AnimatedOpacity(
+          opacity: controller.isChangingTab.value ? 0.8 : 1.0,
+          duration: const Duration(milliseconds: 200),
+          child: CustomBottomBar(controller: controller),
         ),
       );
     });

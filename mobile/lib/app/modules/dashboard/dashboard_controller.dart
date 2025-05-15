@@ -71,6 +71,13 @@ class DashboardController extends GetxController {
 
   /// Dashboard verilerini yükler - Tüm servislerin verilerini toplar
   Future<void> loadDashboardData() async {
+    // Halihazırda yükleme yapılıyorsa çıkış yap, önce mevcut yüklemenin bitmesini bekle
+    if (isLoading.value) {
+      print(
+          '>>> DashboardController: Already loading data, ignoring new request');
+      return;
+    }
+
     _stateManager.setLoadingState(true);
     _stateManager.clearErrorMessage();
 
@@ -80,12 +87,38 @@ class DashboardController extends GetxController {
       _stateManager.handleUnexpectedError(e);
     } finally {
       _stateManager.setLoadingState(false);
+      print('>>> DashboardController: Loading completed');
     }
   }
 
   /// Verileri yeniler - Pull-to-refresh için
   Future<void> refreshData() async {
-    await loadDashboardData();
+    // Yükleme durumunu başlat
+    print('>>> DashboardController: Starting refresh operation');
+    _stateManager.setLoadingState(true);
+    _stateManager.clearErrorMessage();
+
+    try {
+      await _fetchAllDashboardData();
+      print('>>> DashboardController: Data fetched successfully');
+    } catch (e) {
+      print('>>> DashboardController: Error during refresh: $e');
+      _stateManager.handleUnexpectedError(e);
+    } finally {
+      // Yükleme durumunu kesinlikle kapat
+      _stateManager.setLoadingState(false);
+      print(
+          '>>> DashboardController: Refresh completed, loading state set to false');
+    }
+
+    // Future'ı her zaman başarılı olarak sonlandır ki RefreshIndicator kapansın
+    return Future.value();
+  }
+
+  /// Yükleme durumunu sıfırlar - Token yenileme sonrası kullanılır
+  void resetLoadingState() {
+    print('>>> DashboardController: Manual reset of loading state');
+    _stateManager.setLoadingState(false);
   }
 
   /// Hesaplar sayfasına yönlendirir

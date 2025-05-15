@@ -37,4 +37,10 @@ extension CategoryTypeExtension on CategoryType {
         return 'Gelir';
     }
   }
+
+  /// Kategori türünün gelir olup olmadığını kontrol eder
+  bool get isIncome => this == CategoryType.Income;
+
+  /// Kategori türünün gider olup olmadığını kontrol eder
+  bool get isExpense => this == CategoryType.Expense;
 }

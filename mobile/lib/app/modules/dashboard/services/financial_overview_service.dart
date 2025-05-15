@@ -18,6 +18,10 @@ class FinancialOverviewService {
   final RxDouble totalExpense = 0.0.obs;
   final RxList<TransactionModel> recentTransactions = <TransactionModel>[].obs;
 
+  // Kategori bazlı gruplandırılmış işlemler
+  final RxMap<String, List<TransactionModel>> groupedTransactions =
+      <String, List<TransactionModel>>{}.obs;
+
   // Constructor - Dependency Injection
   FinancialOverviewService({
     required ITransactionRepository transactionRepository,
@@ -32,7 +36,8 @@ class FinancialOverviewService {
 
   /// Son işlemler için filtre oluşturur
   TransactionFilterDto _createRecentTransactionsFilter() {
-    return TransactionFilterDto(pageNumber: 1, pageSize: 5);
+    // Dashboard için son 10 işlem yeterli
+    return TransactionFilterDto(pageNumber: 1, pageSize: 10);
   }
 
   /// Aylık gelir ve giderleri çeker
@@ -89,6 +94,30 @@ class FinancialOverviewService {
     return {'income': income, 'expense': expense};
   }
 
+  /// İşlemleri kategoriye göre grupla
+  Map<String, List<TransactionModel>> groupTransactionsByCategory(
+      List<TransactionModel> transactions) {
+    final Map<String, List<TransactionModel>> grouped = {};
+
+    for (final transaction in transactions) {
+      final categoryName = transaction.categoryName;
+
+      if (!grouped.containsKey(categoryName)) {
+        grouped[categoryName] = [];
+      }
+
+      grouped[categoryName]!.add(transaction);
+    }
+
+    return grouped;
+  }
+
+  /// Kategori bazında toplam tutarı hesapla
+  double calculateCategoryTotal(List<TransactionModel> transactions) {
+    return transactions.fold(
+        0.0, (sum, transaction) => sum + transaction.amount);
+  }
+
   /// Beklenmedik bir hata oluştuğunda AppException oluşturur
   UnexpectedException _createUnexpectedException(dynamic error) {
     return UnexpectedException(
@@ -101,7 +130,13 @@ class FinancialOverviewService {
   void processTransactions(Result<List<TransactionModel>, AppException> result,
       Function(AppException, String, VoidCallback) errorHandler) {
     result.when(
-      success: (transactions) => recentTransactions.assignAll(transactions),
+      success: (transactions) {
+        recentTransactions.assignAll(transactions);
+
+        // Kategori bazlı gruplandırma
+        final grouped = groupTransactionsByCategory(transactions);
+        groupedTransactions.assignAll(grouped);
+      },
       failure: (error) => errorHandler(
           error, 'Son İşlemler Yüklenemedi', () => fetchRecentTransactions()),
     );

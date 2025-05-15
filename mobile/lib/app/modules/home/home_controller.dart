@@ -79,11 +79,7 @@ class HomeController extends GetxController {
 
       // PageView'i de güncelle
       if (pageController.hasClients) {
-        pageController.animateToPage(
-          index,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
+        pageController.jumpToPage(index);
       }
 
       // Animasyonu tamamla
@@ -116,7 +112,12 @@ class HomeController extends GetxController {
   /// Dashboard verilerini yeniler
   void _refreshDashboard() {
     try {
-      _dashboardController.refreshData();
+      print('>>> HomeController: Refreshing dashboard data');
+      _dashboardController.refreshData().then((_) {
+        print('>>> HomeController: Dashboard refresh completed');
+      }).catchError((error) {
+        printError(info: 'Error during dashboard refresh: $error');
+      });
     } catch (e) {
       printError(info: 'Error refreshing dashboard: $e');
     }
