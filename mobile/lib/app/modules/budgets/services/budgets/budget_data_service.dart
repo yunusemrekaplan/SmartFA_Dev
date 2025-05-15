@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:mobile/app/data/models/response/budget_response_model.dart';
 import 'package:mobile/app/domain/repositories/budget_repository.dart';
-import 'package:mobile/app/utils/error_handler.dart';
+import 'package:mobile/app/utils/error_handler/error_handler.dart';
 import 'package:mobile/app/data/network/exceptions.dart';
 import 'package:mobile/app/utils/snackbar_helper.dart';
 
@@ -27,7 +27,8 @@ class BudgetDataService {
     errorMessage.value = ''; // Hata mesajını temizle
 
     try {
-      final result = await _budgetRepository.getUserBudgetsByPeriod(year, month);
+      final result =
+          await _budgetRepository.getUserBudgetsByPeriod(year, month);
 
       return result.when(
         success: (budgets) {
@@ -79,7 +80,8 @@ class BudgetDataService {
           budgetList.removeWhere((budget) => budget.id == budgetId);
           print('>>> Budget deleted successfully: ID $budgetId');
 
-          SnackbarHelper.showSuccess(message: 'Bütçe başarıyla silindi.', title: 'Başarılı');
+          SnackbarHelper.showSuccess(
+              message: 'Bütçe başarıyla silindi.', title: 'Başarılı');
           return true;
         },
         failure: (error) {

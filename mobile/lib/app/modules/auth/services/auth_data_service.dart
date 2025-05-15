@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:mobile/app/data/network/exceptions.dart';
 import 'package:mobile/app/domain/repositories/auth_repository.dart';
-import 'package:mobile/app/utils/error_handler.dart';
+import 'package:mobile/app/utils/error_handler/error_handler.dart';
 
 /// Auth verilerini yöneten servis
 /// SRP (Single Responsibility Principle) - Auth API istekleri tek bir sınıfta toplanır

@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:mobile/app/modules/home/home_controller.dart';
 import 'package:mobile/app/navigation/app_routes.dart';
-import 'package:mobile/app/utils/error_handler.dart';
+import 'package:mobile/app/utils/error_handler/error_handler.dart';
 import 'package:mobile/app/data/network/exceptions.dart';
 
 /// Dashboard ekranının UI durumunu yöneten servis sınıfı.

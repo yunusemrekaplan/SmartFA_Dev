@@ -6,6 +6,7 @@ import 'package:mobile/app/data/models/response/account_response_model.dart';
 import 'package:mobile/app/data/models/response/category_response_model.dart';
 import 'package:mobile/app/modules/transactions/controllers/add_edit_transaction_controller.dart';
 import 'package:mobile/app/theme/app_colors.dart';
+import 'package:mobile/app/services/dialog_service.dart';
 
 /// İşlem ekleme/düzenleme ekranı
 class AddEditTransactionScreen extends GetView<AddEditTransactionController> {
@@ -155,38 +156,12 @@ class AddEditTransactionScreen extends GetView<AddEditTransactionController> {
 
   /// Silme onay dialodu
   void _showDeleteConfirmation(BuildContext context) {
-    Get.defaultDialog(
+    DialogService.showDeleteConfirmationDialog(
       title: 'İşlemi Sil',
-      titleStyle: Get.theme.dialogTheme
-          .titleTextStyle, // Dialog temasından alıyoruz (18, w600)
-      // titleStyle: Get.theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold), // Alternatif
-      content: Column(
-        children: [
-          const Icon(
-            Icons.warning_amber_rounded,
-            color: AppColors.warning,
-            size: 40,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            // Removed const
-            'Bu işlemi silmek istediğinizden emin misiniz?',
-            textAlign: TextAlign.center,
-            style: Get.theme.dialogTheme.contentTextStyle?.copyWith(
-                fontSize: 14), // Dialog content (16) boyutunu override
-          ),
-        ],
-      ),
-      textConfirm: 'Sil',
-      confirmTextColor: Colors.white,
-      buttonColor: AppColors.error,
-      textCancel: 'İptal',
-      cancelTextColor: AppColors.textPrimary,
+      message: 'Bu işlemi silmek istediğinizden emin misiniz?',
       onConfirm: () {
-        Get.back(); // Dialogu kapat
         controller.deleteTransaction();
       },
-      radius: 8,
     );
   }
 }

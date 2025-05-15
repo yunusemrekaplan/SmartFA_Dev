@@ -6,6 +6,8 @@ import 'package:mobile/app/modules/budgets/bindings/budget_add_edit_binding.dart
 import 'package:mobile/app/modules/budgets/bindings/budgets_binding.dart';
 import 'package:mobile/app/modules/budgets/views/budget_add_edit_screen.dart';
 import 'package:mobile/app/modules/budgets/views/budgets_screen.dart';
+import 'package:mobile/app/modules/categories/bindings/categories_binding.dart';
+import 'package:mobile/app/modules/categories/views/categories_view.dart';
 import 'package:mobile/app/modules/splash/splash_binding.dart';
 import 'package:mobile/app/modules/splash/splash_screen.dart';
 import 'package:mobile/app/modules/transactions/bindings/add_edit_transaction_binding.dart';
@@ -128,22 +130,11 @@ class AppPages {
     // --- Ayarlar Alt Rotaları ---
     // Ayarlar ekranı Home içindeki bir sekme olduğu için ayrı route'a gerek yok.
     // Ancak altındaki sayfalar için route tanımlanabilir.
-    /*GetPage(
-      name: AppRoutes.CATEGORIES, // Kategori Yönetimi
-      page: () => const PlaceholderScreen(routeName: 'Kategori Yönetimi'),
-      binding: CategoriesBinding(), // Kategori bağımlılıkları
-    ),
     GetPage(
-      name: AppRoutes.PROFILE, // Profil Ekranı
-      page: () => const PlaceholderScreen(routeName: 'Profil'),
-      binding: ProfileBinding(), // Profil bağımlılıkları
+      name: AppRoutes.CATEGORIES,
+      page: () => const CategoriesView(),
+      binding: CategoriesBinding(),
     ),
-    // Borçlar ekranı Ayarlar altından da erişilebilir, ayrı route'u olabilir.
-    GetPage(
-      name: AppRoutes.DEBTS,
-      page: () => const PlaceholderScreen(routeName: 'Borç Yönetimi'),
-      binding: DebtsBinding(),
-    ),*/
   ];
 }
 

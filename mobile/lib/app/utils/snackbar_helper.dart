@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'error_handler.dart';
+import 'package:mobile/app/utils/snack_bar_button.dart';
 
 /// SmartFA uygulaması için genel snackbar mesajlarını yöneten yardımcı sınıf.
 /// Başarı, hata, bilgi ve uyarı mesajlarını göstermek için kullanılır.

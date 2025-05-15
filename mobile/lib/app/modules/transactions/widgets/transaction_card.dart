@@ -32,7 +32,7 @@ class TransactionCard extends StatelessWidget {
     final IconData categoryIcon = getCategoryIcon(transaction.categoryIcon);
 
     // Tarih formatlayıcı
-    final dateFormatter = DateFormat('d MMM, EEE', 'tr_TR');
+    // final dateFormatter = DateFormat('d MMM, EEE', 'tr_TR');
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),

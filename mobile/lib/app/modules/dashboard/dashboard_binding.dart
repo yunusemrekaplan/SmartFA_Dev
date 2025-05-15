@@ -4,7 +4,7 @@ import 'package:mobile/app/domain/repositories/account_repository.dart';
 import 'package:mobile/app/domain/repositories/budget_repository.dart';
 import 'package:mobile/app/domain/repositories/transaction_repository.dart';
 import 'package:mobile/app/modules/dashboard/dashboard_controller.dart';
-import 'package:mobile/app/utils/error_handler.dart';
+import 'package:mobile/app/utils/error_handler/error_handler.dart';
 
 /// Dashboard modülü için bağımlılıkları yönetir.
 /// Controller'a gerekli repository'leri enjekte eder, servisler controller içinde oluşturulur.

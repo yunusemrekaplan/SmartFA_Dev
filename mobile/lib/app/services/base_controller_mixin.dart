@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:mobile/app/services/page_refresh_service.dart';
 import 'package:mobile/app/data/network/exceptions.dart';
-import 'package:mobile/app/utils/error_handler.dart';
+import 'package:mobile/app/utils/error_handler/error_handler.dart';
 
 /// Tüm controller'lar için standart veri yükleme, yenileme ve hata yönetimi
 /// işlevlerini sağlayan mixin.

@@ -6,6 +6,7 @@ import 'package:mobile/app/modules/accounts/services/account_form_service.dart';
 import 'package:mobile/app/modules/accounts/services/account_navigation_service.dart';
 import 'package:mobile/app/modules/accounts/services/account_ui_service.dart';
 import 'package:mobile/app/modules/accounts/services/account_update_service.dart';
+import 'package:mobile/app/services/dialog_service.dart';
 
 /// Hesap ekleme ve düzenleme ekranının controller'ı
 /// DIP (Dependency Inversion Principle) - Yüksek seviyeli modüller düşük seviyeli modüllere bağlı değil
@@ -15,7 +16,6 @@ class AddEditAccountController extends GetxController {
   final AccountFormService _formService;
   final AccountUpdateService _updateService;
   final AccountNavigationService _navigationService;
-  final AccountUIService _uiService;
 
   AddEditAccountController({
     required AccountFormService formService,
@@ -24,8 +24,7 @@ class AddEditAccountController extends GetxController {
     required AccountUIService uiService,
   })  : _formService = formService,
         _updateService = updateService,
-        _navigationService = navigationService,
-        _uiService = uiService;
+        _navigationService = navigationService;
 
   // --- Convenience Getters (Delegasyon Paterni) ---
 
@@ -120,12 +119,12 @@ class AddEditAccountController extends GetxController {
     }
 
     // Silme onayı
-    final confirm = await _uiService.showConfirmDialog(
+    final confirm = await DialogService.showDeleteConfirmationDialog(
       title: 'Hesabı Sil',
       message:
           'Bu hesabı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
-      confirmText: 'Sil',
-      cancelText: 'İptal',
+      onConfirm:
+          null, // Dialog kapanınca işlem yapmak istemiyoruz, result'ı kullanacağız
     );
 
     if (confirm != true) {
