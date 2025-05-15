@@ -3,6 +3,8 @@ import 'package:get/get.dart';
 import 'package:mobile/app/modules/accounts/controllers/accounts_controller.dart';
 import 'package:mobile/app/modules/accounts/widgets/account_card.dart';
 import 'package:mobile/app/modules/accounts/widgets/accounts_header.dart';
+import 'package:mobile/app/theme/app_colors.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 /// Hesaplar içeriğini gösteren widget
 /// SRP (Single Responsibility Principle) - Widget yalnızca hesap listesini görüntüler
@@ -14,26 +16,31 @@ class AccountsContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       children: [
         // Yükleniyor göstergesi (ilk yüklemeden sonra)
         Obx(() => controller.isLoading.value
-            ? const Padding(
-                padding: EdgeInsets.only(bottom: 16.0),
-                child: Center(child: LinearProgressIndicator()),
-              )
-            : const SizedBox.shrink()),
+            ? Container(
+                margin: const EdgeInsets.only(bottom: 16.0, top: 8.0),
+                child: const LinearProgressIndicator(
+                  backgroundColor: Colors.transparent,
+                  minHeight: 3,
+                ),
+              ).animate().fadeIn(duration: 200.ms)
+            : const SizedBox(height: 8)),
 
         // Hesaplar başlığı
         AccountsHeader(
           accountCount: controller.accountList.length,
           totalBalance: controller.totalBalance,
-        ),
+        ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.1, end: 0),
 
         const SizedBox(height: 24),
 
         // Hesaplarım bölümü başlığı
-        _buildSectionHeader(context),
+        _buildSectionHeader(context)
+            .animate()
+            .fadeIn(delay: 200.ms, duration: 400.ms),
 
         // Hesap listesi
         _buildAccountList(),
@@ -45,30 +52,41 @@ class AccountsContent extends StatelessWidget {
 
   /// Bölüm başlığını oluşturur
   Widget _buildSectionHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16.0, left: 4.0, right: 4.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            'Hesaplarım',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
+          Row(
+            children: [
+              Container(
+                width: 4,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(2),
                 ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Hesaplarım',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ],
           ),
           TextButton.icon(
             onPressed: controller.goToAddAccount,
             icon: const Icon(Icons.add, size: 16),
-            label: const Text('Yeni Hesap'),
+            label: const Text('Yeni'),
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              textStyle: Theme.of(context)
-                  .textButtonTheme
-                  .style
-                  ?.textStyle
-                  ?.resolve({})?.copyWith(
-                fontWeight: FontWeight.w600,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
               ),
+              backgroundColor: AppColors.primary.withOpacity(0.1),
+              foregroundColor: AppColors.primary,
             ),
           ),
         ],
@@ -78,18 +96,28 @@ class AccountsContent extends StatelessWidget {
 
   /// Hesap listesini oluşturur
   Widget _buildAccountList() {
-    return Obx(() => Column(
-          children: controller.accountList
-              .map((account) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12.0),
-                    child: AccountCard(
-                      account: account,
-                      onTap: () => controller.goToEditAccount(account),
-                      onDelete: () =>
-                          controller.confirmAndDeleteAccount(account),
-                    ),
-                  ))
-              .toList(),
+    return Obx(() => ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: controller.accountList.length,
+          itemBuilder: (context, index) {
+            final account = controller.accountList[index];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12.0),
+              child: AccountCard(
+                account: account,
+                onTap: () => controller.goToEditAccount(account),
+                onDelete: () => controller.confirmAndDeleteAccount(account),
+              )
+                  .animate(delay: Duration(milliseconds: 100 * index))
+                  .fadeIn(duration: 400.ms)
+                  .slideX(
+                      begin: 0.1,
+                      end: 0,
+                      duration: 300.ms,
+                      curve: Curves.easeOutQuad),
+            );
+          },
         ));
   }
 }

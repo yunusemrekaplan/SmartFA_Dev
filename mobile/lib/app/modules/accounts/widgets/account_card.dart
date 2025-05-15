@@ -22,37 +22,41 @@ class AccountCard extends StatelessWidget {
     final currencyFormatter = NumberFormat.currency(
       locale: 'tr_TR',
       symbol: '₺',
+      decimalDigits: 2,
     );
 
     final (IconData accountIcon, Color accountColor) =
         _getAccountTypeInfo(account.type);
     final Color balanceColor =
-        account.currentBalance >= 0 ? accountColor : AppColors.error;
+        account.currentBalance >= 0 ? AppColors.success : AppColors.error;
 
     // Arka plan rengi
-    final Color cardBackgroundColor = account.currentBalance >= 0
-        ? accountColor.withOpacity(0.05)
-        : AppColors.error.withOpacity(0.05);
+    final Color cardBackgroundColor = Colors.white;
 
     return Card(
-      elevation: 1,
-      shadowColor: accountColor.withOpacity(0.2),
+      margin: EdgeInsets.zero,
+      elevation: 2,
+      shadowColor: Colors.black.withOpacity(0.1),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: account.currentBalance >= 0
-              ? accountColor.withOpacity(0.2)
-              : AppColors.error.withOpacity(0.2),
-          width: 1,
-        ),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: Container(
           decoration: BoxDecoration(
             color: cardBackgroundColor,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              colors: [
+                Colors.white,
+                account.currentBalance >= 0
+                    ? accountColor.withOpacity(0.05)
+                    : AppColors.error.withOpacity(0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -63,7 +67,7 @@ class AccountCard extends StatelessWidget {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: accountColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: accountColor.withOpacity(0.2),
                       width: 1,
@@ -79,7 +83,7 @@ class AccountCard extends StatelessWidget {
                   child: Icon(
                     accountIcon,
                     color: accountColor,
-                    size: 22,
+                    size: 24,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -99,6 +103,23 @@ class AccountCard extends StatelessWidget {
                       const SizedBox(height: 6),
                       Row(
                         children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: accountColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              _getAccountTypeName(account.type),
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: accountColor,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
                           Icon(
                             account.currentBalance >= 0
                                 ? Icons.arrow_upward_rounded
@@ -114,7 +135,7 @@ class AccountCard extends StatelessWidget {
                                 .titleSmall
                                 ?.copyWith(
                                   color: balanceColor,
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.w600,
                                 ),
                           ),
                         ],
@@ -124,59 +145,64 @@ class AccountCard extends StatelessWidget {
                 ),
 
                 // İşlem menüsü
-                PopupMenuButton<String>(
-                  offset: const Offset(0, 40),
-                  icon: Icon(
-                    Icons.more_vert,
-                    color: AppColors.textSecondary,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 4,
-                  onSelected: (value) {
-                    if (value == 'edit') {
-                      onTap();
-                    } else if (value == 'delete') {
-                      onDelete();
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.edit_outlined,
-                            size: 18,
-                            color: AppColors.primary,
-                          ),
-                          const SizedBox(width: 8),
-                          const Text('Düzenle'),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.delete_outline,
-                            size: 18,
-                            color: AppColors.error,
-                          ),
-                          const SizedBox(width: 8),
-                          const Text('Sil'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                _buildActionMenu(context),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  /// İşlem menüsünü oluşturur
+  Widget _buildActionMenu(BuildContext context) {
+    return PopupMenuButton<String>(
+      offset: const Offset(0, 40),
+      icon: Icon(
+        Icons.more_vert,
+        color: AppColors.textSecondary,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      elevation: 4,
+      onSelected: (value) {
+        if (value == 'edit') {
+          onTap();
+        } else if (value == 'delete') {
+          onDelete();
+        }
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: 'edit',
+          child: Row(
+            children: [
+              Icon(
+                Icons.edit_outlined,
+                size: 18,
+                color: AppColors.primary,
+              ),
+              const SizedBox(width: 8),
+              const Text('Düzenle'),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'delete',
+          child: Row(
+            children: [
+              Icon(
+                Icons.delete_outline,
+                size: 18,
+                color: AppColors.error,
+              ),
+              const SizedBox(width: 8),
+              const Text('Sil'),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -189,6 +215,18 @@ class AccountCard extends StatelessWidget {
         return (Icons.account_balance_outlined, AppColors.primary);
       case AccountType.CreditCard:
         return (Icons.credit_card_outlined, AppColors.secondary);
+    }
+  }
+
+  /// Hesap türünün adını döndürür
+  String _getAccountTypeName(AccountType accountType) {
+    switch (accountType) {
+      case AccountType.Cash:
+        return 'Nakit';
+      case AccountType.Bank:
+        return 'Banka';
+      case AccountType.CreditCard:
+        return 'Kredi Kartı';
     }
   }
 }

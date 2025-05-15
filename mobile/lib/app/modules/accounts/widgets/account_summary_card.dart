@@ -32,26 +32,19 @@ class AccountSummaryCard extends StatelessWidget {
 
     return Card(
       elevation: 2,
-      shadowColor: iconColor.withOpacity(0.2),
+      shadowColor: iconColor.withOpacity(0.15),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(
-          color: iconColor.withOpacity(0.2),
-          width: 0.5,
-        ),
       ),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
+        padding: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              backgroundColor.withOpacity(0.4),
-              backgroundColor.withOpacity(0.1),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: iconColor.withOpacity(0.1),
+            width: 1,
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,7 +53,7 @@ class AccountSummaryCard extends StatelessWidget {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: backgroundColor,
                     borderRadius: BorderRadius.circular(12),
@@ -71,59 +64,52 @@ class AccountSummaryCard extends StatelessWidget {
                         offset: const Offset(0, 2),
                       ),
                     ],
-                    border: Border.all(
-                      color: iconColor.withOpacity(0.2),
-                      width: 1,
-                    ),
                   ),
                   child: Icon(
                     icon,
                     color: iconColor,
-                    size: 20,
+                    size: 16,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Text(
                   title,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
                       ),
                 ),
               ],
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
 
             // Tutar
             Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Expanded(
                   child: Text(
                     isNegative
                         ? '- ${currencyFormatter.format(amount)}'
                         : currencyFormatter.format(amount),
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          color: isNegative ? iconColor : null,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: isNegative ? iconColor : AppColors.textPrimary,
                           fontWeight: FontWeight.bold,
                         ),
                   ),
-                ),
-                Icon(
-                  isNegative ? Icons.arrow_downward : Icons.arrow_upward,
-                  color: iconColor,
-                  size: 18,
                 ),
               ],
             ),
 
             // Açıklama
             Padding(
-              padding: const EdgeInsets.only(top: 6.0),
+              padding: const EdgeInsets.only(top: 4.0),
               child: Text(
-                isNegative ? 'Toplam borç miktarı' : 'Toplam varlık miktarı',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontSize: 12,
-                      color: AppColors.textSecondary.withOpacity(0.8),
+                isNegative ? 'Toplam borç' : 'Toplam varlık',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontSize: 11,
+                      color: AppColors.textSecondary.withOpacity(0.7),
                     ),
               ),
             ),
