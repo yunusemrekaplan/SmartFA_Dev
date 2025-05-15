@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile/app/modules/settings/settings_screen.dart';
 import 'package:mobile/app/theme/app_colors.dart';
-import 'package:mobile/app/widgets/loading_logo.dart';
+import 'package:mobile/app/modules/auth/widgets/loading_logo.dart';
 
 /// Uygulamanın modern ve animasyonlu drawer menüsü
 class AppDrawer extends StatelessWidget {

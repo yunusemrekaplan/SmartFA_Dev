@@ -4,14 +4,16 @@ import 'package:intl/intl.dart';
 import 'package:mobile/app/modules/dashboard/dashboard_controller.dart';
 import 'package:mobile/app/modules/dashboard/widgets/budget_summary_card.dart';
 import 'package:mobile/app/modules/dashboard/widgets/income_expense_chart.dart';
+import 'package:mobile/app/widgets/empty_state_view.dart';
 import 'package:mobile/app/widgets/info_panel.dart';
-import 'package:mobile/app/widgets/section_header.dart';
+import 'package:mobile/app/modules/dashboard/widgets/section_header.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/app/theme/app_theme.dart';
 import 'package:mobile/app/widgets/error_view.dart';
-import 'package:mobile/app/widgets/custom_home_app_bar.dart';
+import 'package:mobile/app/widgets/custom_app_bar.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:mobile/app/modules/dashboard/widgets/grouped_transactions/grouped_transaction_list.dart';
+import 'package:mobile/app/widgets/loading_state_view.dart';
 
 /// Modern dashboard ekranı, finans özetini görsel öğelerle gösterir
 class DashboardScreen extends GetView<DashboardController> {
@@ -24,7 +26,7 @@ class DashboardScreen extends GetView<DashboardController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomHomeAppBar(
+      appBar: CustomAppBar(
         title: 'Özet',
         leading: IconButton(
           icon: const Icon(Icons.menu_rounded),

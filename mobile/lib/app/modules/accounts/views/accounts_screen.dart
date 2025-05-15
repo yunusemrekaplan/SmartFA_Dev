@@ -3,8 +3,9 @@ import 'package:get/get.dart';
 import 'package:mobile/app/modules/accounts/controllers/accounts_controller.dart';
 import 'package:mobile/app/modules/accounts/widgets/accounts_content.dart';
 import 'package:mobile/app/theme/app_colors.dart';
+import 'package:mobile/app/widgets/empty_state_view.dart';
 import 'package:mobile/app/widgets/error_view.dart';
-import 'package:mobile/app/widgets/custom_home_app_bar.dart';
+import 'package:mobile/app/widgets/custom_app_bar.dart';
 
 /// Kullanıcının hesaplarını listeleyen modern ekran.
 /// SRP (Single Responsibility Principle) - Hesaplar ekranı gösterimi için temel container
@@ -15,7 +16,7 @@ class AccountsScreen extends GetView<AccountsController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomHomeAppBar(
+      appBar: CustomAppBar(
         title: 'Hesaplar',
         leading: IconButton(
           icon: const Icon(Icons.menu_rounded),

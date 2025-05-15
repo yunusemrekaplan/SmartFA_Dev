@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/app/theme/app_colors.dart';
-import 'package:mobile/app/widgets/loading_logo.dart';
+import 'package:mobile/app/modules/auth/widgets/loading_logo.dart';
 
 /// Auth ekranlarının üst kısmında yer alan logo ve başlık bileşeni
 class AuthHeader extends StatelessWidget {

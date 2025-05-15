@@ -7,8 +7,9 @@ import 'package:mobile/app/modules/budgets/widgets/budgets/budget_card/budget_ca
 import 'package:mobile/app/modules/budgets/widgets/budgets/budget_filter_bottom_sheet/budget_filter_bottom_sheet.dart';
 import 'package:mobile/app/modules/budgets/widgets/budgets/month_selector.dart';
 import 'package:mobile/app/theme/app_colors.dart';
+import 'package:mobile/app/widgets/empty_state_view.dart';
 import 'package:mobile/app/widgets/error_view.dart';
-import 'package:mobile/app/widgets/custom_home_app_bar.dart';
+import 'package:mobile/app/widgets/custom_app_bar.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 /// Kullanıcının bütçelerini listeleyen ekran.
@@ -41,7 +42,7 @@ class BudgetsScreen extends GetView<BudgetsController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomHomeAppBar(
+      appBar: CustomAppBar(
         title: 'Bütçeler',
         leading: IconButton(
           icon: const Icon(Icons.menu_rounded),
