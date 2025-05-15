@@ -23,6 +23,12 @@ class HomeController extends GetxController {
   late final BudgetsController _budgetsController;
   late final SettingsController _settingsController;
 
+  // Yenileme kilitlerini tutan değişkenler (duplicate istekleri önlemek için)
+  final RxBool _isRefreshingDashboard = false.obs;
+  final RxBool _isRefreshingAccounts = false.obs;
+  final RxBool _isRefreshingTransactions = false.obs;
+  final RxBool _isRefreshingBudgets = false.obs;
+
   // Alt sekmelerin her birine erişecek getter'lar
   DashboardController get dashboardController => _dashboardController;
   AccountsController get accountsController => _accountsController;
@@ -111,42 +117,131 @@ class HomeController extends GetxController {
 
   /// Dashboard verilerini yeniler
   void _refreshDashboard() {
+    // Zaten yenileniyor mu kontrol et
+    if (_isRefreshingDashboard.value) {
+      print(
+          '>>> HomeController: Dashboard refresh already in progress, skipping');
+      return;
+    }
+
     try {
       print('>>> HomeController: Refreshing dashboard data');
+      _isRefreshingDashboard.value = true;
+
       _dashboardController.refreshDashboardData().then((_) {
         print('>>> HomeController: Dashboard refresh completed');
       }).catchError((error) {
         printError(info: 'Error during dashboard refresh: $error');
+      }).whenComplete(() {
+        _isRefreshingDashboard.value = false;
       });
     } catch (e) {
       printError(info: 'Error refreshing dashboard: $e');
+      _isRefreshingDashboard.value = false;
     }
   }
 
   /// Hesaplar verilerini yeniler
-  void _refreshAccounts() {
+  void _refreshAccounts() async {
+    // Zaten yenileniyor mu kontrol et
+    if (_isRefreshingAccounts.value) {
+      print(
+          '>>> HomeController: Accounts refresh already in progress, skipping');
+      return;
+    }
+
     try {
-      _accountsController.fetchAccounts();
+      print('>>> HomeController: Refreshing accounts data');
+      _isRefreshingAccounts.value = true;
+
+      // Force parametresini true olarak geçerek yükleme durumunu sıfırlamayı sağla
+      await _accountsController.refreshAccounts(force: true);
+      print('>>> HomeController: Accounts refresh completed');
     } catch (e) {
       printError(info: 'Error refreshing accounts: $e');
+
+      // Hata durumunda yükleme durumunu sıfırla
+      if (_accountsController.isLoading.value) {
+        _accountsController.resetLoadingState();
+      }
+    } finally {
+      _isRefreshingAccounts.value = false;
     }
   }
 
   /// İşlemler verilerini yeniler
-  void _refreshTransactions() {
+  void _refreshTransactions() async {
+    // Zaten yenileniyor mu kontrol et
+    if (_isRefreshingTransactions.value) {
+      print(
+          '>>> HomeController: Transactions refresh already in progress, skipping');
+      return;
+    }
+
     try {
-      _transactionsController.fetchTransactions(isInitialLoad: false);
+      print('>>> HomeController: Refreshing transactions data');
+      _isRefreshingTransactions.value = true;
+
+      // Önce yükleme durumunu kontrol edelim ve gerekirse sıfırlayalım
+      if (_transactionsController.isLoading.value) {
+        print(
+            '>>> HomeController: Transactions already loading, resetting state');
+        _transactionsController.resetLoadingState();
+
+        // Yükleme durumunun tamamen sıfırlandığından emin olmak için kısa bir gecikme
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+
+      // Force parametresini true olarak geçerek yükleme durumunu sıfırlamayı sağla
+      await _transactionsController.fetchTransactions(
+          isInitialLoad: true, force: true);
+      print('>>> HomeController: Transactions refresh completed');
     } catch (e) {
       printError(info: 'Error refreshing transactions: $e');
+
+      // Hata durumunda yükleme durumunu sıfırla
+      if (_transactionsController.isLoading.value) {
+        _transactionsController.resetLoadingState();
+      }
+    } finally {
+      _isRefreshingTransactions.value = false;
     }
   }
 
   /// Bütçeler verilerini yeniler
-  void _refreshBudgets() {
+  void _refreshBudgets() async {
+    // Zaten yenileniyor mu kontrol et
+    if (_isRefreshingBudgets.value) {
+      print(
+          '>>> HomeController: Budgets refresh already in progress, skipping');
+      return;
+    }
+
     try {
-      _budgetsController.refreshBudgets();
+      print('>>> HomeController: Refreshing budgets data');
+      _isRefreshingBudgets.value = true;
+
+      // Önce yükleme durumunu kontrol edelim ve gerekirse sıfırlayalım
+      if (_budgetsController.isLoading.value) {
+        print('>>> HomeController: Budgets already loading, resetting state');
+        _budgetsController.resetLoadingState();
+
+        // Yükleme durumunun tamamen sıfırlandığından emin olmak için kısa bir gecikme
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+
+      // Force parametresini true olarak geçerek yükleme durumunu sıfırlamayı sağla
+      await _budgetsController.refreshBudgets(force: true);
+      print('>>> HomeController: Budgets refresh completed');
     } catch (e) {
       printError(info: 'Error refreshing budgets: $e');
+
+      // Hata durumunda yükleme durumunu sıfırla
+      if (_budgetsController.isLoading.value) {
+        _budgetsController.resetLoadingState();
+      }
+    } finally {
+      _isRefreshingBudgets.value = false;
     }
   }
 

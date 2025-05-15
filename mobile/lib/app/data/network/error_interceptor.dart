@@ -301,7 +301,6 @@ class ErrorInterceptor extends Interceptor {
   void _refreshDashboardData() {
     try {
       // Token yenileme işlemlerinin tamamen bitmesi için daha uzun bir gecikme ekle
-      // Bu da kullanıcı arayüzündeki yükleme göstergelerinin doğru şekilde çalışmasını sağlar
       Future.delayed(const Duration(milliseconds: 1000), () {
         // Öncelikle Dashboard controller'ını doğrudan bul
         if (Get.isRegistered<DashboardController>()) {
@@ -309,18 +308,29 @@ class ErrorInterceptor extends Interceptor {
           // Önce yükleme durumunu güvenli bir şekilde sıfırla
           dashboardController.resetLoadingState();
 
-          // Token yenileme ve yükleme durumu sıfırlandıktan sonra,
-          // Verileri yenilemeden önce biraz daha gecikme ekle
-          Future.delayed(const Duration(milliseconds: 300), () {
-            // HomeController ile tüm verileri yenile
-            if (Get.isRegistered<HomeController>()) {
-              final homeController = Get.find<HomeController>();
-              homeController.refreshAllData();
-            } else {
-              // HomeController bulunamadıysa doğrudan dashboard'ı yenile
-              dashboardController.refreshDashboardData();
+          // Token yenileme sonrası otomatik veri yüklemesini tamamen devre dışı bırakıyoruz
+          // Kullanıcı zaten ekranlar arası geçiş yaparken veri yükleniyor
+          // Bu, çift veri yükleme sorununu çözecek
+          _logDebug(
+              'Token yenileme sonrası otomatik veri yüklemesi devre dışı bırakıldı');
+
+          // Eğer aktif olarak kulllanılan controller'ların loading durumları varsa sıfırla
+          if (Get.isRegistered<HomeController>()) {
+            final homeController = Get.find<HomeController>();
+
+            // Her controller için yükleme durumunu sıfırla (eğer varsa)
+            try {
+              homeController.dashboardController.resetLoadingState();
+
+              homeController.accountsController.resetLoadingState();
+
+              homeController.transactionsController.resetLoadingState();
+
+              homeController.budgetsController.resetLoadingState();
+            } catch (e) {
+              _logDebug('Controller yükleme durumu sıfırlanırken hata: $e');
             }
-          });
+          }
         } else {
           _logDebug(
               'DashboardController is not registered yet, cannot refresh');

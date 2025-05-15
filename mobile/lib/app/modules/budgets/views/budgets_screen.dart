@@ -8,9 +8,9 @@ import 'package:mobile/app/modules/budgets/widgets/budgets/budget_filter_bottom_
 import 'package:mobile/app/modules/budgets/widgets/budgets/month_selector.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/app/widgets/empty_state_view.dart';
-import 'package:mobile/app/widgets/error_view.dart';
 import 'package:mobile/app/widgets/custom_app_bar.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:mobile/app/widgets/refreshable_content_view.dart';
 
 /// Kullanıcının bütçelerini listeleyen ekran.
 class BudgetsScreen extends GetView<BudgetsController> {
@@ -86,78 +86,63 @@ class BudgetsScreen extends GetView<BudgetsController> {
           // Aktif filtre göstergesi
           ActiveFiltersBar(controller: controller),
 
-          // Bütçe listesi
+          // Bütçe listesi - RefreshableContentView kullanarak
           Expanded(
-            child: RefreshIndicator(
-              onRefresh: controller.refreshBudgets,
-              child: Obx(() {
-                // State değişikliklerini dinle
-                // 1. Yüklenme Durumu
-                if (controller.isLoading.value &&
-                    controller.budgetList.isEmpty) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                // 2. Hata Durumu
-                else if (controller.errorMessage.isNotEmpty) {
-                  // ErrorView widget'ını kullan
-                  return ErrorView(
-                    message: controller.errorMessage.value,
-                    onRetry: controller.refreshBudgets,
-                    isLarge: true,
-                  );
-                }
-                // 3. Boş Liste Durumu
-                else if (controller.filteredBudgetList.isEmpty &&
-                    !controller.isLoading.value) {
-                  // Filtre uygulanmış ve sonuç boş mu kontrolü
-                  if (controller.budgetList.isNotEmpty) {
-                    // Filtreleme sonucu boş
-                    return EmptyStateView(
-                      title: 'Bütçe Bulunamadı',
-                      message: 'Seçilen filtrelere uygun bütçe bulunamadı.',
-                      actionText: 'Filtreleri Sıfırla',
-                      onAction: controller.resetFilters,
-                      icon: Icons.filter_alt_off_rounded,
-                      actionIcon: Icons.filter_alt_off_rounded,
-                    );
-                  }
-
-                  // Veri yok (filtresiz)
-                  return EmptyStateView(
-                    title: 'Bütçe Bulunamadı',
-                    message: 'Henüz bütçeniz yok.',
-                    actionText: 'Bütçe Ekle',
-                    onAction: () {
-                      controller.goToAddBudget();
-                    },
-                    icon: Icons.pie_chart_rounded,
-                  );
-                }
-                // 4. Bütçe Listesi
-                else {
-                  return ListView.separated(
-                    padding: const EdgeInsets.all(16.0),
-                    itemCount: controller.filteredBudgetList.length,
-                    itemBuilder: (context, index) {
-                      final budget = controller.filteredBudgetList[index];
-                      return BudgetCard(
-                        budget: budget,
-                        currencyFormatter: currencyFormatter,
-                        controller: controller,
-                      ).animate().fadeIn(
-                            duration: 300.ms,
-                            delay: Duration(milliseconds: 50 * index),
-                          );
-                    },
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 10),
-                  );
-                }
-              }),
-            ),
+            child: Obx(() {
+              return RefreshableContentView<dynamic>(
+                isLoading: controller.isLoading,
+                errorMessage: controller.errorMessage,
+                onRefresh: controller.refreshBudgets,
+                items: controller.filteredBudgetList,
+                contentPadding: const EdgeInsets.all(16.0),
+                showLoadingOverlay: true,
+                emptyStateView: controller.budgetList.isEmpty
+                    ? EmptyStateView(
+                        title: 'Bütçe Bulunamadı',
+                        message: 'Henüz bütçeniz yok.',
+                        actionText: 'Bütçe Ekle',
+                        onAction: controller.goToAddBudget,
+                        icon: Icons.pie_chart_rounded,
+                      )
+                    : EmptyStateView(
+                        title: 'Bütçe Bulunamadı',
+                        message: 'Seçilen filtrelere uygun bütçe bulunamadı.',
+                        actionText: 'Filtreleri Sıfırla',
+                        onAction: controller.resetFilters,
+                        icon: Icons.filter_alt_off_rounded,
+                        actionIcon: Icons.filter_alt_off_rounded,
+                      ),
+                contentView: _buildBudgetList(),
+              );
+            }),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildBudgetList() {
+    return ListView.separated(
+      // RefreshableContentView kendi padding'ini uygulayacak
+      padding: EdgeInsets.zero,
+      // ListView'ın boyutunu içeriğine göre sınırlandırıyoruz
+      shrinkWrap: true,
+      // Üst scrollview'in scrollunu kullanacağız
+      primary: false,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: controller.filteredBudgetList.length,
+      itemBuilder: (context, index) {
+        final budget = controller.filteredBudgetList[index];
+        return BudgetCard(
+          budget: budget,
+          currencyFormatter: currencyFormatter,
+          controller: controller,
+        ).animate().fadeIn(
+              duration: 300.ms,
+              delay: Duration(milliseconds: 50 * index),
+            );
+      },
+      separatorBuilder: (context, index) => const SizedBox(height: 10),
     );
   }
 }

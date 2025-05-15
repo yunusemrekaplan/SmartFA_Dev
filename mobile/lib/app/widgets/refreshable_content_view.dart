@@ -197,26 +197,23 @@ class RefreshableContentView<T> extends StatelessWidget {
 
   /// Kaydırılabilir içerik oluşturur, header ve footer ekler
   Widget _buildScrollableContent() {
-    return CustomScrollView(
+    // Daha basit ve güvenli bir yaklaşımla ListView kullanarak burada sorundan kaçınalım
+    return ListView(
       controller: scrollController,
       physics: const AlwaysScrollableScrollPhysics(),
-      slivers: [
+      padding: contentPadding,
+      children: [
         // Header widget
-        if (headerWidget != null) SliverToBoxAdapter(child: headerWidget!),
+        if (headerWidget != null) headerWidget!,
 
         // Ana içerik
-        SliverPadding(
-          padding: contentPadding,
-          sliver: SliverToBoxAdapter(child: contentView),
-        ),
+        contentView,
 
         // Footer widget
-        if (footerWidget != null) SliverToBoxAdapter(child: footerWidget!),
+        if (footerWidget != null) footerWidget!,
 
         // Ekstra boşluk - pull-to-refresh için
-        const SliverToBoxAdapter(
-          child: SizedBox(height: 20),
-        ),
+        const SizedBox(height: 20),
       ],
     );
   }

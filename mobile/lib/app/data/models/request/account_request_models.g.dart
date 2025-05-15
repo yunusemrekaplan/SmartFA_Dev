@@ -10,7 +10,7 @@ Map<String, dynamic> _$CreateAccountRequestModelToJson(
         CreateAccountRequestModel instance) =>
     <String, dynamic>{
       'name': instance.name,
-      'type': _accountTypeToJson(instance.type),
+      'type': accountTypeToInt(instance.type),
       'currency': instance.currency,
       'initialBalance': instance.initialBalance,
     };

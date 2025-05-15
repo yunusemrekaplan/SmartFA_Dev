@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mobile/app/data/models/enums/category_type.dart';
 import 'package:mobile/app/data/models/request/transaction_request_models.dart';
 import 'package:mobile/app/data/models/response/account_response_model.dart';
@@ -9,10 +10,12 @@ import 'package:mobile/app/domain/repositories/account_repository.dart';
 import 'package:mobile/app/domain/repositories/category_repository.dart';
 import 'package:mobile/app/domain/repositories/transaction_repository.dart';
 import 'package:mobile/app/navigation/app_routes.dart';
+import 'package:mobile/app/services/base_controller_mixin.dart';
 import 'package:mobile/app/theme/app_colors.dart'; // Tema renkleri
 
 /// İşlemler ekranının state'ini ve iş mantığını yöneten GetX controller.
-class TransactionsController extends GetxController {
+class TransactionsController extends GetxController
+    with RefreshableControllerMixin {
   // Repository'leri inject et (Binding üzerinden)
   final ITransactionRepository _transactionRepository;
   final IAccountRepository _accountRepository;
@@ -30,13 +33,9 @@ class TransactionsController extends GetxController {
 
   // --- State Değişkenleri ---
 
-  // Yüklenme durumları
-  final RxBool isLoading = true.obs; // Ana liste yükleniyor mu?
+  // Yüklenme durumları (isLoading ve errorMessage RefreshableControllerMixin'den geliyor)
   final RxBool isLoadingMore = false.obs; // Daha fazla veri yükleniyor mu?
   final RxBool isFilterLoading = false.obs; // Filtreler yükleniyor mu?
-
-  // Hata durumu
-  final RxString errorMessage = ''.obs;
 
   // İşlem Listesi
   final RxList<TransactionModel> transactionList = <TransactionModel>[].obs;
@@ -77,17 +76,19 @@ class TransactionsController extends GetxController {
   // Seçilen hızlı tarih filtresi
   final Rx<String?> selectedQuickDate = Rx<String?>(null);
 
+  // Çift istek kontrolü için bir zaman damgası
+  DateTime? _lastFetchTimestamp;
+
   // --- Lifecycle Metotları ---
 
   @override
   void onInit() {
     super.onInit();
-    print('>>> TransactionsController onInit called');
+    _logDebug('TransactionsController onInit called');
     // Başlangıçta hem filtreleri hem de ilk sayfa işlemleri çek
     _initializeData();
     // Scroll listener'ı ekle
     scrollController.addListener(_scrollListener);
-    fetchTransactions(isInitialLoad: true);
   }
 
   @override
@@ -101,38 +102,34 @@ class TransactionsController extends GetxController {
 
   /// Başlangıç verilerini (filtreler ve ilk sayfa) yükler.
   Future<void> _initializeData() async {
-    isLoading.value = true; // Genel yükleme başladı
-    isFilterLoading.value = true;
-    errorMessage.value = '';
-    hasMoreData.value = true; // Başlangıçta daha fazla veri olduğunu varsay
-    _currentPage.value = 1; // Sayfayı sıfırla
-    transactionList.clear(); // Listeyi temizle
-
-    try {
-      // Filtre verilerini ve ilk sayfa işlemlerini paralel çek
-      await Future.wait([
-        _loadFilterOptions(),
-        fetchTransactions(isInitialLoad: true), // İlk yükleme olduğunu belirt
-      ]);
-    } catch (e) {
-      // Hata zaten fetchTransactions veya _loadFilterOptions içinde ele alınır.
-      // Burada genel bir loglama yapılabilir.
-      print("Initialization error: $e");
-    } finally {
-      isLoading.value = false; // Genel yükleme bitti
-      isFilterLoading.value = false;
-    }
+    _logDebug('_initializeData çağırıldı');
+    await loadData(
+      fetchFunc: () async {
+        // Önce filtreleri yükle, ardından işlemleri yükle
+        await _loadFilterOptions();
+        await _fetchTransactionsData();
+      },
+      loadingErrorMessage: "İşlemler yüklenirken bir hata oluştu.",
+    );
   }
 
   /// Filtreleme için hesap ve kategori listelerini yükler.
   Future<void> _loadFilterOptions() async {
+    _logDebug('_loadFilterOptions çağırıldı');
+    isFilterLoading.value = true;
     try {
       // Hesapları yükle
       final accountsResult = await _accountRepository.getUserAccounts();
       accountsResult.when(
-        success: (accounts) => filterAccounts.assignAll(accounts),
-        failure: (error) => print(
-            "Error loading filter accounts: ${error.message}"), // Hata loglanabilir
+        success: (accounts) {
+          _logDebug('${accounts.length} hesap yüklendi');
+          filterAccounts.assignAll(accounts);
+        },
+        failure: (error) {
+          _logDebug("Error loading filter accounts: ${error.message}");
+          // Hata durumunda boş liste ata
+          filterAccounts.clear();
+        },
       );
 
       // Kategorileri yükle (hem gelir hem gider)
@@ -143,49 +140,81 @@ class TransactionsController extends GetxController {
 
       final List<CategoryModel> allCategories = [];
       expenseCategoriesResult.when(
-        success: (cats) => allCategories.addAll(cats),
-        failure: (error) =>
-            print("Error loading expense categories: ${error.message}"),
+        success: (cats) {
+          _logDebug('${cats.length} gider kategorisi yüklendi');
+          allCategories.addAll(cats);
+        },
+        failure: (error) {
+          _logDebug("Error loading expense categories: ${error.message}");
+        },
       );
       incomeCategoriesResult.when(
-        success: (cats) => allCategories.addAll(cats),
-        failure: (error) =>
-            print("Error loading income categories: ${error.message}"),
+        success: (cats) {
+          _logDebug('${cats.length} gelir kategorisi yüklendi');
+          allCategories.addAll(cats);
+        },
+        failure: (error) {
+          _logDebug("Error loading income categories: ${error.message}");
+        },
       );
+
       // Ada göre sırala
       allCategories.sort((a, b) => a.name.compareTo(b.name));
+      _logDebug('Toplam ${allCategories.length} kategori yüklendi');
       filterCategories.assignAll(allCategories);
     } catch (e) {
-      print("Error loading filter options: $e");
+      _logDebug("Error loading filter options: $e");
       // Hata mesajı gösterilebilir
+    } finally {
+      isFilterLoading.value = false;
     }
   }
 
-  /// İşlemleri API'den çeker (sayfalama ve filtreleme ile).
-  /// [isInitialLoad] true ise mevcut listeyi temizler ve sayfayı sıfırlar.
-  /// [loadMore] true ise sonraki sayfayı yükler.
-  Future<void> fetchTransactions(
-      {bool isInitialLoad = false, bool loadMore = false}) async {
-    // Zaten yükleniyorsa veya daha fazla veri yoksa (loadMore için) işlemi durdur
-    if ((isLoading.value && isInitialLoad) ||
-        (isLoadingMore.value && loadMore) ||
-        (!hasMoreData.value && loadMore)) return;
+  /// İşlemlerin ana veri yükleme işlemini gerçekleştirir.
+  /// Bu metot, RefreshableControllerMixin için veri çekme işini yapar.
+  Future<void> _fetchTransactionsData() async {
+    hasMoreData.value = true;
+    _currentPage.value = 1;
+    transactionList.clear();
 
-    if (isInitialLoad) {
-      isLoading.value = true;
-      _currentPage.value = 1;
-      hasMoreData.value = true;
-      transactionList.clear(); // İlk yüklemede listeyi temizle
-    } else if (loadMore) {
-      isLoadingMore.value = true;
-      _currentPage.value++; // Sonraki sayfaya geç
-    } else {
-      isLoading.value = true; // Filtre değişikliği vb. için
-      _currentPage.value = 1; // Filtre değişince sayfayı sıfırla
-      hasMoreData.value = true;
-      transactionList.clear();
-    }
-    errorMessage.value = ''; // Hata mesajını temizle
+    // Filtre DTO'sunu oluştur
+    final filter = TransactionFilterDto(
+      accountId: selectedAccount.value?.id,
+      categoryId: selectedCategory.value?.id,
+      startDate: selectedStartDate.value,
+      endDate: selectedEndDate.value,
+      type: selectedType.value,
+      pageNumber: _currentPage.value,
+      pageSize: _pageSize,
+    );
+
+    final result = await _transactionRepository.getUserTransactions(filter);
+
+    result.when(
+      success: (newTransactions) {
+        if (newTransactions.isEmpty) {
+          hasMoreData.value = false;
+        } else {
+          transactionList.addAll(newTransactions);
+          hasMoreData.value = newTransactions.length == _pageSize;
+        }
+        _logDebug(
+            'İşlemler yüklendi: ${newTransactions.length} adet, Sayfa: ${_currentPage.value}, Daha fazla veri var mı: ${hasMoreData.value}');
+        _calculateTotals();
+      },
+      failure: (error) {
+        _logDebug('İşlemler yüklenirken hata: ${error.message}');
+        throw error; // RefreshableControllerMixin hata yönetimi için hatayı fırlat
+      },
+    );
+  }
+
+  /// Daha fazla işlem yükler (sayfalama için)
+  Future<void> loadMoreTransactions() async {
+    if (isLoadingMore.value || !hasMoreData.value) return;
+
+    isLoadingMore.value = true;
+    _currentPage.value++;
 
     try {
       // Filtre DTO'sunu oluştur
@@ -204,39 +233,99 @@ class TransactionsController extends GetxController {
       result.when(
         success: (newTransactions) {
           if (newTransactions.isEmpty) {
-            hasMoreData.value =
-                false; // Yeni veri gelmediyse daha fazla veri yoktur
+            hasMoreData.value = false;
           } else {
-            transactionList
-                .addAll(newTransactions); // Yeni işlemleri listeye ekle
-            hasMoreData.value = newTransactions.length ==
-                _pageSize; // Tam sayfa geldiyse daha fazla olabilir
+            transactionList.addAll(newTransactions);
+            hasMoreData.value = newTransactions.length == _pageSize;
           }
-          print(
-              '>>> Transactions fetched: ${newTransactions.length} items, Page: ${_currentPage.value}, HasMore: ${hasMoreData.value}');
+          _logDebug(
+              'Daha fazla işlem yüklendi: ${newTransactions.length} adet, Sayfa: ${_currentPage.value}');
+          _calculateTotals();
         },
         failure: (error) {
-          print('>>> Failed to fetch transactions: ${error.message}');
-          errorMessage.value = error.message;
-          hasMoreData.value =
-              false; // Hata durumunda daha fazla veri olmadığını varsay
-          _currentPage.value = _currentPage.value > 1
-              ? _currentPage.value - 1
-              : 1; // Hata olursa sayfayı geri al
+          _logDebug('Daha fazla işlem yüklenirken hata: ${error.message}');
+          _currentPage.value--; // Hata durumunda sayfa numarasını geri al
+          super.errorMessage.value = error.message;
         },
       );
-
-      // Toplam gelir ve gider hesapla
-      _calculateTotals();
     } catch (e) {
-      print('>>> Fetch transactions unexpected error: $e');
-      errorMessage.value = 'İşlemler yüklenirken beklenmedik bir hata oluştu.';
-      hasMoreData.value = false;
-      _currentPage.value = _currentPage.value > 1 ? _currentPage.value - 1 : 1;
+      _logDebug('Beklenmeyen hata (loadMoreTransactions): $e');
+      _currentPage.value--; // Hata durumunda sayfa numarasını geri al
+      super.errorMessage.value =
+          'İşlemler yüklenirken beklenmedik bir hata oluştu';
     } finally {
-      isLoading.value = false;
       isLoadingMore.value = false;
     }
+  }
+
+  /// İşlemleri API'den çeker (sayfalama ve filtreleme ile).
+  /// [isInitialLoad] true ise mevcut listeyi temizler ve sayfayı sıfırlar.
+  /// [force] true ise, halihazırda bir yükleme işlemi devam etse bile
+  /// yenileme işlemini zorla başlatır
+  Future<void> fetchTransactions(
+      {bool isInitialLoad = false, bool force = false}) async {
+    // İşlem başlatmadan önce debug log ekleyelim
+    _logDebug(
+        'fetchTransactions çağırıldı: isInitialLoad=$isInitialLoad, force=$force, '
+        'current isLoading=${super.isLoading.value}');
+
+    // Son işlem çağrısı ile şu anki çağrı arasındaki farkı kontrol et
+    // Çok kısa süre içinde gelen çağrıları engelle (300ms)
+    if (_lastFetchTimestamp != null) {
+      final difference = DateTime.now().difference(_lastFetchTimestamp!);
+      if (difference.inMilliseconds < 300 && !force) {
+        _logDebug(
+            'Son istekten bu yana çok kısa süre geçti (${difference.inMilliseconds}ms). İstek engellendi.');
+        return;
+      }
+    }
+
+    // Zaman damgasını güncelle
+    _lastFetchTimestamp = DateTime.now();
+
+    // Halihazırda yükleme yapılıyorsa ve zorlanmıyorsa, çık
+    if (super.isLoading.value && !force) {
+      _logDebug('İşlemler zaten yükleniyor, yenileme iptal edildi.');
+      return;
+    }
+
+    // Force modunda ise önce yükleme durumunu sıfırla
+    if (force && super.isLoading.value) {
+      _logDebug('Zorla yenileme: Yükleme durumu sıfırlanıyor');
+      resetLoadingState();
+      // Kısa bir gecikme ekle
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+
+    // Çağrı tipine göre uygun veri çekme metodunu kullan
+    if (isInitialLoad) {
+      // Halihazırda token yenileme süreci nedeniyle çağrı yapılıp yapılmadığını
+      // kontrol etmek için bir flag ekleyelim
+      bool requestStarted = false;
+
+      await loadData(
+        fetchFunc: () async {
+          // Eğer bu istek zaten başlatıldıysa, ikinci çağrıyı engelle
+          if (requestStarted) {
+            _logDebug('Duplicate request detected. Skipping...');
+            return;
+          }
+          requestStarted = true;
+
+          await _fetchTransactionsData();
+        },
+        loadingErrorMessage: 'İşlemler yüklenirken bir hata oluştu',
+        preventMultipleRequests: !force,
+      );
+    } else {
+      // Yenileme için loadData değil refreshData kullanılmalı
+      await refreshData(
+        fetchFunc: _fetchTransactionsData,
+        refreshErrorMessage: 'İşlemler yenilenirken bir hata oluştu',
+      );
+    }
+
+    _logDebug('fetchTransactions tamamlandı');
   }
 
   /// Kaydırma olaylarını dinler ve listenin sonuna gelindiğinde daha fazla veri yükler.
@@ -246,7 +335,7 @@ class TransactionsController extends GetxController {
     if (scrollController.position.extentAfter < 200 && // Son 200 piksel kala
         !isLoadingMore.value &&
         hasMoreData.value) {
-      fetchTransactions(loadMore: true);
+      loadMoreTransactions();
     }
   }
 
@@ -263,11 +352,7 @@ class TransactionsController extends GetxController {
     sortCriteria.value = tempSortCriteria.value;
 
     // Verileri yükle
-    isLoading.value = true;
-    transactionList.clear();
-    _currentPage.value = 1;
-    hasMoreData.value = true;
-    fetchTransactions(isInitialLoad: false);
+    fetchTransactions(isInitialLoad: true);
   }
 
   /// Tüm filtreleri temizler - FilterBottomSheet içinde kullanılır
@@ -323,7 +408,8 @@ class TransactionsController extends GetxController {
   }
 
   /// Filtreleme seansını başlat - Bottom Sheet açıldığında çağrılır
-  void startFiltering() {
+  void startFiltering() async {
+    _logDebug('startFiltering çağırıldı');
     // Mevcut filtre değerlerini geçici değişkenlere kopyala
     tempStartDate.value = selectedStartDate.value;
     tempEndDate.value = selectedEndDate.value;
@@ -332,6 +418,12 @@ class TransactionsController extends GetxController {
     tempType.value = selectedType.value;
     tempQuickDate.value = selectedQuickDate.value;
     tempSortCriteria.value = sortCriteria.value;
+
+    // Eğer filtre listeleri boşsa, yeniden yükle
+    if (filterAccounts.isEmpty || filterCategories.isEmpty) {
+      _logDebug('Filtre listeleri boş, yeniden yükleniyor');
+      await _loadFilterOptions();
+    }
   }
 
   /// Tarih aralığı seçimi için dialog gösterir.
@@ -440,6 +532,15 @@ class TransactionsController extends GetxController {
             DateTime(threeMonthsAgo.year, threeMonthsAgo.month, 1);
         tempEndDate.value = DateTime(now.year, now.month, now.day, 23, 59, 59);
         break;
+
+      case 'lastYear':
+        final lastYear = DateTime(now.year - 1, now.month, now.day);
+        tempStartDate.value =
+            DateTime(lastYear.year, lastYear.month, lastYear.day);
+        tempEndDate.value = DateTime(now.year, now.month, now.day, 23, 59, 59);
+        break;
+
+      case 'all':
       default:
         tempStartDate.value = null;
         tempEndDate.value = null;
@@ -476,7 +577,8 @@ class TransactionsController extends GetxController {
 
     if (confirm != true) return; // Kullanıcı iptal ettiyse çık
 
-    isLoading.value = true; // Silme işlemi sırasında indicator gösterilebilir
+    isLoadingMore.value =
+        true; // Silme işlemi sırasında indicator gösterilebilir
     errorMessage.value = '';
 
     try {
@@ -514,7 +616,7 @@ class TransactionsController extends GetxController {
       errorMessage.value = 'İşlem silinirken beklenmedik bir hata oluştu.';
       Get.snackbar('Hata', errorMessage.value);
     } finally {
-      isLoading.value = false;
+      isLoadingMore.value = false;
     }
   }
 
@@ -734,5 +836,12 @@ class TransactionsController extends GetxController {
         ],
       ),
     );
+  }
+
+  /// Debug modunda log basar
+  void _logDebug(String message) {
+    if (kDebugMode) {
+      print('>>> TransactionsController: $message');
+    }
   }
 }

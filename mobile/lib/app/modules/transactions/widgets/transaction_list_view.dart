@@ -46,9 +46,17 @@ class TransactionListView extends StatelessWidget {
           return dateB.compareTo(dateA);
         });
 
+      // Eğer liste boşsa veya henüz oluşturulmadıysa boş bir widget döndür
+      if (sortedDates.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
       return ListView.builder(
-        controller: controller.scrollController,
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        primary: false, // Nested kaydırma için, parent'a bırakıyoruz
+        shrinkWrap: true, // İçeriğe göre boyutlandır
+        padding: EdgeInsets.zero, // Padding'i contentView'den alıyoruz
+        controller:
+            controller.scrollController, // Kaydırma kontrolünü geri ekliyoruz
         itemCount: sortedDates.length + (controller.hasMoreData.value ? 1 : 0),
         itemBuilder: (context, index) {
           // Listenin sonuna geldik mi?
@@ -64,42 +72,52 @@ class TransactionListView extends StatelessWidget {
 
           // Grup başlığı ve o gruba ait işlemler
           final dateStr = sortedDates[index];
-          final transactionsInGroup = groupedTransactions[dateStr]!;
+          final transactionsInGroup = groupedTransactions[dateStr] ?? [];
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Tarih başlığı
-              Padding(
-                padding:
-                    const EdgeInsets.only(top: 16.0, bottom: 8.0, left: 4.0),
-                child: Container(
+          // Eğer bu gruba ait hiç işlem yoksa boş widget döndür
+          if (transactionsInGroup.isEmpty) {
+            return const SizedBox.shrink();
+          }
+
+          // Tarih grubu başlığı ve işlemler
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Tarih başlığı
+                Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    dateStr,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primary,
-                        ),
+                      const EdgeInsets.only(top: 16.0, bottom: 8.0, left: 4.0),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      dateStr,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primary,
+                          ),
+                    ),
                   ),
                 ),
-              ),
 
-              // Bu tarihe ait işlemler
-              ...transactionsInGroup
-                  .map((transaction) => TransactionCard(
-                        transaction: transaction,
-                        currencyFormatter: currencyFormatter,
-                        getCategoryIcon: getCategoryIcon,
-                        controller: controller,
-                      ))
-                  .toList(),
-            ],
+                // Bu tarihe ait işlemler
+                ...transactionsInGroup
+                    .map((transaction) => TransactionCard(
+                          transaction: transaction,
+                          currencyFormatter: currencyFormatter,
+                          getCategoryIcon: getCategoryIcon,
+                          controller: controller,
+                        ))
+                    .toList(),
+              ],
+            ),
           );
         },
       );
@@ -111,6 +129,7 @@ class TransactionListView extends StatelessWidget {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             padding: const EdgeInsets.all(20),

@@ -7,10 +7,11 @@ import 'package:mobile/app/modules/transactions/widgets/filter_bottom_sheet/filt
 import 'package:mobile/app/modules/transactions/widgets/transaction_list_view.dart';
 import 'package:mobile/app/modules/transactions/widgets/transaction_summary.dart';
 import 'package:mobile/app/theme/app_colors.dart'; // Sayı ve tarih formatlama için
+import 'package:mobile/app/theme/app_theme.dart';
 import 'package:mobile/app/widgets/empty_state_view.dart';
-import 'package:mobile/app/widgets/error_view.dart'; // ErrorView widget'ını import et
 import 'package:mobile/app/widgets/custom_app_bar.dart';
-import 'package:mobile/app/widgets/loading_state_view.dart'; // CustomHomeAppBar widget'ını import et
+import 'package:mobile/app/widgets/refreshable_content_view.dart';
+import 'package:mobile/app/data/models/response/transaction_response_model.dart';
 
 /// İşlemleri listeleyen ve filtreleyen modern ekran.
 class TransactionsScreen extends GetView<TransactionsController> {
@@ -61,66 +62,53 @@ class TransactionsScreen extends GetView<TransactionsController> {
             currencyFormatter: currencyFormatter,
           ),
 
-          // Filtreler ve içerik
+          // Ana içerik - RefreshableContentView ile sarmalanmış
           Expanded(
-            child: RefreshIndicator(
-              color: AppColors.primary,
-              onRefresh: controller.fetchTransactions,
-              child: Obx(() {
-                // Yükleme durumu
-                if (controller.isLoading.value &&
-                    controller.transactionList.isEmpty) {
-                  return const LoadingStateView(
-                    message: 'İşlemler yükleniyor...',
-                  );
-                }
-                // Hata durumu
-                else if (controller.errorMessage.isNotEmpty &&
-                    controller.transactionList.isEmpty) {
-                  return ErrorView(
-                    message: controller.errorMessage.value,
-                    onRetry: () =>
-                        controller.fetchTransactions(isInitialLoad: true),
-                    isLarge: true,
-                  );
-                }
-                // Ana içerik
-                else {
-                  return Column(
-                    children: [
-                      // Aktif filtreleri gösteren alan
-                      ActiveFiltersRow(controller: controller),
+            child: Obx(() {
+              // Aktif filtreler varsa göster
+              Widget? filtersWidget;
+              if (controller.hasActiveFilters) {
+                filtersWidget = ActiveFiltersRow(controller: controller);
+              }
 
-                      // İşlem listesi
-                      Expanded(
-                        child: controller.transactionList.isEmpty
-                            ? EmptyStateView(
-                                title: 'İşlem kaydı bulunamadı',
-                                message: controller.hasActiveFilters
-                                    ? 'Seçtiğiniz filtrelere uygun işlem kaydı bulunamadı. Filtrelerinizi değiştirerek tekrar deneyin.'
-                                    : 'Gelir ve giderlerinizi takip etmek için işlem ekleyin.',
-                                icon: Icons.sync_alt_rounded,
-                                actionText: controller.hasActiveFilters
-                                    ? 'Filtreleri Temizle'
-                                    : 'İşlem Ekle',
-                                onAction: controller.hasActiveFilters
-                                    ? controller.clearFilters
-                                    : controller.goToAddTransaction,
-                                actionIcon: controller.hasActiveFilters
-                                    ? Icons.filter_alt_off_rounded
-                                    : Icons.add_circle_outline_rounded,
-                              )
-                            : TransactionListView(
-                                controller: controller,
-                                currencyFormatter: currencyFormatter,
-                                getCategoryIcon: _getCategoryIcon,
-                              ),
-                      ),
-                    ],
-                  );
-                }
-              }),
-            ),
+              return RefreshableContentView<TransactionModel>(
+                isLoading: controller.isLoading,
+                errorMessage: controller.errorMessage,
+                onRefresh: () =>
+                    controller.fetchTransactions(isInitialLoad: false),
+                contentPadding: EdgeInsets.zero, // Padding'i kaldırdık
+                showLoadingOverlay: true,
+                progressColor: AppColors.primary,
+                loadingMessage: 'İşlemler yükleniyor...',
+                items: controller.transactionList,
+                headerWidget:
+                    filtersWidget, // Filtreleri header olarak ekliyoruz
+                emptyStateView: EmptyStateView(
+                  title: 'İşlem kaydı bulunamadı',
+                  message: controller.hasActiveFilters
+                      ? 'Seçtiğiniz filtrelere uygun işlem kaydı bulunamadı. Filtrelerinizi değiştirerek tekrar deneyin.'
+                      : 'Gelir ve giderlerinizi takip etmek için işlem ekleyin.',
+                  icon: Icons.sync_alt_rounded,
+                  actionText: controller.hasActiveFilters
+                      ? 'Filtreleri Temizle'
+                      : 'İşlem Ekle',
+                  onAction: controller.hasActiveFilters
+                      ? controller.clearFilters
+                      : controller.goToAddTransaction,
+                  actionIcon: controller.hasActiveFilters
+                      ? Icons.filter_alt_off_rounded
+                      : Icons.add_circle_outline_rounded,
+                ),
+                contentView: Padding(
+                  padding: const EdgeInsets.all(AppTheme.kHorizontalPadding),
+                  child: TransactionListView(
+                    controller: controller,
+                    currencyFormatter: currencyFormatter,
+                    getCategoryIcon: _getCategoryIcon,
+                  ),
+                ),
+              );
+            }),
           ),
         ],
       ),
