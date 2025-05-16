@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile/app/domain/repositories/auth_repository.dart';
 import 'package:mobile/app/modules/settings/settings_screen.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/app/modules/auth/widgets/loading_logo.dart';
@@ -503,9 +504,8 @@ class AppDrawer extends StatelessWidget {
   void _showLogoutDialog(BuildContext context) {
     DialogService.showLogoutConfirmationDialog(
       onConfirm: () {
-        // TODO: Logout işlemini gerçekleştir
-        Navigator.of(context).pop(); // Drawer'ı da kapat
-        _showNotImplementedMessage(context);
+        Get.find<IAuthRepository>().logout();
+        Get.offAllNamed(AppRoutes.LOGIN);
       },
     );
   }
