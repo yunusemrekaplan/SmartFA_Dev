@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/app/data/network/exceptions.dart';
+import 'package:mobile/app/data/network/exceptions/app_exception.dart';
 
 /// Hata yönetimini sağlayan arayüz
 abstract class IErrorHandler {

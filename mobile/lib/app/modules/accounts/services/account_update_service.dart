@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
 import 'package:mobile/app/data/models/enums/account_type.dart';
 import 'package:mobile/app/data/models/request/account_request_models.dart';
+import 'package:mobile/app/data/network/exceptions/unexpected_exception.dart';
 import 'package:mobile/app/domain/repositories/account_repository.dart';
-import 'package:mobile/app/data/network/exceptions.dart';
 import 'package:mobile/app/utils/error_handler/error_handler.dart';
 import 'package:mobile/app/utils/snackbar_helper.dart';
 

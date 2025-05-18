@@ -1,7 +1,7 @@
 import 'package:get/get.dart';
 import 'package:mobile/app/modules/accounts/bindings/accounts_binding.dart';
 import 'package:mobile/app/modules/budgets/bindings/budgets_binding.dart';
-import 'package:mobile/app/modules/dashboard/dashboard_binding.dart';
+import 'package:mobile/app/modules/dashboard/bindings/dashboard_binding.dart';
 import 'package:mobile/app/modules/home/home_controller.dart';
 import 'package:mobile/app/modules/settings/settings_binding.dart';
 import 'package:mobile/app/modules/transactions/bindings/transactions_binding.dart';

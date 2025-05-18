@@ -2,8 +2,12 @@ import 'package:dio/dio.dart';
 import 'package:mobile/app/data/datasources/remote/account_remote_datasource.dart';
 import 'package:mobile/app/data/models/request/account_request_models.dart';
 import 'package:mobile/app/data/models/response/account_response_model.dart';
+import 'package:mobile/app/data/network/exceptions/app_exception.dart';
+import 'package:mobile/app/data/network/exceptions/network_exception.dart';
+import 'package:mobile/app/data/network/exceptions/not_found_exception.dart';
+import 'package:mobile/app/data/network/exceptions/unexpected_exception.dart';
+import 'package:mobile/app/data/network/exceptions/validation_exception.dart';
 import 'package:mobile/app/domain/repositories/account_repository.dart';
-import 'package:mobile/app/data/network/exceptions.dart'; // Yeni exception sınıflarını import et
 import 'package:mobile/app/utils/result.dart';
 
 class AccountRepositoryImpl implements IAccountRepository {
@@ -26,8 +30,7 @@ class AccountRepositoryImpl implements IAccountRepository {
   }
 
   @override
-  Future<Result<AccountModel, AppException>> getAccountById(
-      int accountId) async {
+  Future<Result<AccountModel, AppException>> getAccountById(int accountId) async {
     try {
       final account = await _remoteDataSource.getAccountById(accountId);
       return Success(account);
@@ -102,14 +105,12 @@ class AccountRepositoryImpl implements IAccountRepository {
       // Backend'den gelen 400 Bad Request (örn: ilişkili işlem var) hatasını yakala
       if (e.response?.statusCode == 400 || e.response?.statusCode == 422) {
         // Sunucudan gelen özel mesajı kullan
-        String message =
-            'Hesap silinemedi. Hesaba ait işlemler bulunuyor olabilir.';
+        String message = 'Hesap silinemedi. Hesaba ait işlemler bulunuyor olabilir.';
         if (e.response?.data is Map && e.response?.data['message'] != null) {
           message = e.response?.data['message'];
         }
 
-        return Failure(
-            ValidationException(message: message, details: e.response?.data));
+        return Failure(ValidationException(message: message, details: e.response?.data));
       }
       return Failure(NetworkException.fromDioError(e));
     } catch (e) {

@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:mobile/app/data/network/exceptions/app_exception.dart';
 import 'package:mobile/app/services/page_refresh_service.dart';
-import 'package:mobile/app/data/network/exceptions.dart';
 import 'package:mobile/app/utils/error_handler/error_handler.dart';
 
 /// Tüm controller'lar için standart veri yükleme, yenileme ve hata yönetimi
@@ -54,8 +54,7 @@ mixin RefreshableControllerMixin on GetxController {
       errorMessage: errorMessage,
       onSuccess: onSuccess,
       onError: (e) {
-        _handleError(
-            e, loadingErrorMessage ?? 'Veriler yüklenirken bir hata oluştu');
+        _handleError(e, loadingErrorMessage ?? 'Veriler yüklenirken bir hata oluştu');
         if (onError != null) onError(e);
       },
     );
@@ -72,8 +71,8 @@ mixin RefreshableControllerMixin on GetxController {
       isLoading: isLoading,
       errorMessage: errorMessage,
       onSuccess: onSuccess,
-      onError: (e) => _handleError(
-          e, refreshErrorMessage ?? 'Veriler yenilenirken bir hata oluştu'),
+      onError: (e) =>
+          _handleError(e, refreshErrorMessage ?? 'Veriler yenilenirken bir hata oluştu'),
     );
 
     // RefreshIndicator için Future'ı her zaman tamamla
@@ -107,9 +106,8 @@ mixin RefreshableControllerMixin on GetxController {
       _errorHandler.handleError(
         error,
         message: defaultMessage,
-        onRetry: () => loadData(
-            fetchFunc:
-                () async {}), // Boş fonksiyon, alt sınıflarda override edilecek
+        onRetry: () =>
+            loadData(fetchFunc: () async {}), // Boş fonksiyon, alt sınıflarda override edilecek
       );
 
       // Hata mesajını ayarla

@@ -1,17 +1,20 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart' hide Response;
-import 'package:mobile/app/data/network/exceptions.dart';
+import 'package:mobile/app/data/network/exceptions/app_exception.dart';
+import 'package:mobile/app/data/network/exceptions/auth_exception.dart';
+import 'package:mobile/app/data/network/exceptions/network_exception.dart';
+import 'package:mobile/app/data/network/exceptions/not_found_exception.dart';
+import 'package:mobile/app/data/network/exceptions/validation_exception.dart';
 import 'package:mobile/app/navigation/app_routes.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:mobile/app/modules/home/home_controller.dart';
-import 'package:mobile/app/modules/dashboard/dashboard_controller.dart';
+import 'package:mobile/app/modules/dashboard/controllers/dashboard_controller.dart';
 
 // Token'ları saklamak için kullanılacak key'ler
 const String _accessTokenKey = 'accessToken';
 const String _refreshTokenKey = 'refreshToken';
-const String _refreshEndpoint =
-    '/auth/refresh'; // Backend'deki refresh endpoint yolu
+const String _refreshEndpoint = '/auth/refresh'; // Backend'deki refresh endpoint yolu
 
 /// API isteklerindeki hataları yakalayıp işleyen Dio interceptor.
 /// Token yenileme mantığını ve hata tipine göre uygun exception'ları oluşturur.
@@ -35,8 +38,7 @@ class ErrorInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    _logDebug(
-        'Error caught for ${err.requestOptions.path} - Status: ${err.response?.statusCode}');
+    _logDebug('Error caught for ${err.requestOptions.path} - Status: ${err.response?.statusCode}');
 
     // 401 Unauthorized hatası token yenileme ile çözülebilir mi?
     if (_shouldRefreshToken(err)) {
@@ -46,8 +48,7 @@ class ErrorInterceptor extends Interceptor {
 
     // Diğer hatalar için uygun AppException oluştur
     final exception = _createAppException(err);
-    _logDebug(
-        'Created exception: ${exception.runtimeType} - ${exception.message}');
+    _logDebug('Created exception: ${exception.runtimeType} - ${exception.message}');
 
     // Orijinal hatayı özel exception ile güncelle
     final updatedError = DioException(
@@ -77,8 +78,7 @@ class ErrorInterceptor extends Interceptor {
     if (statusCode == 400 || statusCode == 422) {
       // Yanıtın yapısını kontrol et
       if (responseData is Map<String, dynamic> &&
-          (responseData.containsKey('errors') ||
-              responseData.containsKey('fieldErrors'))) {
+          (responseData.containsKey('errors') || responseData.containsKey('fieldErrors'))) {
         // Doğrulama hatası formatında
         return ValidationException.fromDioResponse(responseData,
             defaultMessage: 'Gönderilen veriler geçersiz');
@@ -87,18 +87,14 @@ class ErrorInterceptor extends Interceptor {
         String message = '';
         if (responseData is String) {
           message = responseData;
-        } else if (responseData is Map<String, dynamic> &&
-            responseData.containsKey('message')) {
+        } else if (responseData is Map<String, dynamic> && responseData.containsKey('message')) {
           message = responseData['message'].toString();
         } else {
           message = 'İstek işlenemedi';
         }
 
         return NetworkException(
-            message: message,
-            code: 'BAD_REQUEST',
-            statusCode: statusCode,
-            details: responseData);
+            message: message, code: 'BAD_REQUEST', statusCode: statusCode, details: responseData);
       }
     }
 
@@ -126,13 +122,11 @@ class ErrorInterceptor extends Interceptor {
 
   /// Token yenileme gerekip gerekmediğini kontrol eder
   bool _shouldRefreshToken(DioException err) {
-    return err.response?.statusCode == 401 &&
-        !err.requestOptions.path.contains(_refreshEndpoint);
+    return err.response?.statusCode == 401 && !err.requestOptions.path.contains(_refreshEndpoint);
   }
 
   /// Token yenileme işlemini gerçekleştirir
-  Future<void> _handleTokenRefresh(
-      DioException err, ErrorInterceptorHandler handler) async {
+  Future<void> _handleTokenRefresh(DioException err, ErrorInterceptorHandler handler) async {
     _logDebug('401 detected, attempting token refresh...');
 
     // Eğer zaten bir yenileme işlemi devam ediyorsa, bu isteği beklemeye al
@@ -166,8 +160,7 @@ class ErrorInterceptor extends Interceptor {
           await _saveTokens(newAccessToken, newRefreshToken);
 
           // Başarısız olan orijinal isteği yeni token ile tekrar dene
-          final retryResponse =
-              await _retryRequest(err.requestOptions, newAccessToken);
+          final retryResponse = await _retryRequest(err.requestOptions, newAccessToken);
           handler.resolve(retryResponse);
 
           // Bekleyen diğer istekleri de yeni token ile tekrar dene
@@ -181,8 +174,7 @@ class ErrorInterceptor extends Interceptor {
       }
 
       // Geçerli token alınamadıysa
-      await _handleRefreshError(
-          handler, err, 'Oturum yenilenemedi. Lütfen tekrar giriş yapın.');
+      await _handleRefreshError(handler, err, 'Oturum yenilenemedi. Lütfen tekrar giriş yapın.');
     } on DioException catch (refreshError) {
       _logDebug('Error during refresh token request: $refreshError');
       await _handleRefreshError(handler, err, 'Token yenileme sırasında hata.');
@@ -217,8 +209,7 @@ class ErrorInterceptor extends Interceptor {
   }
 
   /// Başarısız olan isteği yeni token ile tekrar dener
-  Future<Response> _retryRequest(
-      RequestOptions options, String newAccessToken) async {
+  Future<Response> _retryRequest(RequestOptions options, String newAccessToken) async {
     _logDebug('Retrying original request: ${options.path}');
 
     options.headers['Authorization'] = 'Bearer $newAccessToken';
@@ -266,8 +257,8 @@ class ErrorInterceptor extends Interceptor {
   }
 
   /// Refresh token hatası durumunda yapılacak işlemler
-  Future<void> _handleRefreshError(ErrorInterceptorHandler handler,
-      DioException originalError, String message) async {
+  Future<void> _handleRefreshError(
+      ErrorInterceptorHandler handler, DioException originalError, String message) async {
     _logDebug('Handling refresh error: $message');
 
     // Tokenları temizle
@@ -280,10 +271,7 @@ class ErrorInterceptor extends Interceptor {
 
     // AuthException oluştur
     final authException = AuthException(
-        message: message,
-        isTokenExpired: true,
-        code: 'AUTH_TOKEN_EXPIRED',
-        details: originalError);
+        message: message, isTokenExpired: true, code: 'AUTH_TOKEN_EXPIRED', details: originalError);
 
     // Kullanıcıyı login ekranına yönlendir
     Get.offAllNamed(AppRoutes.LOGIN);
@@ -311,8 +299,7 @@ class ErrorInterceptor extends Interceptor {
           // Token yenileme sonrası otomatik veri yüklemesini tamamen devre dışı bırakıyoruz
           // Kullanıcı zaten ekranlar arası geçiş yaparken veri yükleniyor
           // Bu, çift veri yükleme sorununu çözecek
-          _logDebug(
-              'Token yenileme sonrası otomatik veri yüklemesi devre dışı bırakıldı');
+          _logDebug('Token yenileme sonrası otomatik veri yüklemesi devre dışı bırakıldı');
 
           // Eğer aktif olarak kulllanılan controller'ların loading durumları varsa sıfırla
           if (Get.isRegistered<HomeController>()) {
@@ -332,8 +319,7 @@ class ErrorInterceptor extends Interceptor {
             }
           }
         } else {
-          _logDebug(
-              'DashboardController is not registered yet, cannot refresh');
+          _logDebug('DashboardController is not registered yet, cannot refresh');
         }
       });
     } catch (e) {

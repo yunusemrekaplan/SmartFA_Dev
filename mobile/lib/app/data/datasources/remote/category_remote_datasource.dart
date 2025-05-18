@@ -5,7 +5,7 @@ import 'package:mobile/app/data/models/enums/category_type.dart';
 import 'package:mobile/app/data/models/request/category_request_models.dart';
 import 'package:mobile/app/data/models/response/category_response_model.dart';
 import 'package:mobile/app/data/network/dio_client.dart';
-import 'package:mobile/app/data/network/exceptions.dart';
+import 'package:mobile/app/data/network/exceptions/unexpected_exception.dart';
 
 const String _categoriesEndpoint = '/categories'; // Ana endpoint
 
@@ -17,8 +17,7 @@ abstract class ICategoryRemoteDataSource {
   Future<CategoryModel> createCategory(CreateCategoryRequestModel categoryData);
 
   /// Varolan kategoriyi günceller
-  Future<void> updateCategory(
-      int categoryId, UpdateCategoryRequestModel categoryData);
+  Future<void> updateCategory(int categoryId, UpdateCategoryRequestModel categoryData);
 
   /// Kategori siler
   Future<void> deleteCategory(int categoryId);
@@ -42,9 +41,7 @@ class CategoryRemoteDataSource implements ICategoryRemoteDataSource {
         queryParameters: queryParams,
       );
       final List<dynamic> data = response.data as List<dynamic>;
-      return data
-          .map((json) => CategoryModel.fromJson(json as Map<String, dynamic>))
-          .toList();
+      return data.map((json) => CategoryModel.fromJson(json as Map<String, dynamic>)).toList();
     } on DioException {
       // Dio hataları ErrorInterceptor tarafından işleneceği için tekrar fırlatıyoruz
       rethrow;
@@ -60,8 +57,7 @@ class CategoryRemoteDataSource implements ICategoryRemoteDataSource {
   }
 
   @override
-  Future<CategoryModel> createCategory(
-      CreateCategoryRequestModel categoryData) async {
+  Future<CategoryModel> createCategory(CreateCategoryRequestModel categoryData) async {
     try {
       final response = await _dioClient.post(
         _categoriesEndpoint,
@@ -80,8 +76,7 @@ class CategoryRemoteDataSource implements ICategoryRemoteDataSource {
   }
 
   @override
-  Future<void> updateCategory(
-      int categoryId, UpdateCategoryRequestModel categoryData) async {
+  Future<void> updateCategory(int categoryId, UpdateCategoryRequestModel categoryData) async {
     try {
       await _dioClient.put(
         '$_categoriesEndpoint/$categoryId',
@@ -118,9 +113,7 @@ class CategoryRemoteDataSource implements ICategoryRemoteDataSource {
     try {
       final response = await _dioClient.get(_categoriesEndpoint);
       final List<dynamic> data = response.data as List<dynamic>;
-      return data
-          .map((json) => CategoryModel.fromJson(json as Map<String, dynamic>))
-          .toList();
+      return data.map((json) => CategoryModel.fromJson(json as Map<String, dynamic>)).toList();
     } on DioException {
       rethrow;
     } catch (e) {

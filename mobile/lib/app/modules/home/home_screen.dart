@@ -6,7 +6,7 @@ import 'package:mobile/app/theme/app_colors.dart';
 import 'home_controller.dart';
 
 // Sekmelerde gösterilecek ekranları import et
-import '../dashboard/dashboard_screen.dart';
+import '../dashboard/views/dashboard_screen.dart';
 import '../accounts/views/accounts_screen.dart';
 import '../transactions/views/transactions_screen.dart';
 import '../budgets/views/budgets_screen.dart';

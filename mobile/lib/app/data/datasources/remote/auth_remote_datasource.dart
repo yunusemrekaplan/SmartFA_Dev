@@ -3,7 +3,8 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:mobile/app/data/models/request/auth_request_models.dart';
 import 'package:mobile/app/data/models/response/auth_response_model.dart';
 import 'package:mobile/app/data/network/dio_client.dart';
-import 'package:mobile/app/data/network/exceptions.dart';
+import 'package:mobile/app/data/network/exceptions/app_exception.dart';
+import 'package:mobile/app/data/network/exceptions/unexpected_exception.dart';
 
 // Auth API endpoint yolları
 const String _loginEndpoint = '/auth/login';
@@ -19,8 +20,7 @@ abstract class IAuthRemoteDataSource {
   Future<AuthResponseModel> register(RegisterRequestModel registerRequest);
 
   /// Access token yenilemek için refresh token kullanır
-  Future<AuthResponseModel> refreshToken(
-      RefreshTokenRequestModel refreshRequest);
+  Future<AuthResponseModel> refreshToken(RefreshTokenRequestModel refreshRequest);
 
   /// Refresh token'ı iptal eder (logout)
   Future<void> revokeToken(RefreshTokenRequestModel revokeRequest);
@@ -76,8 +76,7 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
   }
 
   @override
-  Future<AuthResponseModel> register(
-      RegisterRequestModel registerRequest) async {
+  Future<AuthResponseModel> register(RegisterRequestModel registerRequest) async {
     try {
       _logDebug('Sending register request');
 
@@ -101,8 +100,7 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
   }
 
   @override
-  Future<AuthResponseModel> refreshToken(
-      RefreshTokenRequestModel refreshRequest) async {
+  Future<AuthResponseModel> refreshToken(RefreshTokenRequestModel refreshRequest) async {
     try {
       _logDebug('Sending refresh token request');
 

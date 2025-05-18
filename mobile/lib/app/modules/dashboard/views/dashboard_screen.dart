@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile/app/modules/dashboard/dashboard_controller.dart';
+import 'package:mobile/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:mobile/app/modules/dashboard/widgets/budget_summary_card.dart';
 import 'package:mobile/app/modules/dashboard/widgets/income_expense_chart.dart';
 import 'package:mobile/app/widgets/empty_state_view.dart';

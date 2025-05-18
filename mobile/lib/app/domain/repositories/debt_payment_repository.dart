@@ -1,6 +1,6 @@
 import 'package:mobile/app/data/models/request/debt_payment_request_models.dart';
 import 'package:mobile/app/data/models/response/debt_payment_response_model.dart';
-import 'package:mobile/app/data/network/exceptions.dart';
+import 'package:mobile/app/data/network/exceptions/app_exception.dart';
 import 'package:mobile/app/utils/result.dart';
 
 /// Borç ödeme verilerine erişim ve yönetim işlemlerini tanımlayan arayüz.

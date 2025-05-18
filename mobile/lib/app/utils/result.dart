@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:mobile/app/data/network/exceptions.dart';
+import 'package:mobile/app/data/network/exceptions/app_exception.dart';
+import 'package:mobile/app/data/network/exceptions/unexpected_exception.dart';
 
 /// Asenkron operasyonların sonucunu temsil eden soyut temel sınıf.
 /// Ya bir başarı değeri (Success) ya da bir hata (Failure) içerir.

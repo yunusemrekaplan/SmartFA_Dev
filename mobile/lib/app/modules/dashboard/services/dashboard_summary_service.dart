@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:mobile/app/data/network/exceptions/app_exception.dart';
+import 'package:mobile/app/data/network/exceptions/unexpected_exception.dart';
 import 'package:mobile/app/domain/repositories/account_repository.dart';
-import 'package:mobile/app/data/network/exceptions.dart';
 import 'package:mobile/app/utils/result.dart';
 
 /// Dashboard ana verilerini yönetmek için servis sınıfı.
@@ -47,8 +48,7 @@ class DashboardSummaryService {
       Function(AppException, String, VoidCallback) errorHandler) {
     result.when(
       success: (balance) => totalBalance.value = balance,
-      failure: (error) => errorHandler(
-          error, 'Bakiye Yüklenemedi', () => fetchAccountSummary()),
+      failure: (error) => errorHandler(error, 'Bakiye Yüklenemedi', () => fetchAccountSummary()),
     );
   }
 

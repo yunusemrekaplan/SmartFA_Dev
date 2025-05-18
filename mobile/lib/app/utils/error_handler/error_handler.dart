@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/app/data/network/exceptions.dart';
+import 'package:mobile/app/data/network/exceptions/app_exception.dart';
 import 'package:mobile/app/utils/error_handler/auth_error_handler.dart';
 import 'package:mobile/app/utils/error_handler/i_error_handler.dart';
 import 'package:mobile/app/utils/error_handler/network_error_handler.dart';
 import 'package:mobile/app/utils/error_handler/unexpected_error_handler.dart';
 import 'package:mobile/app/utils/error_handler/validation_error_handler.dart';
-import '../snackbar_helper.dart';
+import 'package:mobile/app/utils/snackbar_helper.dart';
 
 /// Merkezi hata yöneticisi
 class ErrorHandler {

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/app/data/network/exceptions/app_exception.dart';
+import 'package:mobile/app/data/network/exceptions/auth_exception.dart';
+import 'package:mobile/app/data/network/exceptions/network_exception.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:mobile/app/data/network/exceptions.dart';
 
 /// Hata durumlarını görüntülemek için kullanılan widget.
 /// Farklı hata türleri için özelleştirilmiş görünümler sunar.
@@ -32,7 +34,7 @@ class ErrorView extends StatelessWidget {
   final double? height;
 
   const ErrorView({
-    Key? key,
+    super.key,
     this.error,
     this.message,
     this.onRetry,
@@ -42,8 +44,7 @@ class ErrorView extends StatelessWidget {
     this.onSecondaryButtonPressed,
     this.isLarge = false,
     this.height,
-  })  : assert(error != null || message != null, 'error veya message verilmelidir'),
-        super(key: key);
+  })  : assert(error != null || message != null, 'error veya message verilmelidir');
 
   /// Özel network hatası görünümü
   factory ErrorView.network({

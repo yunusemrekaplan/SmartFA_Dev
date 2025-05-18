@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile/app/modules/accounts/controllers/accounts_controller.dart';
 import 'package:mobile/app/modules/budgets/controllers/budgets_controller.dart';
-import 'package:mobile/app/modules/dashboard/dashboard_controller.dart';
+import 'package:mobile/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:mobile/app/modules/settings/settings_controller.dart';
 import 'package:mobile/app/modules/transactions/controllers/transactions_controller.dart';
 
@@ -35,6 +35,9 @@ class HomeController extends GetxController {
   TransactionsController get transactionsController => _transactionsController;
   BudgetsController get budgetsController => _budgetsController;
   SettingsController get settingsController => _settingsController;
+
+  // Son yenileme zamanını tutmak için değişken
+  DateTime? _lastDashboardRefresh;
 
   @override
   void onInit() {
@@ -99,8 +102,20 @@ class HomeController extends GetxController {
   /// Sekme değiştiğinde yapılacak işlemleri yönetir
   void _handleTabChange(int index) {
     // Sekmeye göre yenileme veya veri getirme işlemleri
+    // Eğer aynı sekmeye tekrar tıklanırsa yenileme yapma
+    if (index == selectedIndex.value) {
+      return;
+    }
+
     switch (index) {
       case 0: // Dashboard
+        // Dashboard için özel kontrol - sadece gerektiğinde yenile
+        if (_dashboardController.isLoading.value ||
+            _isRefreshingDashboard.value) {
+          print(
+              '>>> HomeController: Dashboard is already loading or refreshing, skipping');
+          return;
+        }
         _refreshDashboard();
         break;
       case 1: // Accounts
@@ -124,9 +139,29 @@ class HomeController extends GetxController {
       return;
     }
 
+    // Son yenileme zamanını kontrol et
+    final now = DateTime.now();
+    if (_lastDashboardRefresh != null) {
+      final difference = now.difference(_lastDashboardRefresh!);
+      if (difference.inSeconds < 5) {
+        // Minimum 5 saniye ara
+        print('>>> HomeController: Dashboard refresh too frequent, skipping');
+        return;
+      }
+    }
+
     try {
       print('>>> HomeController: Refreshing dashboard data');
       _isRefreshingDashboard.value = true;
+      _lastDashboardRefresh = now;
+
+      // Önce yükleme durumunu kontrol edelim
+      if (_dashboardController.isLoading.value) {
+        print('>>> HomeController: Dashboard already loading, resetting state');
+        _dashboardController.resetLoadingState();
+        // Yükleme durumunun tamamen sıfırlandığından emin olmak için kısa bir gecikme
+        Future.delayed(const Duration(milliseconds: 100));
+      }
 
       _dashboardController.refreshDashboardData().then((_) {
         print('>>> HomeController: Dashboard refresh completed');

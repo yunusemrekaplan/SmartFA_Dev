@@ -40,13 +40,23 @@ class PageRefreshService {
 
       _logDebug('Veri yenileme işlemi başarıyla tamamlandı');
     } catch (e) {
-      // Hata oluşursa callback çağır (eğer tanımlanmışsa)
-      if (onError != null) {
-        onError(e);
+      // Boş veri durumunu kontrol et
+      if (e.toString().contains('No data found')) {
+        _logDebug(
+            'Boş veri durumu tespit edildi, normal bir durum olarak işleniyor');
+        // Boş veri durumunda hata olarak işleme, normal durum olarak kabul et
+        if (onSuccess != null) {
+          onSuccess();
+        }
       } else {
-        // Varsayılan hata mesajı
-        errorMessage.value = 'Veriler yüklenirken bir hata oluştu';
-        _logDebug('Veri yenileme sırasında hata: $e');
+        // Gerçek hata durumu
+        if (onError != null) {
+          onError(e);
+        } else {
+          // Varsayılan hata mesajı
+          errorMessage.value = 'Veriler yüklenirken bir hata oluştu';
+          _logDebug('Veri yenileme sırasında hata: $e');
+        }
       }
     } finally {
       // Yükleme durumunu her koşulda sıfırla (eğer isteniyorsa)

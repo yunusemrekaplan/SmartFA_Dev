@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
 import 'package:mobile/app/data/models/response/budget_response_model.dart';
 import 'package:mobile/app/data/models/response/transaction_response_model.dart';
+import 'package:mobile/app/data/network/exceptions/app_exception.dart';
 import 'package:mobile/app/utils/error_handler/error_handler.dart';
-import 'package:mobile/app/data/network/exceptions.dart';
 import 'package:mobile/app/domain/repositories/account_repository.dart';
 import 'package:mobile/app/domain/repositories/budget_repository.dart';
 import 'package:mobile/app/domain/repositories/transaction_repository.dart';
@@ -22,6 +22,11 @@ class DashboardController extends GetxController
   final FinancialOverviewService _financialService;
   final BudgetSummaryService _budgetService;
   final DashboardStateManager _stateManager;
+
+  // Yenileme kontrolü için değişkenler
+  final RxBool _isRefreshing = false.obs;
+  DateTime? _lastRefreshTime;
+  static const int _minimumRefreshInterval = 5; // saniye
 
   // Getter'lar - UI'ın servis verilerine erişimi için
 
@@ -94,18 +99,61 @@ class DashboardController extends GetxController
 
   /// Dashboard verilerini yükler - Tüm servislerin verilerini toplar
   Future<void> loadDashboardData() async {
-    await loadData(
-      fetchFunc: _fetchAllDashboardData,
-      loadingErrorMessage: 'Dashboard verileri yüklenirken bir hata oluştu',
-    );
+    if (_shouldPreventRefresh()) {
+      print(
+          '>>> DashboardController: Preventing refresh due to recent update or ongoing refresh');
+      return;
+    }
+
+    _isRefreshing.value = true;
+    _lastRefreshTime = DateTime.now();
+
+    try {
+      await loadData(
+        fetchFunc: _fetchAllDashboardData,
+        loadingErrorMessage: 'Dashboard verileri yüklenirken bir hata oluştu',
+        preventMultipleRequests: true,
+      );
+    } finally {
+      _isRefreshing.value = false;
+    }
   }
 
   /// Verileri yeniler - Pull-to-refresh için
   Future<void> refreshDashboardData() async {
-    return await refreshData(
-      fetchFunc: _fetchAllDashboardData,
-      refreshErrorMessage: 'Dashboard verileri yenilenirken bir hata oluştu',
-    );
+    if (_shouldPreventRefresh()) {
+      print(
+          '>>> DashboardController: Preventing refresh due to recent update or ongoing refresh');
+      return;
+    }
+
+    _isRefreshing.value = true;
+    _lastRefreshTime = DateTime.now();
+
+    try {
+      return await refreshData(
+        fetchFunc: _fetchAllDashboardData,
+        refreshErrorMessage: 'Dashboard verileri yenilenirken bir hata oluştu',
+      );
+    } finally {
+      _isRefreshing.value = false;
+    }
+  }
+
+  /// Yenileme yapılıp yapılmayacağını kontrol eder
+  bool _shouldPreventRefresh() {
+    if (_isRefreshing.value) {
+      return true;
+    }
+
+    if (_lastRefreshTime != null) {
+      final difference = DateTime.now().difference(_lastRefreshTime!);
+      if (difference.inSeconds < _minimumRefreshInterval) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /// Yükleme durumunu sıfırlar - Token yenileme sonrası kullanılır
@@ -114,6 +162,7 @@ class DashboardController extends GetxController
     super.resetLoadingState(); // Mixin'in metodu
     // StateManager'ı da bilgilendir (UI için gerekli)
     _stateManager.setLoadingState(false);
+    _isRefreshing.value = false;
   }
 
   /// Hesaplar sayfasına yönlendirir
@@ -151,13 +200,29 @@ class DashboardController extends GetxController
     _summaryService.processAccountDetails(
         results[0] as Result<double, AppException>, _stateManager.handleError);
 
+    // Boş veri durumunu normal karşıla, hata olarak işleme
     _financialService.processTransactions(
         results[1] as Result<List<TransactionModel>, AppException>,
-        _stateManager.handleError);
+        (error, title, retry) {
+      if (error.message.contains('No data found')) {
+        // Boş veri durumunu sessizce kabul et
+        _financialService.recentTransactions.clear();
+      } else {
+        _stateManager.handleError(error, title, retry);
+      }
+    });
 
-    _budgetService.processBudgets(
-        results[2] as Result<List<BudgetModel>, AppException>,
-        _stateManager.handleError);
+    // Boş bütçe durumunu normal karşıla
+    _budgetService
+        .processBudgets(results[2] as Result<List<BudgetModel>, AppException>,
+            (error, title, retry) {
+      if (error.message.contains('No data found')) {
+        // Boş bütçe durumunu sessizce kabul et
+        _budgetService.budgetSummaries.clear();
+      } else {
+        _stateManager.handleError(error, title, retry);
+      }
+    });
 
     _financialService.processIncomeExpense(
         results[3] as Result<Map<String, double>, AppException>,

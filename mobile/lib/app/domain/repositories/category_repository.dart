@@ -1,7 +1,7 @@
 import 'package:mobile/app/data/models/enums/category_type.dart';
 import 'package:mobile/app/data/models/request/category_request_models.dart';
 import 'package:mobile/app/data/models/response/category_response_model.dart';
-import 'package:mobile/app/data/network/exceptions.dart';
+import 'package:mobile/app/data/network/exceptions/app_exception.dart';
 import 'package:mobile/app/utils/result.dart';
 
 abstract class ICategoryRepository {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/app/data/network/exceptions.dart';
+import 'package:mobile/app/data/network/exceptions/app_exception.dart';
+import 'package:mobile/app/data/network/exceptions/unexpected_exception.dart';
 import 'package:mobile/app/utils/error_handler/i_error_handler.dart';
 import 'package:mobile/app/utils/snackbar_helper.dart';
 
