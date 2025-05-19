@@ -4,6 +4,9 @@ import 'package:intl/intl.dart';
 import 'package:mobile/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:mobile/app/modules/dashboard/widgets/budget_summary_card.dart';
 import 'package:mobile/app/modules/dashboard/widgets/income_expense_chart.dart';
+import 'package:mobile/app/modules/dashboard/widgets/welcome_dashboard.dart';
+import 'package:mobile/app/modules/dashboard/widgets/welcome_empty_state.dart';
+import 'package:mobile/app/navigation/app_routes.dart';
 import 'package:mobile/app/widgets/empty_state_view.dart';
 import 'package:mobile/app/widgets/info_panel.dart';
 import 'package:mobile/app/modules/dashboard/widgets/section_header.dart';
@@ -74,20 +77,30 @@ class DashboardScreen extends GetView<DashboardController> {
             items: _hasContent()
                 ? null // İçerik var, kontrol etmeye gerek yok
                 : RxList<int>.empty(), // İçerik yok, boş liste gönder
+            emptyStateView: _buildEmptyState(),
             contentView: _buildDashboardContent(context),
           )),
+    );
+  }
+
+  /// Boş durum widget'ını oluşturur
+  EmptyStateView _buildEmptyState() {
+    return WelcomeEmptyStateView(
+      hasAccounts: controller.accountCount.value > 0,
+      hasTransactions: controller.recentTransactions.isNotEmpty,
+      hasBudgets: controller.budgetSummaries.isNotEmpty,
+      onAddAccount: () => Get.toNamed(AppRoutes.ADD_EDIT_ACCOUNT),
+      onAddTransaction: () => Get.toNamed(AppRoutes.ADD_EDIT_TRANSACTION),
+      onAddBudget: () => Get.toNamed(AppRoutes.ADD_EDIT_BUDGET),
     );
   }
 
   /// Dashboard içeriğini oluşturur
   Widget _buildDashboardContent(BuildContext context) {
     return ListView(
-      physics:
-          const NeverScrollableScrollPhysics(), // Ana scrolling RefreshableContentView tarafından yönetiliyor
+      physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
       children: [
-        // Yükleniyor veya hata durumları RefreshableContentView tarafından ele alınıyor
-
         // --- Gelir-Gider Özeti Grafik ---
         Obx(() => IncomeExpenseChart(
               income: controller.totalIncome.value,
@@ -274,7 +287,8 @@ class DashboardScreen extends GetView<DashboardController> {
   }
 
   bool _hasContent() {
-    return controller.recentTransactions.isNotEmpty ||
-        controller.budgetSummaries.isNotEmpty;
+    return controller.accountCount.value > 0 &&
+        (controller.recentTransactions.isNotEmpty ||
+            controller.budgetSummaries.isNotEmpty);
   }
 }
