@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:mobile/app/data/datasources/local/auth_local_datasource.dart';
 import 'package:mobile/app/data/datasources/remote/auth_remote_datasource.dart';
-import 'package:mobile/app/data/models/request/auth_request_models.dart';
-import 'package:mobile/app/data/models/response/auth_response_model.dart';
+import 'package:mobile/app/domain/models/request/auth_request_models.dart';
+import 'package:mobile/app/domain/models/response/auth_response_model.dart';
 import 'package:mobile/app/data/network/exceptions/app_exception.dart';
 import 'package:mobile/app/data/network/exceptions/auth_exception.dart';
 import 'package:mobile/app/data/network/exceptions/network_exception.dart';
@@ -19,7 +19,8 @@ class AuthRepositoryImpl implements IAuthRepository {
   AuthRepositoryImpl(this._remoteDataSource, this._localDataSource);
 
   @override
-  Future<Result<AuthResponseModel, AppException>> login(String email, String password) async {
+  Future<Result<AuthResponseModel, AppException>> login(
+      String email, String password) async {
     print('>>> AuthRepository: Login attempt for email: $email');
     final requestModel = LoginRequestModel(email: email, password: password);
     try {
@@ -50,7 +51,8 @@ class AuthRepositoryImpl implements IAuthRepository {
           message = 'Geçersiz e-posta veya şifre.';
         }
 
-        return Failure(AuthException(message: message, code: 'INVALID_CREDENTIALS'));
+        return Failure(
+            AuthException(message: message, code: 'INVALID_CREDENTIALS'));
       }
 
       // Validasyon hataları
@@ -100,7 +102,8 @@ class AuthRepositoryImpl implements IAuthRepository {
           message = e.response?.data['message'];
         }
 
-        return Failure(ValidationException(message: message, fieldErrors: {'email': message}));
+        return Failure(ValidationException(
+            message: message, fieldErrors: {'email': message}));
       }
 
       return Failure(NetworkException.fromDioError(e));
@@ -110,7 +113,8 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
-  Future<Result<AuthResponseModel, AppException>> refreshToken(String refreshToken) async {
+  Future<Result<AuthResponseModel, AppException>> refreshToken(
+      String refreshToken) async {
     final requestModel = RefreshTokenRequestModel(refreshToken: refreshToken);
     try {
       final responseModel = await _remoteDataSource.refreshToken(requestModel);
@@ -130,7 +134,8 @@ class AuthRepositoryImpl implements IAuthRepository {
           isTokenExpired: true,
           code: 'TOKEN_EXPIRED'));
     } catch (e) {
-      await _localDataSource.clearTokens(); // Güvenlik için beklenmedik hatada da temizle
+      await _localDataSource
+          .clearTokens(); // Güvenlik için beklenmedik hatada da temizle
       return Failure(UnexpectedException.fromException(e as Exception));
     }
   }

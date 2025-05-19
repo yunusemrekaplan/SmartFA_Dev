@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/app/data/models/response/budget_response_model.dart';
+import 'package:mobile/app/domain/models/response/budget_response_model.dart';
 import 'package:mobile/app/modules/budgets/controllers/budgets_controller.dart';
 import 'package:mobile/app/services/dialog_service.dart';
 

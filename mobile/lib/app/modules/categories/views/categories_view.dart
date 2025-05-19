@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile/app/data/models/enums/category_type.dart';
-import 'package:mobile/app/data/models/response/category_response_model.dart';
+import 'package:mobile/app/domain/models/enums/category_type.dart';
+import 'package:mobile/app/domain/models/response/category_response_model.dart';
 import 'package:mobile/app/modules/categories/controllers/categories_controller.dart';
 import 'package:mobile/app/modules/categories/views/widgets/category_form_sheet.dart';
 import 'package:mobile/app/theme/app_colors.dart';

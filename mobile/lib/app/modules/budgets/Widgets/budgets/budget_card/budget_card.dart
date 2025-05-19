@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile/app/data/models/response/budget_response_model.dart';
+import 'package:mobile/app/domain/models/response/budget_response_model.dart';
 import 'package:mobile/app/modules/budgets/controllers/budgets_controller.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/app/theme/app_theme.dart';
@@ -27,7 +27,8 @@ class BudgetCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // İlerleme çubuğu için yüzdelik değer (0.0-1.0 arasında)
-    final double spentPercentage = budget.amount > 0 ? budget.spentAmount / budget.amount : 0;
+    final double spentPercentage =
+        budget.amount > 0 ? budget.spentAmount / budget.amount : 0;
 
     // İlerleme çubuğu ve vurgular için durum rengi
     Color statusColor;

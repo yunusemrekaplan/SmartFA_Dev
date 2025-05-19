@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:mobile/app/data/models/enums/category_type.dart';
+import 'package:mobile/app/domain/models/enums/category_type.dart';
 
 part 'category_response_model.g.dart'; // json_serializable için
 
@@ -28,13 +28,13 @@ class CategoryModel {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-          other is CategoryModel &&
-              runtimeType == other.runtimeType &&
-              id == other.id &&
-              name == other.name &&
-              type == other.type &&
-              iconName == other.iconName &&
-              isPredefined == other.isPredefined;
+      other is CategoryModel &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          name == other.name &&
+          type == other.type &&
+          iconName == other.iconName &&
+          isPredefined == other.isPredefined;
 
   @override
   int get hashCode =>

@@ -48,7 +48,8 @@ class DashboardSummaryService {
       Function(AppException, String, VoidCallback) errorHandler) {
     result.when(
       success: (balance) => totalBalance.value = balance,
-      failure: (error) => errorHandler(error, 'Bakiye Yüklenemedi', () => fetchAccountSummary()),
+      failure: (error) => errorHandler(
+          error, 'Bakiye Yüklenemedi', () => fetchAccountSummary()),
     );
   }
 

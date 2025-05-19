@@ -1,4 +1,4 @@
-import 'package:mobile/app/data/models/response/auth_response_model.dart';
+import 'package:mobile/app/domain/models/response/auth_response_model.dart';
 import 'package:mobile/app/data/network/exceptions/app_exception.dart';
 import 'package:mobile/app/utils/result.dart';
 

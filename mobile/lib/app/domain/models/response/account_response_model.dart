@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:mobile/app/data/models/enums/account_type.dart';
+import 'package:mobile/app/domain/models/enums/account_type.dart';
 
 part 'account_response_model.g.dart'; // json_serializable için
 
@@ -28,13 +28,13 @@ class AccountModel {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-          other is AccountModel &&
-              runtimeType == other.runtimeType &&
-              id == other.id &&
-              name == other.name &&
-              type == other.type &&
-              currency == other.currency &&
-              currentBalance == other.currentBalance;
+      other is AccountModel &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          name == other.name &&
+          type == other.type &&
+          currency == other.currency &&
+          currentBalance == other.currentBalance;
 
   @override
   int get hashCode =>

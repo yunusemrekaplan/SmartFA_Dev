@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:mobile/app/data/models/enums/category_type.dart';
+import 'package:mobile/app/domain/models/enums/category_type.dart';
 
 part 'transaction_response_model.g.dart'; // json_serializable için
 
@@ -33,7 +33,8 @@ class TransactionModel {
     this.notes,
   });
 
-  factory TransactionModel.fromJson(Map<String, dynamic> json) => _$TransactionModelFromJson(json);
+  factory TransactionModel.fromJson(Map<String, dynamic> json) =>
+      _$TransactionModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$TransactionModelToJson(this);
 

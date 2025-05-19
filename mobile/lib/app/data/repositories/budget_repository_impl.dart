@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:mobile/app/data/datasources/remote/budget_remote_datasource.dart';
-import 'package:mobile/app/data/models/request/budget_request_models.dart';
-import 'package:mobile/app/data/models/response/budget_response_model.dart';
+import 'package:mobile/app/domain/models/request/budget_request_models.dart';
+import 'package:mobile/app/domain/models/response/budget_response_model.dart';
 import 'package:mobile/app/data/network/exceptions/app_exception.dart';
 import 'package:mobile/app/data/network/exceptions/network_exception.dart';
 import 'package:mobile/app/data/network/exceptions/not_found_exception.dart';
@@ -19,7 +19,8 @@ class BudgetRepositoryImpl implements IBudgetRepository {
   Future<Result<List<BudgetModel>, AppException>> getUserBudgetsByPeriod(
       int year, int month) async {
     try {
-      final budgets = await _remoteDataSource.getUserBudgetsByPeriod(year, month);
+      final budgets =
+          await _remoteDataSource.getUserBudgetsByPeriod(year, month);
       return Success(budgets);
     } on DioException catch (e) {
       return Failure(NetworkException.fromDioError(e));
@@ -54,12 +55,14 @@ class BudgetRepositoryImpl implements IBudgetRepository {
             // Bütçe kategorisi bulunamadı veya zaten var gibi özel durumları ele al
             if (fieldErrors.containsKey('categoryId')) {
               return Failure(ValidationException(
-                  message: 'Kategori ile ilgili bir hata oluştu: ${fieldErrors['categoryId']}',
+                  message:
+                      'Kategori ile ilgili bir hata oluştu: ${fieldErrors['categoryId']}',
                   fieldErrors: fieldErrors));
             }
 
             return Failure(ValidationException(
-                message: 'Bütçe bilgileri geçersiz.', fieldErrors: fieldErrors));
+                message: 'Bütçe bilgileri geçersiz.',
+                fieldErrors: fieldErrors));
           } catch (_) {}
         }
       }
@@ -101,7 +104,8 @@ class BudgetRepositoryImpl implements IBudgetRepository {
             });
 
             return Failure(ValidationException(
-                message: 'Bütçe güncelleme bilgileri geçersiz.', fieldErrors: fieldErrors));
+                message: 'Bütçe güncelleme bilgileri geçersiz.',
+                fieldErrors: fieldErrors));
           } catch (_) {}
         }
       }

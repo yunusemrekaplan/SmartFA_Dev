@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:mobile/app/data/models/enums/account_type.dart';
+import 'package:mobile/app/domain/models/enums/account_type.dart';
 
 part 'account_request_models.g.dart'; // json_serializable için
 
@@ -37,7 +37,7 @@ class UpdateAccountRequestModel {
 }
 
 // AccountType enum'ını JSON'a gönderirken int değerine çeviren yardımcı fonksiyon
-int _accountTypeToJson(AccountType type) => accountTypeToInt(type);
+// int _accountTypeToJson(AccountType type) => accountTypeToInt(type);
 
 // Veya string olarak göndermek isterseniz:
 // String _accountTypeToJsonString(AccountType type) => type.name; // Enum'ın adını kullanır

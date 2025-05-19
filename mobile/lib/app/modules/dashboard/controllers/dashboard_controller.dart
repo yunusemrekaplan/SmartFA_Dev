@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
-import 'package:mobile/app/data/models/response/budget_response_model.dart';
-import 'package:mobile/app/data/models/response/transaction_response_model.dart';
+import 'package:mobile/app/domain/models/response/budget_response_model.dart';
+import 'package:mobile/app/domain/models/response/transaction_response_model.dart';
 import 'package:mobile/app/data/network/exceptions/app_exception.dart';
 import 'package:mobile/app/utils/error_handler/error_handler.dart';
 import 'package:mobile/app/domain/repositories/account_repository.dart';
@@ -31,7 +31,9 @@ class DashboardController extends GetxController
   // Getter'lar - UI'ın servis verilerine erişimi için
 
   // Dashboard Durumu
+  @override
   RxBool get isLoading => _stateManager.isLoading;
+  @override
   RxString get errorMessage => _stateManager.errorMessage;
 
   // Hesap Bilgileri

@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
-import 'package:mobile/app/data/models/enums/category_type.dart';
-import 'package:mobile/app/data/models/request/transaction_request_models.dart';
-import 'package:mobile/app/data/models/response/transaction_response_model.dart';
+import 'package:mobile/app/domain/models/enums/category_type.dart';
+import 'package:mobile/app/domain/models/request/transaction_request_models.dart';
+import 'package:mobile/app/domain/models/response/transaction_response_model.dart';
 import 'package:mobile/app/data/network/exceptions/app_exception.dart';
 import 'package:mobile/app/data/network/exceptions/unexpected_exception.dart';
 import 'package:mobile/app/domain/repositories/transaction_repository.dart';
@@ -29,7 +29,8 @@ class FinancialOverviewService {
   }) : _transactionRepository = transactionRepository;
 
   /// Son işlemleri çeker
-  Future<Result<List<TransactionModel>, AppException>> fetchRecentTransactions() async {
+  Future<Result<List<TransactionModel>, AppException>>
+      fetchRecentTransactions() async {
     final filter = _createRecentTransactionsFilter();
     return await _transactionRepository.getUserTransactions(filter);
   }
@@ -41,14 +42,16 @@ class FinancialOverviewService {
   }
 
   /// Aylık gelir ve giderleri çeker
-  Future<Result<Map<String, double>, AppException>> fetchMonthlyIncomeExpense() async {
+  Future<Result<Map<String, double>, AppException>>
+      fetchMonthlyIncomeExpense() async {
     try {
       final dateRange = _getCurrentMonthDateRange();
       final filter = _createMonthlyTransactionsFilter(dateRange);
       final result = await _transactionRepository.getUserTransactions(filter);
 
       return result.when(
-        success: (transactions) => Success(_calculateIncomeAndExpense(transactions)),
+        success: (transactions) =>
+            Success(_calculateIncomeAndExpense(transactions)),
         failure: (error) => Failure(error),
       );
     } catch (e) {
@@ -66,7 +69,8 @@ class FinancialOverviewService {
   }
 
   /// Aylık işlemler için filtre oluşturur
-  TransactionFilterDto _createMonthlyTransactionsFilter(Map<String, DateTime> dateRange) {
+  TransactionFilterDto _createMonthlyTransactionsFilter(
+      Map<String, DateTime> dateRange) {
     return TransactionFilterDto(
       pageSize: 100,
       startDate: dateRange['start'],
@@ -75,7 +79,8 @@ class FinancialOverviewService {
   }
 
   /// İşlemlerden gelir ve gider toplamlarını hesaplar
-  Map<String, double> _calculateIncomeAndExpense(List<TransactionModel> transactions) {
+  Map<String, double> _calculateIncomeAndExpense(
+      List<TransactionModel> transactions) {
     double income = 0;
     double expense = 0;
 
@@ -110,7 +115,8 @@ class FinancialOverviewService {
 
   /// Kategori bazında toplam tutarı hesapla
   double calculateCategoryTotal(List<TransactionModel> transactions) {
-    return transactions.fold(0.0, (sum, transaction) => sum + transaction.amount);
+    return transactions.fold(
+        0.0, (sum, transaction) => sum + transaction.amount);
   }
 
   /// Beklenmedik bir hata oluştuğunda AppException oluşturur
@@ -132,8 +138,8 @@ class FinancialOverviewService {
         final grouped = groupTransactionsByCategory(transactions);
         groupedTransactions.assignAll(grouped);
       },
-      failure: (error) =>
-          errorHandler(error, 'Son İşlemler Yüklenemedi', () => fetchRecentTransactions()),
+      failure: (error) => errorHandler(
+          error, 'Son İşlemler Yüklenemedi', () => fetchRecentTransactions()),
     );
   }
 
@@ -145,8 +151,8 @@ class FinancialOverviewService {
         totalIncome.value = data['income'] ?? 0;
         totalExpense.value = data['expense'] ?? 0;
       },
-      failure: (error) =>
-          errorHandler(error, 'Gelir-Gider Özeti Yüklenemedi', () => fetchMonthlyIncomeExpense()),
+      failure: (error) => errorHandler(error, 'Gelir-Gider Özeti Yüklenemedi',
+          () => fetchMonthlyIncomeExpense()),
     );
   }
 }

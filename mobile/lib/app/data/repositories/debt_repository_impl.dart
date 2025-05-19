@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:mobile/app/data/datasources/remote/debt_remote_datasource.dart';
-import 'package:mobile/app/data/models/request/debt_request_models.dart';
-import 'package:mobile/app/data/models/response/debt_response_model.dart';
+import 'package:mobile/app/domain/models/request/debt_request_models.dart';
+import 'package:mobile/app/domain/models/response/debt_response_model.dart';
 import 'package:mobile/app/data/network/exceptions/app_exception.dart';
 import 'package:mobile/app/data/network/exceptions/network_exception.dart';
 import 'package:mobile/app/data/network/exceptions/not_found_exception.dart';
@@ -34,7 +34,9 @@ class DebtRepositoryImpl implements IDebtRepository {
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
         return Failure(NotFoundException(
-            message: 'Borç bulunamadı.', resourceType: 'Debt', resourceId: debtId.toString()));
+            message: 'Borç bulunamadı.',
+            resourceType: 'Debt',
+            resourceId: debtId.toString()));
       }
       return Failure(NetworkException.fromDioError(e));
     } catch (e) {
@@ -43,7 +45,8 @@ class DebtRepositoryImpl implements IDebtRepository {
   }
 
   @override
-  Future<Result<DebtModel, AppException>> createDebt(CreateDebtRequestModel debtData) async {
+  Future<Result<DebtModel, AppException>> createDebt(
+      CreateDebtRequestModel debtData) async {
     try {
       final newDebt = await _remoteDataSource.createDebt(debtData);
       return Success(newDebt);
@@ -55,7 +58,8 @@ class DebtRepositoryImpl implements IDebtRepository {
   }
 
   @override
-  Future<Result<void, AppException>> updateDebt(int debtId, UpdateDebtRequestModel debtData) async {
+  Future<Result<void, AppException>> updateDebt(
+      int debtId, UpdateDebtRequestModel debtData) async {
     try {
       await _remoteDataSource.updateDebt(debtId, debtData);
       return Success(null);

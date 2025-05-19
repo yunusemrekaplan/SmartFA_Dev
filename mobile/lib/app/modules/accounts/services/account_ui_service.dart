@@ -1,4 +1,4 @@
-import 'package:mobile/app/data/models/response/account_response_model.dart';
+import 'package:mobile/app/domain/models/response/account_response_model.dart';
 import 'package:mobile/app/services/dialog_service.dart';
 
 /// Hesaplar modülündeki UI işlemlerini yöneten servis

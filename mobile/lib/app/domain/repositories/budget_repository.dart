@@ -1,5 +1,5 @@
-import 'package:mobile/app/data/models/request/budget_request_models.dart';
-import 'package:mobile/app/data/models/response/budget_response_model.dart';
+import 'package:mobile/app/domain/models/request/budget_request_models.dart';
+import 'package:mobile/app/domain/models/response/budget_response_model.dart';
 import 'package:mobile/app/data/network/exceptions/app_exception.dart';
 import 'package:mobile/app/utils/result.dart';
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile/app/data/models/enums/account_type.dart';
-import 'package:mobile/app/data/models/response/account_response_model.dart';
+import 'package:mobile/app/domain/models/enums/account_type.dart';
+import 'package:mobile/app/domain/models/response/account_response_model.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 
 /// Tek bir hesabı gösteren modern kart widget'ı

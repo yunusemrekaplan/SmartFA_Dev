@@ -1,8 +1,8 @@
 // API endpoint yolları
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:mobile/app/data/models/request/transaction_request_models.dart';
-import 'package:mobile/app/data/models/response/transaction_response_model.dart';
+import 'package:mobile/app/domain/models/request/transaction_request_models.dart';
+import 'package:mobile/app/domain/models/response/transaction_response_model.dart';
 import 'package:mobile/app/data/network/dio_client.dart';
 import 'package:mobile/app/data/network/exceptions/unexpected_exception.dart';
 

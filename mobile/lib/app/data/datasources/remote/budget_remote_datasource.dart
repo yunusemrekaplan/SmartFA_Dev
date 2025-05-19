@@ -1,8 +1,8 @@
 // API endpoint yolları
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:mobile/app/data/models/request/budget_request_models.dart';
-import 'package:mobile/app/data/models/response/budget_response_model.dart';
+import 'package:mobile/app/domain/models/request/budget_request_models.dart';
+import 'package:mobile/app/domain/models/response/budget_response_model.dart';
 import 'package:mobile/app/data/network/dio_client.dart';
 import 'package:mobile/app/data/network/exceptions/unexpected_exception.dart';
 
@@ -40,7 +40,9 @@ class BudgetRemoteDataSource implements IBudgetRemoteDataSource {
         queryParameters: queryParams,
       );
       final List<dynamic> data = response.data as List<dynamic>;
-      return data.map((json) => BudgetModel.fromJson(json as Map<String, dynamic>)).toList();
+      return data
+          .map((json) => BudgetModel.fromJson(json as Map<String, dynamic>))
+          .toList();
     } on DioException {
       // ErrorInterceptor tarafından işlenecek
       rethrow;
@@ -73,7 +75,8 @@ class BudgetRemoteDataSource implements IBudgetRemoteDataSource {
   }
 
   @override
-  Future<void> updateBudget(int budgetId, UpdateBudgetRequestModel budgetData) async {
+  Future<void> updateBudget(
+      int budgetId, UpdateBudgetRequestModel budgetData) async {
     try {
       await _dioClient.put(
         '$_budgetsEndpoint/$budgetId',

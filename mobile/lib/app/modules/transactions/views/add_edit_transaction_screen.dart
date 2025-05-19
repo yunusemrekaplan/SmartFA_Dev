@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile/app/data/models/enums/category_type.dart';
-import 'package:mobile/app/data/models/response/account_response_model.dart';
-import 'package:mobile/app/data/models/response/category_response_model.dart';
+import 'package:mobile/app/domain/models/enums/category_type.dart';
+import 'package:mobile/app/domain/models/response/account_response_model.dart';
+import 'package:mobile/app/domain/models/response/category_response_model.dart';
 import 'package:mobile/app/modules/transactions/controllers/add_edit_transaction_controller.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/app/services/dialog_service.dart';

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile/app/data/models/response/transaction_response_model.dart';
+import 'package:mobile/app/domain/models/response/transaction_response_model.dart';
 import 'package:mobile/app/modules/dashboard/widgets/transaction_summary_card.dart';
 import 'package:mobile/app/theme/app_colors.dart';
-import 'package:mobile/app/data/models/enums/category_type.dart';
+import 'package:mobile/app/domain/models/enums/category_type.dart';
 
 /// Kategori bazlı işlem grubu widget'ı
 class TransactionCategoryGroup extends StatefulWidget {

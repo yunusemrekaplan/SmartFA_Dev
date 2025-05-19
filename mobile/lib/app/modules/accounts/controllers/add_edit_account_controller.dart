@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile/app/data/models/enums/account_type.dart';
-import 'package:mobile/app/data/models/response/account_response_model.dart';
+import 'package:mobile/app/domain/models/enums/account_type.dart';
+import 'package:mobile/app/domain/models/response/account_response_model.dart';
 import 'package:mobile/app/modules/accounts/services/account_form_service.dart';
 import 'package:mobile/app/modules/accounts/services/account_navigation_service.dart';
 import 'package:mobile/app/modules/accounts/services/account_ui_service.dart';

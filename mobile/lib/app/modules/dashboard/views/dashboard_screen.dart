@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:mobile/app/modules/dashboard/controllers/dashboard_controller.dart';
 import 'package:mobile/app/modules/dashboard/widgets/budget_summary_card.dart';
 import 'package:mobile/app/modules/dashboard/widgets/income_expense_chart.dart';
-import 'package:mobile/app/modules/dashboard/widgets/welcome_dashboard.dart';
 import 'package:mobile/app/modules/dashboard/widgets/welcome_empty_state.dart';
 import 'package:mobile/app/navigation/app_routes.dart';
 import 'package:mobile/app/widgets/empty_state_view.dart';

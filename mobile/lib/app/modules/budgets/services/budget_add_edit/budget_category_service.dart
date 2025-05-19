@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
-import 'package:mobile/app/data/models/enums/category_type.dart';
-import 'package:mobile/app/data/models/response/category_response_model.dart';
+import 'package:mobile/app/domain/models/enums/category_type.dart';
+import 'package:mobile/app/domain/models/response/category_response_model.dart';
 import 'package:mobile/app/domain/repositories/category_repository.dart';
 
 /// Kategori yönetim servisi - SRP (Single Responsibility) prensibi

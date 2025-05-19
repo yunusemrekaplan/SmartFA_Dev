@@ -1,8 +1,8 @@
 // API endpoint yolları
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
-import 'package:mobile/app/data/models/request/debt_request_models.dart';
-import 'package:mobile/app/data/models/response/debt_response_model.dart';
+import 'package:mobile/app/domain/models/request/debt_request_models.dart';
+import 'package:mobile/app/domain/models/response/debt_response_model.dart';
 import 'package:mobile/app/data/network/dio_client.dart';
 import 'package:mobile/app/data/network/exceptions/unexpected_exception.dart';
 
@@ -38,7 +38,9 @@ class DebtRemoteDataSource implements IDebtRemoteDataSource {
       // Backend'deki endpoint'e GET isteği (aktif borçları döndürür)
       final response = await _dioClient.get(_debtsEndpoint);
       final List<dynamic> data = response.data as List<dynamic>;
-      return data.map((json) => DebtModel.fromJson(json as Map<String, dynamic>)).toList();
+      return data
+          .map((json) => DebtModel.fromJson(json as Map<String, dynamic>))
+          .toList();
     } on DioException {
       // ErrorInterceptor tarafından işlenecek
       rethrow;

@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:mobile/app/data/models/response/account_response_model.dart';
+import 'package:mobile/app/domain/models/response/account_response_model.dart';
 import 'package:mobile/app/navigation/app_routes.dart';
 
 /// Hesaplar modülündeki navigasyon işlemlerini yöneten servis

@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:mobile/app/data/models/response/account_response_model.dart';
+import 'package:mobile/app/domain/models/response/account_response_model.dart';
 import 'package:mobile/app/data/network/exceptions/unexpected_exception.dart';
 import 'package:mobile/app/domain/repositories/account_repository.dart';
 import 'package:mobile/app/utils/error_handler/error_handler.dart';
@@ -96,6 +96,7 @@ class AccountDataService {
 
   /// Hesapların toplam bakiyesini hesaplar
   double calculateTotalBalance() {
-    return accountList.fold<double>(0, (sum, account) => sum + account.currentBalance);
+    return accountList.fold<double>(
+        0, (sum, account) => sum + account.currentBalance);
   }
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile/app/data/models/enums/account_type.dart';
+import 'package:mobile/app/domain/models/enums/account_type.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../controllers/add_edit_account_controller.dart';

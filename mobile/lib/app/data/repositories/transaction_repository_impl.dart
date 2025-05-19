@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:mobile/app/data/datasources/remote/transaction_remote_datasource.dart';
-import 'package:mobile/app/data/models/request/transaction_request_models.dart';
-import 'package:mobile/app/data/models/response/transaction_response_model.dart';
+import 'package:mobile/app/domain/models/request/transaction_request_models.dart';
+import 'package:mobile/app/domain/models/response/transaction_response_model.dart';
 import 'package:mobile/app/data/network/exceptions/app_exception.dart';
 import 'package:mobile/app/data/network/exceptions/network_exception.dart';
 import 'package:mobile/app/data/network/exceptions/not_found_exception.dart';
@@ -29,9 +29,11 @@ class TransactionRepositoryImpl implements ITransactionRepository {
   }
 
   @override
-  Future<Result<TransactionModel, AppException>> getTransactionById(int transactionId) async {
+  Future<Result<TransactionModel, AppException>> getTransactionById(
+      int transactionId) async {
     try {
-      final transaction = await _remoteDataSource.getTransactionById(transactionId);
+      final transaction =
+          await _remoteDataSource.getTransactionById(transactionId);
       return Success(transaction);
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) {
@@ -50,7 +52,8 @@ class TransactionRepositoryImpl implements ITransactionRepository {
   Future<Result<TransactionModel, AppException>> createTransaction(
       CreateTransactionRequestModel transactionData) async {
     try {
-      final newTransaction = await _remoteDataSource.createTransaction(transactionData);
+      final newTransaction =
+          await _remoteDataSource.createTransaction(transactionData);
       return Success(newTransaction);
     } on DioException catch (e) {
       // Validasyon hatalarını ele al
@@ -70,7 +73,8 @@ class TransactionRepositoryImpl implements ITransactionRepository {
             });
 
             return Failure(ValidationException(
-                message: 'İşlem bilgileri geçersiz.', fieldErrors: fieldErrors));
+                message: 'İşlem bilgileri geçersiz.',
+                fieldErrors: fieldErrors));
           } catch (_) {}
         }
       }
@@ -112,7 +116,8 @@ class TransactionRepositoryImpl implements ITransactionRepository {
             });
 
             return Failure(ValidationException(
-                message: 'İşlem güncelleme bilgileri geçersiz.', fieldErrors: fieldErrors));
+                message: 'İşlem güncelleme bilgileri geçersiz.',
+                fieldErrors: fieldErrors));
           } catch (_) {}
         }
       }
@@ -124,7 +129,8 @@ class TransactionRepositoryImpl implements ITransactionRepository {
   }
 
   @override
-  Future<Result<void, AppException>> deleteTransaction(int transactionId) async {
+  Future<Result<void, AppException>> deleteTransaction(
+      int transactionId) async {
     try {
       await _remoteDataSource.deleteTransaction(transactionId);
       return Success(null);

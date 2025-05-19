@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:mobile/app/data/models/enums/category_type.dart';
+import 'package:mobile/app/domain/models/enums/category_type.dart';
 
 part 'transaction_request_models.g.dart'; // json_serializable için
 
@@ -46,7 +46,6 @@ class UpdateTransactionRequestModel {
   Map<String, dynamic> toJson() => _$UpdateTransactionRequestModelToJson(this);
 }
 
-
 // DateTime'ı ISO 8601 formatında string'e çeviren yardımcı fonksiyon
 String _dateTimeToJson(DateTime dateTime) => dateTime.toIso8601String();
 
@@ -87,5 +86,3 @@ class TransactionFilterDto {
     return params;
   }
 }
-
-

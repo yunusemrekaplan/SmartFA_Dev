@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile/app/data/models/response/transaction_response_model.dart';
+import 'package:mobile/app/domain/models/response/transaction_response_model.dart';
 import 'package:mobile/app/modules/transactions/controllers/transactions_controller.dart';
 import 'package:mobile/app/modules/transactions/widgets/transaction_card.dart';
 import 'package:mobile/app/theme/app_colors.dart';

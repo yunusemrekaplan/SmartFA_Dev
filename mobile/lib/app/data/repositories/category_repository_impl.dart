@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:mobile/app/data/datasources/remote/category_remote_datasource.dart';
-import 'package:mobile/app/data/models/enums/category_type.dart';
-import 'package:mobile/app/data/models/request/category_request_models.dart';
-import 'package:mobile/app/data/models/response/category_response_model.dart';
+import 'package:mobile/app/domain/models/enums/category_type.dart';
+import 'package:mobile/app/domain/models/request/category_request_models.dart';
+import 'package:mobile/app/domain/models/response/category_response_model.dart';
 import 'package:mobile/app/data/network/exceptions/app_exception.dart';
 import 'package:mobile/app/data/network/exceptions/network_exception.dart';
 import 'package:mobile/app/data/network/exceptions/not_found_exception.dart';
@@ -17,7 +17,8 @@ class CategoryRepositoryImpl implements ICategoryRepository {
   CategoryRepositoryImpl(this._remoteDataSource);
 
   @override
-  Future<Result<List<CategoryModel>, AppException>> getCategories(CategoryType type) async {
+  Future<Result<List<CategoryModel>, AppException>> getCategories(
+      CategoryType type) async {
     try {
       final categories = await _remoteDataSource.getCategories(type);
       return Success(categories);
@@ -38,7 +39,8 @@ class CategoryRepositoryImpl implements ICategoryRepository {
       // İsim çakışması (400 Bad Request) gibi durumları özel ele alabiliriz
       if (e.response?.statusCode == 400) {
         return Failure(ValidationException(
-            message: 'Kategori oluşturma hatası', fieldErrors: e.response?.data['errors']));
+            message: 'Kategori oluşturma hatası',
+            fieldErrors: e.response?.data['errors']));
       }
       return Failure(NetworkException.fromDioError(e));
     } catch (e) {
@@ -62,7 +64,8 @@ class CategoryRepositoryImpl implements ICategoryRepository {
       if (e.response?.statusCode == 400) {
         // İsim çakışması vb.
         return Failure(ValidationException(
-            message: 'Kategori güncelleme hatası', fieldErrors: e.response?.data['errors']));
+            message: 'Kategori güncelleme hatası',
+            fieldErrors: e.response?.data['errors']));
       }
       return Failure(NetworkException.fromDioError(e));
     } catch (e) {

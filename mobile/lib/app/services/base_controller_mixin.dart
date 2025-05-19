@@ -54,7 +54,8 @@ mixin RefreshableControllerMixin on GetxController {
       errorMessage: errorMessage,
       onSuccess: onSuccess,
       onError: (e) {
-        _handleError(e, loadingErrorMessage ?? 'Veriler yüklenirken bir hata oluştu');
+        _handleError(
+            e, loadingErrorMessage ?? 'Veriler yüklenirken bir hata oluştu');
         if (onError != null) onError(e);
       },
     );
@@ -71,8 +72,8 @@ mixin RefreshableControllerMixin on GetxController {
       isLoading: isLoading,
       errorMessage: errorMessage,
       onSuccess: onSuccess,
-      onError: (e) =>
-          _handleError(e, refreshErrorMessage ?? 'Veriler yenilenirken bir hata oluştu'),
+      onError: (e) => _handleError(
+          e, refreshErrorMessage ?? 'Veriler yenilenirken bir hata oluştu'),
     );
 
     // RefreshIndicator için Future'ı her zaman tamamla
@@ -106,8 +107,9 @@ mixin RefreshableControllerMixin on GetxController {
       _errorHandler.handleError(
         error,
         message: defaultMessage,
-        onRetry: () =>
-            loadData(fetchFunc: () async {}), // Boş fonksiyon, alt sınıflarda override edilecek
+        onRetry: () => loadData(
+            fetchFunc:
+                () async {}), // Boş fonksiyon, alt sınıflarda override edilecek
       );
 
       // Hata mesajını ayarla

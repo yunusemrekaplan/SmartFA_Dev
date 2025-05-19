@@ -11,7 +11,7 @@ import 'package:mobile/app/theme/app_theme.dart';
 import 'package:mobile/app/widgets/empty_state_view.dart';
 import 'package:mobile/app/widgets/custom_app_bar.dart';
 import 'package:mobile/app/widgets/refreshable_content_view.dart';
-import 'package:mobile/app/data/models/response/transaction_response_model.dart';
+import 'package:mobile/app/domain/models/response/transaction_response_model.dart';
 
 /// İşlemleri listeleyen ve filtreleyen modern ekran.
 class TransactionsScreen extends GetView<TransactionsController> {

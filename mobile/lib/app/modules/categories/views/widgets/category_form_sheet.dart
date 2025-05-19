@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile/app/data/models/enums/category_type.dart';
+import 'package:mobile/app/domain/models/enums/category_type.dart';
 import 'package:mobile/app/modules/categories/controllers/categories_controller.dart';
 import 'package:mobile/app/modules/categories/views/widgets/icon_picker.dart';
 import 'package:mobile/app/theme/app_colors.dart';

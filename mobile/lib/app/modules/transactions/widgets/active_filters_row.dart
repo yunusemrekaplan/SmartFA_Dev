@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile/app/data/models/enums/category_type.dart';
+import 'package:mobile/app/domain/models/enums/category_type.dart';
 import 'package:mobile/app/modules/transactions/controllers/transactions_controller.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:flutter_animate/flutter_animate.dart';

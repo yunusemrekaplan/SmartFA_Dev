@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:mobile/app/data/models/response/transaction_response_model.dart';
+import 'package:mobile/app/domain/models/response/transaction_response_model.dart';
 import 'package:mobile/app/modules/dashboard/widgets/grouped_transactions/transaction_category_group.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 
@@ -82,7 +82,8 @@ class GroupedTransactionList extends StatelessWidget {
 
   /// Verilen işlem listesindeki toplam tutarı hesaplar
   double _calculateTotalAmount(List<TransactionModel> transactions) {
-    return transactions.fold(0.0, (sum, transaction) => sum + transaction.amount);
+    return transactions.fold(
+        0.0, (sum, transaction) => sum + transaction.amount);
   }
 
   /// Boş durum widget'ı oluşturur

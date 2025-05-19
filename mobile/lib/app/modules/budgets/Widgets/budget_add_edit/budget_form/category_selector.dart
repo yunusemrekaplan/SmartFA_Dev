@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
-import 'package:mobile/app/data/models/response/category_response_model.dart';
+import 'package:mobile/app/domain/models/response/category_response_model.dart';
 import 'package:mobile/app/modules/budgets/controllers/budget_add_edit_controller.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/app/theme/app_theme.dart';
@@ -64,7 +64,8 @@ class CategorySelector extends StatelessWidget {
   Widget _buildCategoryDropdown(BuildContext context) {
     // Geçerli bir kategori ID'si olup olmadığını kontrol et
     final selectedCategoryId = controller.categoryId.value;
-    final isValidCategory = controller.categories.any((category) => category.id == selectedCategoryId);
+    final isValidCategory = controller.categories
+        .any((category) => category.id == selectedCategoryId);
 
     return Container(
       height: 60,
@@ -87,7 +88,9 @@ class CategorySelector extends StatelessWidget {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<int>(
-          value: isValidCategory ? selectedCategoryId : null, // Geçerli değilse null yap
+          value: isValidCategory
+              ? selectedCategoryId
+              : null, // Geçerli değilse null yap
           isExpanded: true,
           hint: _buildDropdownHint(),
           icon: Padding(
@@ -105,15 +108,15 @@ class CategorySelector extends StatelessWidget {
     )
         .animate()
         .fadeIn(
-      duration: const Duration(milliseconds: 400),
-      delay: const Duration(milliseconds: 300),
-    )
+          duration: const Duration(milliseconds: 400),
+          delay: const Duration(milliseconds: 300),
+        )
         .slideY(
-      begin: 0.2,
-      end: 0,
-      duration: const Duration(milliseconds: 400),
-      curve: Curves.easeOutCubic,
-    );
+          begin: 0.2,
+          end: 0,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOutCubic,
+        );
   }
 
   /// Dropdown için ipucu metni

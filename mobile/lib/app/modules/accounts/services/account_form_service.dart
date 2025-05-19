@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile/app/data/models/enums/account_type.dart';
-import 'package:mobile/app/data/models/response/account_response_model.dart';
+import 'package:mobile/app/domain/models/enums/account_type.dart';
+import 'package:mobile/app/domain/models/response/account_response_model.dart';
 
 /// Hesap formunu yöneten servis
 /// SRP (Single Responsibility Principle) - Form işlemleri ve validasyon tek bir sınıfta toplanır
