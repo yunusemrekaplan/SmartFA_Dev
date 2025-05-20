@@ -30,7 +30,8 @@ class TransactionsController extends GetxController with BaseControllerMixin {
     required ICategoryRepository categoryRepository,
   }) {
     _dataService = TransactionDataService(transactionRepository);
-    _filterService = TransactionFilterService(accountRepository, categoryRepository);
+    _filterService =
+        TransactionFilterService(accountRepository, categoryRepository);
     _navigationService = TransactionNavigationService();
   }
 
@@ -74,6 +75,21 @@ class TransactionsController extends GetxController with BaseControllerMixin {
 
   RxList<CategoryModel> get filterCategories => _filterService.filterCategories;
 
+  // Geçici filtre getters
+  Rx<CategoryModel?> get tempCategory => _filterService.tempCategory;
+
+  Rx<AccountModel?> get tempAccount => _filterService.tempAccount;
+
+  Rx<CategoryType?> get tempType => _filterService.tempType;
+
+  Rx<String?> get tempQuickDate => _filterService.tempQuickDate;
+
+  RxString get tempSortCriteria => _filterService.tempSortCriteria;
+
+  Rx<DateTime?> get tempStartDate => _filterService.tempStartDate;
+
+  Rx<DateTime?> get tempEndDate => _filterService.tempEndDate;
+
   @override
   void onInit() {
     super.onInit();
@@ -115,7 +131,8 @@ class TransactionsController extends GetxController with BaseControllerMixin {
 
   /// Scroll olaylarını dinler ve sayfalama yapar
   void _scrollListener() {
-    if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
+    if (scrollController.position.pixels ==
+        scrollController.position.maxScrollExtent) {
       if (!isLoading.value && _dataService.hasMoreData.value) {
         _logDebug('loadMoreTransactions çağrıldı');
         loadMoreTransactions();
@@ -167,14 +184,63 @@ class TransactionsController extends GetxController with BaseControllerMixin {
   }
 
   /// Özet kart için tarih aralığı seçim menüsünü gösterir
-  void showQuickDateMenu(BuildContext context, Offset position) {
-    _filterService.showQuickDateMenu(context, position);
+  Future<void> showQuickDateMenu(BuildContext context, Offset position) async {
+    final value = await _filterService.showQuickDateMenu(context, position);
+    if (value != null) {
+      await _fetchTransactions();
+    }
   }
 
   /// İşlem siler
   Future<void> deleteTransaction(int transactionId) async {
-    if (await _dataService.deleteTransaction(transactionId)) {
-      await _fetchTransactions();
+    try {
+      // Loading göstergesi başlat
+      Get.dialog(
+        const Center(child: CircularProgressIndicator()),
+        barrierDismissible: false,
+      );
+
+      // İşlemi sil
+      final success = await _dataService.deleteTransaction(transactionId);
+
+      // Loading göstergesini kapat
+      Get.back();
+
+      if (success) {
+        // Snackbar göster
+        Get.snackbar(
+          'Başarılı',
+          'İşlem başarıyla silindi',
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 2),
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+
+        // Kısa bir gecikme ekle
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        // Sayfayı kapat ve listeyi yenile
+        Get.back();
+        await _fetchTransactions();
+      } else {
+        Get.snackbar(
+          'Hata',
+          'İşlem silinirken bir hata oluştu',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      Get.back(); // Loading göstergesini kapat
+      Get.snackbar(
+        'Hata',
+        'Beklenmeyen bir hata oluştu',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 
@@ -185,20 +251,12 @@ class TransactionsController extends GetxController with BaseControllerMixin {
 
   /// İşlem ekleme sayfasına gider
   void goToAddTransaction() {
-    _navigationService.goToAddTransaction()?.then((result) {
-      if (result == true) {
-        _fetchTransactions();
-      }
-    });
+    _navigationService.goToAddTransaction();
   }
 
   /// İşlem düzenleme sayfasına gider
   void goToEditTransaction(TransactionModel transaction) {
-    _navigationService.goToEditTransaction(transaction)?.then((result) {
-      if (result == true) {
-        _fetchTransactions();
-      }
-    });
+    _navigationService.goToEditTransaction(transaction);
   }
 
   /// Debug modunda log basar

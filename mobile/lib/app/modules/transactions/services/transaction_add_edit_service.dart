@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:mobile/app/core/services/snackbar/i_snackbar_service.dart';
 import 'package:mobile/app/domain/models/enums/category_type.dart';
 import 'package:mobile/app/domain/models/request/transaction_request_models.dart';
 import 'package:mobile/app/domain/models/response/account_response_model.dart';
@@ -7,13 +8,13 @@ import 'package:mobile/app/domain/models/response/transaction_response_model.dar
 import 'package:mobile/app/domain/repositories/account_repository.dart';
 import 'package:mobile/app/domain/repositories/category_repository.dart';
 import 'package:mobile/app/domain/repositories/transaction_repository.dart';
-import 'package:mobile/app/utils/snackbar_helper.dart';
 
 /// İşlem ekleme/düzenleme işlemlerini yöneten servis sınıfı
 class TransactionAddEditService {
   final ITransactionRepository _transactionRepository;
   final IAccountRepository _accountRepository;
   final ICategoryRepository _categoryRepository;
+  final _snackbarService = Get.find<ISnackbarService>();
 
   // Yükleme durumları
   final RxBool isLoading = false.obs;
@@ -141,7 +142,7 @@ class TransactionAddEditService {
 
       return result.when(
         success: (_) {
-          SnackbarHelper.showSuccess(
+          _snackbarService.showSuccess(
             message: 'İşlem başarıyla eklendi',
             title: 'Başarılı',
           );
@@ -149,6 +150,10 @@ class TransactionAddEditService {
         },
         failure: (error) {
           errorMessage.value = error.message;
+          _snackbarService.showError(
+            message: error.message,
+            title: 'Hata',
+          );
           return false;
         },
       );
@@ -172,7 +177,7 @@ class TransactionAddEditService {
 
       return result.when(
         success: (_) {
-          SnackbarHelper.showSuccess(
+          _snackbarService.showSuccess(
             message: 'İşlem başarıyla güncellendi',
             title: 'Başarılı',
           );
@@ -220,7 +225,7 @@ class TransactionAddEditService {
 
       return result.when(
         success: (_) {
-          SnackbarHelper.showSuccess(
+          _snackbarService.showSuccess(
             message: 'İşlem başarıyla silindi',
             title: 'Başarılı',
           );
@@ -228,6 +233,10 @@ class TransactionAddEditService {
         },
         failure: (error) {
           errorMessage.value = error.message;
+          _snackbarService.showError(
+            message: error.message,
+            title: 'Hata',
+          );
           return false;
         },
       );

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile/app/core/services/dialog/i_dialog_service.dart';
 import 'package:mobile/app/domain/models/enums/category_type.dart';
 import 'package:mobile/app/domain/models/response/account_response_model.dart';
 import 'package:mobile/app/domain/models/response/category_response_model.dart';
 import 'package:mobile/app/modules/transactions/controllers/add_edit_transaction_controller.dart';
 import 'package:mobile/app/theme/app_colors.dart';
-import 'package:mobile/app/services/dialog_service.dart';
 
 /// İşlem ekleme/düzenleme ekranı
 class AddEditTransactionScreen extends GetView<AddEditTransactionController> {
@@ -19,8 +19,7 @@ class AddEditTransactionScreen extends GetView<AddEditTransactionController> {
         title: Obx(() => Text(
               controller.isEditing.value ? 'İşlem Düzenle' : 'Yeni İşlem',
               style: Get.theme.textTheme.titleLarge?.copyWith(
-                fontWeight:
-                    FontWeight.bold, // titleLarge w600, bunu bold yapıyoruz
+                fontWeight: FontWeight.bold, // titleLarge w600, bunu bold yapıyoruz
               ),
             )),
         centerTitle: true,
@@ -36,7 +35,7 @@ class AddEditTransactionScreen extends GetView<AddEditTransactionController> {
               icon: const Icon(Icons.delete_outline),
               color: AppColors.error,
               tooltip: 'İşlemi Sil',
-              onPressed: () => _showDeleteConfirmation(context),
+              onPressed: () => controller.deleteTransaction(),
             ),
         ],
       ),
@@ -135,8 +134,7 @@ class AddEditTransactionScreen extends GetView<AddEditTransactionController> {
       controller: controller.notesController,
       decoration: InputDecoration(
         hintText: 'İşlemle ilgili notlar...',
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -147,19 +145,6 @@ class AddEditTransactionScreen extends GetView<AddEditTransactionController> {
         ),
       ),
       maxLines: 3,
-    );
-  }
-
-  // _buildSaveButton metodu _SaveButton'a taşındı.
-
-  // _buildEmptyStateCard metodu _EmptyStateCardWidget'a taşındı.
-
-  /// Silme onay dialodu
-  void _showDeleteConfirmation(BuildContext context) {
-    DialogService.showDeleteConfirmationDialog(
-      title: 'İşlemi Sil',
-      message: 'Bu işlemi silmek istediğinizden emin misiniz?',
-      onConfirm: () => controller.deleteTransaction(),
     );
   }
 }
@@ -181,9 +166,8 @@ class _TypeSelectorWidget extends StatelessWidget {
           child: Row(
             children: CategoryType.values.map((type) {
               final bool isSelected = controller.selectedType.value == type;
-              final Color typeColor = type == CategoryType.Income
-                  ? AppColors.success
-                  : AppColors.error;
+              final Color typeColor =
+                  type == CategoryType.Income ? AppColors.success : AppColors.error;
 
               return Expanded(
                 child: InkWell(
@@ -212,12 +196,8 @@ class _TypeSelectorWidget extends StatelessWidget {
                         Text(
                           type == CategoryType.Income ? 'Gelir' : 'Gider',
                           style: Get.theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                            color: isSelected
-                                ? typeColor
-                                : AppColors.textSecondary,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            color: isSelected ? typeColor : AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -240,10 +220,9 @@ class _AmountInputField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final Color textColor =
-          controller.selectedType.value == CategoryType.Income
-              ? AppColors.success
-              : AppColors.error;
+      final Color textColor = controller.selectedType.value == CategoryType.Income
+          ? AppColors.success
+          : AppColors.error;
 
       return Center(
         child: TextFormField(
@@ -305,8 +284,7 @@ class _DateSelector extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  DateFormat('dd MMMM yyyy', 'tr_TR')
-                      .format(controller.selectedDate.value),
+                  DateFormat('dd MMMM yyyy', 'tr_TR').format(controller.selectedDate.value),
                   style: Get.theme.textTheme.bodyMedium?.copyWith(
                     color: AppColors.textPrimary,
                   ),
@@ -335,9 +313,7 @@ class _SaveButton extends StatelessWidget {
     return Obx(() => SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: controller.isSubmitting.value
-                ? null
-                : () => controller.saveTransaction(),
+            onPressed: controller.isSubmitting.value ? null : () => controller.saveTransaction(),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
@@ -391,8 +367,7 @@ class _AccountDropdownWidget extends StatelessWidget {
         value: controller.selectedAccount.value,
         decoration: InputDecoration(
           hintText: 'Hesap Seçin',
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: BorderSide(color: Colors.grey.shade300),
@@ -459,8 +434,7 @@ class _CategorySelectorWidget extends StatelessWidget {
         value: controller.selectedCategory.value,
         decoration: InputDecoration(
           hintText: 'Kategori Seçin',
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
             borderSide: BorderSide(color: Colors.grey.shade300),
@@ -492,9 +466,8 @@ class _CategorySelectorWidget extends StatelessWidget {
                   Icon(
                     categoryIcon,
                     size: 16,
-                    color: category.type == CategoryType.Income
-                        ? AppColors.success
-                        : AppColors.error,
+                    color:
+                        category.type == CategoryType.Income ? AppColors.success : AppColors.error,
                   ),
                   const SizedBox(width: 8),
                 ],
@@ -504,8 +477,7 @@ class _CategorySelectorWidget extends StatelessWidget {
           );
         }).toList(),
         onChanged: (value) => controller.selectCategory(value!),
-        validator: (value) =>
-            value == null ? 'Lütfen bir kategori seçin' : null,
+        validator: (value) => value == null ? 'Lütfen bir kategori seçin' : null,
       );
     });
   }

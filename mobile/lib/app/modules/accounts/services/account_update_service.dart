@@ -1,16 +1,17 @@
 import 'package:get/get.dart';
+import 'package:mobile/app/core/services/snackbar/i_snackbar_service.dart';
 import 'package:mobile/app/domain/models/enums/account_type.dart';
 import 'package:mobile/app/domain/models/request/account_request_models.dart';
 import 'package:mobile/app/data/network/exceptions/unexpected_exception.dart';
 import 'package:mobile/app/domain/repositories/account_repository.dart';
 import 'package:mobile/app/utils/error_handler/error_handler.dart';
-import 'package:mobile/app/utils/snackbar_helper.dart';
 
 /// Hesap ekleme, güncelleme ve silme işlemlerini yöneten servis
 /// SRP (Single Responsibility Principle) - Hesap CRUD işlemleri tek bir sınıfta toplanır
 class AccountUpdateService {
   final IAccountRepository _accountRepository;
-  final ErrorHandler _errorHandler = ErrorHandler();
+  final _errorHandler = ErrorHandler();
+  final _snackbarService = Get.find<ISnackbarService>();
 
   // Observable state
   final RxBool isLoading = false.obs;
@@ -40,7 +41,7 @@ class AccountUpdateService {
 
       return result.when(
         success: (_) {
-          SnackbarHelper.showSuccess(
+          _snackbarService.showSuccess(
             message: 'Hesap başarıyla eklendi.',
             title: 'Başarılı',
           );
@@ -89,7 +90,7 @@ class AccountUpdateService {
 
       return result.when(
         success: (_) {
-          SnackbarHelper.showSuccess(
+          _snackbarService.showSuccess(
             message: 'Hesap başarıyla güncellendi.',
             title: 'Başarılı',
           );
@@ -128,7 +129,7 @@ class AccountUpdateService {
 
       return result.when(
         success: (_) {
-          SnackbarHelper.showSuccess(
+          _snackbarService.showSuccess(
             message: 'Hesap başarıyla silindi.',
             title: 'Başarılı',
           );

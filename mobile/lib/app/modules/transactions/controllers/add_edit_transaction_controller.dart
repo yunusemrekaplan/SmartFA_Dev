@@ -1,5 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile/app/core/services/dialog/i_dialog_service.dart';
+import 'package:mobile/app/core/services/page/i_page_service.dart';
 import 'package:mobile/app/domain/models/enums/category_type.dart';
 import 'package:mobile/app/domain/models/request/transaction_request_models.dart';
 import 'package:mobile/app/domain/models/response/account_response_model.dart';
@@ -9,11 +13,15 @@ import 'package:mobile/app/domain/repositories/account_repository.dart';
 import 'package:mobile/app/domain/repositories/category_repository.dart';
 import 'package:mobile/app/domain/repositories/transaction_repository.dart';
 import 'package:mobile/app/modules/transactions/services/transaction_add_edit_service.dart';
+import 'package:mobile/app/modules/transactions/controllers/transactions_controller.dart';
 
 /// İşlem ekleme/düzenleme ekranının state'ini ve iş mantığını yöneten GetX controller.
 class AddEditTransactionController extends GetxController {
   // Servis
   late final TransactionAddEditService _service;
+  final TransactionsController _transactionsController;
+  final _dialogService = Get.find<IDialogService>();
+  final _pageService = Get.find<IPageService>();
 
   // Form anahtarı
   final formKey = GlobalKey<FormState>();
@@ -26,7 +34,8 @@ class AddEditTransactionController extends GetxController {
     required ITransactionRepository transactionRepository,
     required IAccountRepository accountRepository,
     required ICategoryRepository categoryRepository,
-  }) {
+    required TransactionsController transactionsController,
+  }) : _transactionsController = transactionsController {
     _service = TransactionAddEditService(
       transactionRepository,
       accountRepository,
@@ -36,15 +45,25 @@ class AddEditTransactionController extends GetxController {
 
   // --- Getters ---
   RxBool get isLoading => _service.isLoading;
+
   RxBool get isSubmitting => _service.isSubmitting;
+
   RxString get errorMessage => _service.errorMessage;
+
   Rx<CategoryType> get selectedType => _service.selectedType;
+
   Rx<AccountModel?> get selectedAccount => _service.selectedAccount;
+
   Rx<CategoryModel?> get selectedCategory => _service.selectedCategory;
+
   Rx<DateTime> get selectedDate => _service.selectedDate;
+
   RxList<AccountModel> get accounts => _service.accounts;
+
   RxList<CategoryModel> get categories => _service.categories;
+
   RxBool get isEditing => _service.isEditing;
+
   Rx<TransactionModel?> get editingTransaction => _service.editingTransaction;
 
   @override
@@ -133,7 +152,7 @@ class AddEditTransactionController extends GetxController {
           categoryId: selectedCategory.value!.id,
           amount: double.parse(amountController.text),
           transactionDate: selectedDate.value,
-          notes: notesController.text,
+          notes: notesController.text.trim(),
         ),
       );
     } else {
@@ -143,19 +162,36 @@ class AddEditTransactionController extends GetxController {
           categoryId: selectedCategory.value!.id,
           amount: double.parse(amountController.text),
           transactionDate: selectedDate.value,
-          notes: notesController.text,
+          notes: notesController.text.trim(),
         ),
       );
     }
 
     if (success) {
-      Get.back(result: true);
+      _pageService.closeLastPage();
+      _transactionsController.loadTransactions();
     }
   }
 
   /// İşlemi siler
   Future<void> deleteTransaction() async {
-    await _service.deleteTransaction(editingTransaction.value!.id);
+    final confirm = await _dialogService.showDeleteConfirmation(
+      title: 'İşlemi Sil',
+      message: 'Bu işlemi silmek istediğinize emin misiniz?',
+    );
+
+    if (confirm == true) {
+      //_dialogService.showLoading();
+
+      final success = await _service.deleteTransaction(editingTransaction.value!.id);
+
+      //_dialogService.closeLastDialog();
+
+      if (success) {
+        _pageService.closeLastPage();
+        _transactionsController.loadTransactions();
+      }
+    }
   }
 
   /// Form verilerini temizler

@@ -1,15 +1,16 @@
 import 'package:get/get.dart';
+import 'package:mobile/app/core/services/snackbar/i_snackbar_service.dart';
 import 'package:mobile/app/domain/models/response/account_response_model.dart';
 import 'package:mobile/app/data/network/exceptions/unexpected_exception.dart';
 import 'package:mobile/app/domain/repositories/account_repository.dart';
 import 'package:mobile/app/utils/error_handler/error_handler.dart';
-import 'package:mobile/app/utils/snackbar_helper.dart';
 
 /// Hesap verilerini yönetmekten sorumlu servis
 /// SRP (Single Responsibility Principle) - Hesap verilerinin yönetimi tek bir sınıfta toplanır
 class AccountDataService {
   final IAccountRepository _accountRepository;
-  final ErrorHandler _errorHandler = ErrorHandler();
+  final _errorHandler = ErrorHandler();
+  final _snackbarService = Get.find<ISnackbarService>();
 
   // Observable state
   final RxBool isLoading = false.obs;
@@ -69,7 +70,7 @@ class AccountDataService {
       return result.when(
         success: (_) {
           accountList.removeWhere((account) => account.id == accountId);
-          SnackbarHelper.showSuccess(
+          _snackbarService.showSuccess(
             message: 'Hesap başarıyla silindi.',
             title: 'Başarılı',
           );

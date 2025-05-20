@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile/app/core/services/page/i_page_service.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 
 // Controller import
@@ -49,8 +50,7 @@ class HomeScreen extends GetView<HomeController> {
 
         // Seçili sekmeye göre body'yi değiştirmek için PageView
         body: PageView(
-          physics:
-              const NeverScrollableScrollPhysics(), // Sayfa kaydırmayı devre dışı bırak
+          physics: const NeverScrollableScrollPhysics(), // Sayfa kaydırmayı devre dışı bırak
           controller: controller.pageController,
           onPageChanged: controller.changeTabIndex,
           children: [
@@ -169,20 +169,22 @@ class HomeScreen extends GetView<HomeController> {
 
   /// Seçili sekmeye göre FAB tıklama işlemi
   void _handleFABPressed() {
+    var pageService = Get.find<IPageService>();
     switch (controller.selectedIndex.value) {
       case 0: // Dashboard
       case 2: // Transactions
-        Get.toNamed(AppRoutes.ADD_EDIT_TRANSACTION)?.then((_) {
-          controller.refreshModuleData(controller.selectedIndex.value);
+        pageService.toNamed(AppRoutes.ADD_EDIT_TRANSACTION).then((_) {
+          controller.refreshModuleData(0);
+          controller.refreshModuleData(2);
         });
         break;
       case 1: // Accounts
-        Get.toNamed(AppRoutes.ADD_EDIT_ACCOUNT)?.then((_) {
+        pageService.toNamed(AppRoutes.ADD_EDIT_ACCOUNT)?.then((_) {
           controller.refreshModuleData(controller.selectedIndex.value);
         });
         break;
       case 3: // Budgets
-        Get.toNamed(AppRoutes.ADD_EDIT_BUDGET)?.then((_) {
+        pageService.toNamed(AppRoutes.ADD_EDIT_BUDGET)?.then((_) {
           controller.refreshModuleData(controller.selectedIndex.value);
         });
         break;

@@ -16,7 +16,7 @@ class AccountsContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0, left: 16.0, right: 16.0),
+      padding: const EdgeInsets.all(16),
       child: SingleChildScrollView(
         child: Column(
           children: [
@@ -29,7 +29,7 @@ class AccountsContent extends StatelessWidget {
                       minHeight: 3,
                     ),
                   ).animate().fadeIn(duration: 200.ms)
-                : const SizedBox(height: 8)),
+                : const SizedBox.shrink()),
 
             // Hesaplar başlığı
             Obx(() => AccountsHeader(

@@ -61,6 +61,7 @@ class TransactionFilterDto {
   final CategoryType? type;
   final int pageNumber;
   final int pageSize;
+  final String sortCriteria;
 
   TransactionFilterDto({
     this.accountId,
@@ -70,6 +71,7 @@ class TransactionFilterDto {
     this.type,
     this.pageNumber = 1,
     this.pageSize = 20,
+    this.sortCriteria = 'date_desc',
   });
 
   // Query parametreleri için Map oluşturma (toJson gibi)
@@ -77,6 +79,7 @@ class TransactionFilterDto {
     final Map<String, dynamic> params = {
       'pageNumber': pageNumber.toString(),
       'pageSize': pageSize.toString(),
+      'sortCriteria': sortCriteria,
     };
     if (accountId != null) params['accountId'] = accountId.toString();
     if (categoryId != null) params['categoryId'] = categoryId.toString();
@@ -95,6 +98,7 @@ class TransactionFilterDto {
     CategoryType? type,
     int? pageNumber,
     int? pageSize,
+    String? sortCriteria,
   }) {
     return TransactionFilterDto(
       accountId: accountId ?? this.accountId,
@@ -104,6 +108,7 @@ class TransactionFilterDto {
       type: type ?? this.type,
       pageNumber: pageNumber ?? this.pageNumber,
       pageSize: pageSize ?? this.pageSize,
+      sortCriteria: sortCriteria ?? this.sortCriteria,
     );
   }
 }

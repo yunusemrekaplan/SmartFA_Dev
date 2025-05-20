@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
-import 'package:mobile/app/bindings/initial_binding.dart';
+import 'package:mobile/app/core/di/initial_binding.dart';
 import 'package:mobile/app/navigation/app_pages.dart';
 import 'package:mobile/app/theme/app_theme.dart';
 import 'package:intl/date_symbol_data_local.dart';

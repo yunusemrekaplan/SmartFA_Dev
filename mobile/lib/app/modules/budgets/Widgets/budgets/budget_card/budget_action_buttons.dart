@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:mobile/app/core/services/dialog/i_dialog_service.dart';
 import 'package:mobile/app/domain/models/response/budget_response_model.dart';
 import 'package:mobile/app/modules/budgets/controllers/budgets_controller.dart';
-import 'package:mobile/app/services/dialog_service.dart';
 
 /// Bütçe kartında yer alan işlem butonlarını (düzenleme ve silme) yönetir.
 class BudgetActionButtons extends StatelessWidget {
@@ -22,7 +23,7 @@ class BudgetActionButtons extends StatelessWidget {
           controller.goToEditBudget(budget);
         } else if (result == 'delete') {
           // Onay dialogu göster
-          DialogService.showDeleteConfirmationDialog(
+          Get.find<IDialogService>().showDeleteConfirmation(
             title: "Bütçeyi Sil",
             message:
                 "'${budget.categoryName}' kategorisi için bütçeyi silmek istediğinizden emin misiniz?",

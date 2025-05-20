@@ -6,8 +6,6 @@ import 'package:mobile/app/modules/transactions/widgets/active_filters_row.dart'
 import 'package:mobile/app/modules/transactions/widgets/filter_bottom_sheet/filter_bottom_sheet.dart';
 import 'package:mobile/app/modules/transactions/widgets/transaction_list_view.dart';
 import 'package:mobile/app/modules/transactions/widgets/transaction_summary.dart';
-import 'package:mobile/app/theme/app_colors.dart';
-import 'package:mobile/app/theme/app_theme.dart';
 import 'package:mobile/app/widgets/custom_app_bar.dart';
 import 'package:mobile/app/domain/models/response/transaction_response_model.dart';
 import 'package:mobile/app/widgets/content_view.dart';
@@ -54,33 +52,32 @@ class TransactionsScreen extends GetView<TransactionsController> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // İşlem özeti üst bölüm
-          TransactionSummary(
-            controller: controller,
-            currencyFormatter: currencyFormatter,
-          ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // İşlem özeti üst bölüm
+            TransactionSummary(
+              controller: controller,
+              currencyFormatter: currencyFormatter,
+            ),
 
-          // Ana içerik - ContentView ile sarmalanmış
-          Expanded(
-            child: Obx(() {
-              // Aktif filtreler varsa göster
-              Widget? filtersWidget;
+            // Aktif filtreler satırı
+            Obx(() {
               if (controller.hasActiveFilters) {
-                filtersWidget = ActiveFiltersRow(controller: controller);
+                return ActiveFiltersRow(controller: controller);
               }
+              return const SizedBox.shrink();
+            }),
 
-              return ContentView<TransactionModel>(
+            // Ana içerik - ContentView ile sarmalanmış
+            Expanded(
+              child: ContentView<TransactionModel>(
                 contentView: _buildTransactionList(),
                 isLoading: controller.isLoading,
                 errorMessage: controller.errorMessage,
-                contentPadding: EdgeInsets.zero, // Padding'i kaldırdık
-                showLoadingOverlay: true,
-                progressColor: AppColors.primary,
-                loadingMessage: 'İşlemler yükleniyor...',
+                onRetry: controller.loadTransactions,
                 items: controller.transactionList,
-                headerWidget: filtersWidget,
                 emptyStateView: EmptyStateView(
                   title: 'İşlem kaydı bulunamadı',
                   message: controller.hasActiveFilters
@@ -97,27 +94,25 @@ class TransactionsScreen extends GetView<TransactionsController> {
                       ? Icons.filter_alt_off_rounded
                       : Icons.add_circle_outline_rounded,
                 ),
-              );
-            }),
-          ),
-        ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  /// Filtreleme seçeneklerini gösteren Bottom Sheet'i açar
+  /// İşlem listesini oluşturur
+  Widget _buildTransactionList() {
+    return TransactionListView(
+      controller: controller,
+      currencyFormatter: currencyFormatter,
+      getCategoryIcon: _getCategoryIcon,
+    );
+  }
+
+  /// Filtre bottom sheet'i gösterir
   void _showFilterBottomSheet(BuildContext context) {
     FilterBottomSheet.show(context, controller);
-  }
-
-  Widget _buildTransactionList() {
-    return Padding(
-      padding: const EdgeInsets.all(AppTheme.kHorizontalPadding),
-      child: TransactionListView(
-        controller: controller,
-        currencyFormatter: currencyFormatter,
-        getCategoryIcon: _getCategoryIcon,
-      ),
-    );
   }
 }

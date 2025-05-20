@@ -1,14 +1,15 @@
 import 'package:get/get.dart';
+import 'package:mobile/app/core/services/snackbar/i_snackbar_service.dart';
 import 'package:mobile/app/domain/models/response/budget_response_model.dart';
 import 'package:mobile/app/data/network/exceptions/unexpected_exception.dart';
 import 'package:mobile/app/domain/repositories/budget_repository.dart';
 import 'package:mobile/app/utils/error_handler/error_handler.dart';
-import 'package:mobile/app/utils/snackbar_helper.dart';
 
 /// Bütçe verilerini yükleme ve yönetme işlemlerini gerçekleştiren servis sınıfı
 class BudgetDataService {
   final IBudgetRepository _budgetRepository;
   final ErrorHandler _errorHandler = ErrorHandler();
+  final _snackbarService = Get.find<ISnackbarService>();
 
   // Yüklenme durumu
   final RxBool isLoading = false.obs;
@@ -67,7 +68,7 @@ class BudgetDataService {
           budgetList.removeWhere((budget) => budget.id == budgetId);
           print('>>> Budget deleted successfully: ID $budgetId');
 
-          SnackbarHelper.showSuccess(
+          _snackbarService.showSuccess(
               message: 'Bütçe başarıyla silindi.', title: 'Başarılı');
           return true;
         },

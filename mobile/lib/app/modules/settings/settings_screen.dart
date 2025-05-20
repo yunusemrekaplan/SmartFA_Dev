@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mobile/app/services/dialog_service.dart';
+import 'package:mobile/app/core/services/dialog/i_dialog_service.dart';
 import 'settings_controller.dart';
 
 /// Ayarlar ekranı.
@@ -59,7 +59,13 @@ class SettingsScreen extends GetView<SettingsController> {
               leading: const Icon(Icons.logout, color: Colors.red),
               title: const Text('Çıkış Yap'),
               subtitle: const Text('Hesabınızdan çıkış yapın'),
-              onTap: () => _LogoutConfirmationDialog.show(context, controller),
+              onTap: () {
+                Get.find<IDialogService>().showLogoutConfirmation(
+                  onConfirm: () {
+                    controller.logout();
+                  },
+                );
+              },
             ),
           ),
           const Divider(height: 1, indent: 16),
@@ -104,17 +110,6 @@ class _SectionTitle extends StatelessWidget {
             fontWeight: FontWeight.bold,
             letterSpacing: 1.1),
       ),
-    );
-  }
-}
-
-/// Çıkış yapmadan önce onay diyalogunu gösteren widget.
-class _LogoutConfirmationDialog {
-  static void show(BuildContext context, SettingsController controller) {
-    DialogService.showLogoutConfirmationDialog(
-      onConfirm: () {
-        controller.logout(); // Çıkış yap
-      },
     );
   }
 }

@@ -10,6 +10,7 @@ import 'package:mobile/app/domain/repositories/account_repository.dart';
 import 'package:mobile/app/domain/repositories/category_repository.dart';
 import 'package:mobile/app/domain/repositories/transaction_repository.dart';
 import 'package:mobile/app/modules/transactions/controllers/add_edit_transaction_controller.dart';
+import 'package:mobile/app/modules/transactions/controllers/transactions_controller.dart';
 
 class AddEditTransactionBinding extends Bindings {
   @override
@@ -48,6 +49,7 @@ class AddEditTransactionBinding extends Bindings {
         transactionRepository: Get.find<ITransactionRepository>(),
         accountRepository: Get.find<IAccountRepository>(),
         categoryRepository: Get.find<ICategoryRepository>(),
+        transactionsController: Get.find<TransactionsController>(),
       ),
       fenix: true,
     );

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:mobile/app/core/services/snackbar/i_snackbar_service.dart';
 import 'package:mobile/app/data/network/exceptions/app_exception.dart';
 import 'package:mobile/app/data/network/exceptions/network_exception.dart';
 import 'package:mobile/app/utils/error_handler/i_error_handler.dart';
-import 'package:mobile/app/utils/snack_bar_button.dart';
-import 'package:mobile/app/utils/snackbar_helper.dart';
 
 /// Ağ hatalarını işleyen handler
 class NetworkErrorHandler implements IErrorHandler {
@@ -23,24 +23,17 @@ class NetworkErrorHandler implements IErrorHandler {
 
       // İnternet bağlantısı ile ilgili hatalar için yeniden deneme butonu ekleyelim
       if (error.code == 'CONNECTION_ERROR' || error.code == 'TIMEOUT_ERROR') {
-        SnackbarHelper.showError(
+        Get.find<ISnackbarService>().showError(
           title: title,
           message: message,
-          icon: icon,
+          icon: icon.icon,
           duration: const Duration(seconds: 5),
-          mainButton: onRetry != null
-              ? SnackBarButton(
-                  label: 'Tekrar Dene',
-                  onPressed: onRetry,
-                  icon: Icons.refresh,
-                )
-              : null,
         );
       } else {
-        SnackbarHelper.showError(
+        Get.find<ISnackbarService>().showError(
           title: title,
           message: message,
-          icon: icon,
+          icon: icon.icon,
         );
       }
     }

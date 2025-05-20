@@ -11,12 +11,13 @@ import 'package:mobile/app/modules/budgets/services/budget_add_edit/budget_data_
 import 'package:mobile/app/modules/budgets/services/budget_add_edit/budget_period_service.dart';
 import 'package:mobile/app/modules/budgets/services/budget_add_edit/budget_state_service.dart';
 import 'package:mobile/app/modules/budgets/services/budget_add_edit/budget_validation_service.dart';
-import 'package:mobile/app/utils/snackbar_helper.dart';
+import 'package:mobile/app/core/services/snackbar/i_snackbar_service.dart';
 
 class BudgetAddEditController extends GetxController {
   // Bağımlılık Enjeksiyonu (DIP prensibi)
   final IBudgetRepository _budgetRepository;
   final ICategoryRepository _categoryRepository;
+  final _snackbarService = Get.find<ISnackbarService>();
 
   // Servisler (SRP prensibi ile ayrılmış sorumluluklar)
   late final BudgetValidationService _validationService;
@@ -126,7 +127,7 @@ class BudgetAddEditController extends GetxController {
     final success = await _categoryService.fetchCategories();
 
     if (!success) {
-      SnackbarHelper.showError(
+      _snackbarService.showError(
           message: _categoryService.categoryErrorMessage.value);
     }
   }
@@ -141,7 +142,7 @@ class BudgetAddEditController extends GetxController {
     // Kategoriyi doğrula
     if (!_validationService
         .validateCategory(_categoryService.selectedCategoryId.value)) {
-      SnackbarHelper.showError(message: 'Lütfen bir kategori seçin');
+      _snackbarService.showError(message: 'Lütfen bir kategori seçin');
       return;
     }
 

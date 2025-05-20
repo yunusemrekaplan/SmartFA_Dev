@@ -1,15 +1,16 @@
 import 'package:get/get.dart';
+import 'package:mobile/app/core/services/snackbar/i_snackbar_service.dart';
 import 'package:mobile/app/domain/models/request/budget_request_models.dart';
 import 'package:mobile/app/data/network/exceptions/unexpected_exception.dart';
 import 'package:mobile/app/domain/repositories/budget_repository.dart';
 import 'package:mobile/app/utils/error_handler/error_handler.dart';
-import 'package:mobile/app/utils/snackbar_helper.dart';
 
 /// Bütçe ekleme ve düzenleme işlemlerindeki veri yönetimini sağlayan servis
 /// SRP (Single Responsibility) prensibine uygun
 class BudgetAddEditDataService {
   final IBudgetRepository _budgetRepository;
-  final ErrorHandler _errorHandler = ErrorHandler();
+  final _errorHandler = ErrorHandler();
+  final _snackbarService = Get.find<ISnackbarService>();
 
   // İşlem durumları
   final RxBool isLoading = false.obs;
@@ -41,7 +42,7 @@ class BudgetAddEditDataService {
       return result.when(
         success: (_) {
           successMessage.value = 'Bütçe başarıyla oluşturuldu';
-          SnackbarHelper.showSuccess(
+          _snackbarService.showSuccess(
             message: 'Bütçe başarıyla oluşturuldu.',
             title: 'Başarılı',
           );
@@ -89,7 +90,7 @@ class BudgetAddEditDataService {
       return result.when(
         success: (_) {
           successMessage.value = 'Bütçe başarıyla güncellendi';
-          SnackbarHelper.showSuccess(
+          _snackbarService.showSuccess(
             message: 'Bütçe başarıyla güncellendi.',
             title: 'Başarılı',
           );
@@ -131,7 +132,7 @@ class BudgetAddEditDataService {
       return result.when(
         success: (_) {
           successMessage.value = 'Bütçe başarıyla silindi';
-          SnackbarHelper.showSuccess(
+          _snackbarService.showSuccess(
             message: 'Bütçe başarıyla silindi.',
             title: 'Başarılı',
           );

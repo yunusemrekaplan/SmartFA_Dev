@@ -78,44 +78,47 @@ class BudgetsScreen extends GetView<BudgetsController> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Ay/Yıl seçici
-          MonthSelector(controller: controller, formatMonth: _formatMonth),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Ay/Yıl seçici
+            MonthSelector(controller: controller, formatMonth: _formatMonth),
 
-          // Aktif filtre göstergesi
-          ActiveFiltersBar(controller: controller),
+            // Aktif filtre göstergesi
+            ActiveFiltersBar(controller: controller),
 
-          // Bütçe listesi - RefreshableContentView kullanarak
-          Expanded(
-            child: Obx(() {
-              return ContentView<dynamic>(
-                isLoading: controller.isLoading,
-                errorMessage: controller.errorMessage,
-                items: controller.filteredBudgetList,
-                contentPadding: const EdgeInsets.all(16.0),
-                showLoadingOverlay: true,
-                emptyStateView: controller.budgetList.isEmpty
-                    ? EmptyStateView(
-                        title: 'Bütçe Bulunamadı',
-                        message: 'Henüz bütçeniz yok.',
-                        actionText: 'Bütçe Ekle',
-                        onAction: controller.goToAddBudget,
-                        icon: Icons.pie_chart_rounded,
-                      )
-                    : EmptyStateView(
-                        title: 'Bütçe Bulunamadı',
-                        message: 'Seçilen filtrelere uygun bütçe bulunamadı.',
-                        actionText: 'Filtreleri Sıfırla',
-                        onAction: controller.resetFilters,
-                        icon: Icons.filter_alt_off_rounded,
-                        actionIcon: Icons.filter_alt_off_rounded,
-                      ),
-                contentView: _buildBudgetList(),
-              );
-            }),
-          ),
-        ],
+            // Bütçe listesi - RefreshableContentView kullanarak
+            Expanded(
+              child: Obx(() {
+                return ContentView<dynamic>(
+                  isLoading: controller.isLoading,
+                  errorMessage: controller.errorMessage,
+                  items: controller.filteredBudgetList,
+                  contentPadding: const EdgeInsets.all(16.0),
+                  showLoadingOverlay: true,
+                  emptyStateView: controller.budgetList.isEmpty
+                      ? EmptyStateView(
+                          title: 'Bütçe Bulunamadı',
+                          message: 'Henüz bütçeniz yok.',
+                          actionText: 'Bütçe Ekle',
+                          onAction: controller.goToAddBudget,
+                          icon: Icons.pie_chart_rounded,
+                        )
+                      : EmptyStateView(
+                          title: 'Bütçe Bulunamadı',
+                          message: 'Seçilen filtrelere uygun bütçe bulunamadı.',
+                          actionText: 'Filtreleri Sıfırla',
+                          onAction: controller.resetFilters,
+                          icon: Icons.filter_alt_off_rounded,
+                          actionIcon: Icons.filter_alt_off_rounded,
+                        ),
+                  contentView: _buildBudgetList(),
+                );
+              }),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -128,7 +131,7 @@ class BudgetsScreen extends GetView<BudgetsController> {
       shrinkWrap: true,
       // Üst scrollview'in scrollunu kullanacağız
       primary: false,
-      physics: const NeverScrollableScrollPhysics(),
+      physics: const AlwaysScrollableScrollPhysics(),
       itemCount: controller.filteredBudgetList.length,
       itemBuilder: (context, index) {
         final budget = controller.filteredBudgetList[index];

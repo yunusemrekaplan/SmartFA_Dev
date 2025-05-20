@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:mobile/app/core/services/dialog/i_dialog_service.dart';
+import 'package:mobile/app/core/services/snackbar/i_snackbar_service.dart';
 import 'package:mobile/app/data/network/exceptions/app_exception.dart';
 import 'package:mobile/app/data/network/exceptions/validation_exception.dart';
-import 'package:mobile/app/services/dialog_service.dart';
 import 'package:mobile/app/utils/error_handler/i_error_handler.dart';
-import 'package:mobile/app/utils/snackbar_helper.dart';
 
 /// Doğrulama hatalarını işleyen handler
 class ValidationErrorHandler implements IErrorHandler {
@@ -29,20 +30,20 @@ class ValidationErrorHandler implements IErrorHandler {
 
         if (errorMessages.length <= 3) {
           // 3 veya daha az hata varsa direkt snackbar ile göster
-          SnackbarHelper.showError(
+          Get.find<ISnackbarService>().showError(
             title: title,
             message: errorMessages.join('\n'),
           );
         } else {
           // Çok fazla hata varsa dialog ile göster
-          DialogService.showErrorDialog(
+          Get.find<IDialogService>().showError(
             title: title,
             message: errorMessages.join('\n\n'),
           );
         }
       } else {
         // Sadece genel hata mesajı varsa
-        SnackbarHelper.showError(
+        Get.find<ISnackbarService>().showError(
           title: title,
           message: message,
         );

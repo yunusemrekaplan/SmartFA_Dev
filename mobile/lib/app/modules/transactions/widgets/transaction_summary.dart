@@ -27,7 +27,7 @@ class TransactionSummary extends StatelessWidget {
       }
 
       return Card(
-        margin: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+        //margin: const EdgeInsets.fromLTRB(16, 16, 16, 24),
         elevation: AppTheme.kCardElevation,
         shadowColor: AppColors.shadowLight,
         surfaceTintColor: Colors.white,

@@ -38,86 +38,77 @@ class TransactionListView extends StatelessWidget {
         groupedTransactions[dateStr]!.add(transaction);
       }
 
-      // Tarih gruplarını sırala (en yeni en üstte)
+      // Tarih gruplarını sırala
       final sortedDates = groupedTransactions.keys.toList()
         ..sort((a, b) {
           final dateA = DateFormat('dd MMMM yyyy', 'tr_TR').parse(a);
           final dateB = DateFormat('dd MMMM yyyy', 'tr_TR').parse(b);
-          return dateB.compareTo(dateA);
+          // Sıralama kriterine göre sıralama yönünü belirle
+          if (controller.sortCriteria.value == 'date_asc') {
+            return dateA.compareTo(dateB);
+          } else {
+            return dateB.compareTo(dateA);
+          }
         });
 
-      // Eğer liste boşsa veya henüz oluşturulmadıysa boş bir widget döndür
-      if (sortedDates.isEmpty) {
-        return const SizedBox.shrink();
-      }
-
       return ListView.builder(
-        primary: false,
-        shrinkWrap: false,
-        padding: EdgeInsets.zero,
         controller: controller.scrollController,
-        physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: sortedDates.length + (controller.hasMoreData.value ? 1 : 0),
+        padding: const EdgeInsets.only(bottom: 100),
+        itemCount:
+            sortedDates.length + (controller.isLoadingMore.value ? 1 : 0),
         itemBuilder: (context, index) {
-          // Listenin sonuna geldik mi?
+          // Yükleme göstergesi
           if (index == sortedDates.length) {
-            return controller.isLoadingMore.value
-                ? const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
-                    child: Center(
-                        child: CircularProgressIndicator(strokeWidth: 2)),
-                  )
-                : const SizedBox.shrink();
-          }
-
-          // Grup başlığı ve o gruba ait işlemler
-          final dateStr = sortedDates[index];
-          final transactionsInGroup = groupedTransactions[dateStr] ?? [];
-
-          // Eğer bu gruba ait hiç işlem yoksa boş widget döndür
-          if (transactionsInGroup.isEmpty) {
-            return const SizedBox.shrink();
-          }
-
-          // Tarih grubu başlığı ve işlemler
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Tarih başlığı
-                Padding(
-                  padding:
-                      const EdgeInsets.only(top: 16.0, bottom: 8.0, left: 4.0),
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      dateStr,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.primary,
-                          ),
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: Column(
+                children: [
+                  const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(AppColors.primary),
                     ),
                   ),
-                ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Daha fazla işlem yükleniyor...',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                  ),
+                ],
+              ),
+            );
+          }
 
-                // Bu tarihe ait işlemler
-                ...transactionsInGroup
-                    .map((transaction) => TransactionCard(
-                          transaction: transaction,
-                          currencyFormatter: currencyFormatter,
-                          getCategoryIcon: getCategoryIcon,
-                          controller: controller,
-                        ))
-                    .toList(),
-              ],
-            ),
+          final date = sortedDates[index];
+          final transactions = groupedTransactions[date]!;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Tarih başlığı
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Text(
+                  date,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
+              ),
+              // İşlem kartları
+              ...transactions.map((transaction) => TransactionCard(
+                    transaction: transaction,
+                    currencyFormatter: currencyFormatter,
+                    getCategoryIcon: getCategoryIcon,
+                    controller: controller,
+                  )),
+            ],
           );
         },
       );

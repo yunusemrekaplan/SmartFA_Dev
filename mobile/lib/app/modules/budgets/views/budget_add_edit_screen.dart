@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile/app/core/services/dialog/i_dialog_service.dart';
 import 'package:mobile/app/modules/budgets/controllers/budget_add_edit_controller.dart';
 import 'package:mobile/app/modules/budgets/widgets/budget_add_edit/budget_edit_app_bar.dart';
 import 'package:mobile/app/modules/budgets/widgets/budget_add_edit/budget_form/budget_form.dart';
 import 'package:mobile/app/modules/budgets/widgets/budget_add_edit/budget_header.dart';
-import 'package:mobile/app/services/dialog_service.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 
 class BudgetAddEditScreen extends GetView<BudgetAddEditController> {
@@ -57,7 +57,7 @@ class BudgetAddEditScreen extends GetView<BudgetAddEditController> {
 
   /// Silme onayı dialog'unu göster
   void _showDeleteConfirmation(BuildContext context) {
-    DialogService.showDeleteConfirmationDialog(
+    Get.find<IDialogService>().showDeleteConfirmation(
       title: "Bütçeyi Sil",
       message:
           "Bu bütçeyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",

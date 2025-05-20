@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile/app/core/services/dialog/i_dialog_service.dart';
 import 'package:mobile/app/domain/repositories/auth_repository.dart';
 import 'package:mobile/app/modules/settings/settings_screen.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/app/modules/auth/widgets/loading_logo.dart';
 import 'package:mobile/app/navigation/app_routes.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:mobile/app/services/dialog_service.dart';
 
 /// Uygulamanın modern ve animasyonlu drawer menüsü
 class AppDrawer extends StatelessWidget {
@@ -502,7 +502,7 @@ class AppDrawer extends StatelessWidget {
 
   /// Çıkış yapmayı onaylama dialogu gösterir
   void _showLogoutDialog(BuildContext context) {
-    DialogService.showLogoutConfirmationDialog(
+    Get.find<IDialogService>().showLogoutConfirmation(
       onConfirm: () {
         Get.find<IAuthRepository>().logout();
         Get.offAllNamed(AppRoutes.LOGIN);

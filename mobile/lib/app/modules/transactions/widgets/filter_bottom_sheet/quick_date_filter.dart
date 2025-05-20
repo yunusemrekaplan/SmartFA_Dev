@@ -6,7 +6,7 @@ import 'package:mobile/app/modules/transactions/controllers/transactions_control
 class QuickDateFilter extends StatelessWidget {
   final TransactionsController controller;
 
-  const QuickDateFilter({Key? key, required this.controller}) : super(key: key);
+  const QuickDateFilter({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -16,30 +16,28 @@ class QuickDateFilter extends StatelessWidget {
         spacing: 8,
         runSpacing: 8,
         children: [
+          _buildQuickDateButton('Bugün', () => _applyQuickDate('today')),
+          _buildQuickDateButton('Dün', () => _applyQuickDate('yesterday')),
+          _buildQuickDateButton('Bu Hafta', () => _applyQuickDate('thisWeek')),
+          _buildQuickDateButton('Bu Ay', () => _applyQuickDate('thisMonth')),
+          _buildQuickDateButton('Geçen Ay', () => _applyQuickDate('lastMonth')),
           _buildQuickDateButton(
-              'Bugün', () => controller.selectedQuickDate.value = 'today'),
-          _buildQuickDateButton(
-              'Dün', () => controller.selectedQuickDate.value = 'yesterday'),
-          _buildQuickDateButton('Bu Hafta',
-              () => controller.selectedQuickDate.value = 'thisWeek'),
-          _buildQuickDateButton(
-              'Bu Ay', () => controller.selectedQuickDate.value = 'thisMonth'),
-          _buildQuickDateButton('Geçen Ay',
-              () => controller.selectedQuickDate.value = 'lastMonth'),
-          _buildQuickDateButton('Son 3 Ay',
-              () => controller.selectedQuickDate.value = 'last3Months'),
+              'Son 3 Ay', () => _applyQuickDate('last3Months')),
         ],
       ),
     );
   }
 
+  /// Quick date filtresi uygular ve bottom sheet'i kapatır
+  void _applyQuickDate(String period) {
+    controller.applyQuickDateFilter(period);
+    Get.back();
+  }
+
   /// Hızlı tarih filtre butonu
   Widget _buildQuickDateButton(String title, VoidCallback onTap) {
     return InkWell(
-      onTap: () {
-        onTap();
-        Get.back();
-      },
+      onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

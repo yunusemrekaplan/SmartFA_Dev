@@ -1,15 +1,16 @@
 import 'package:get/get.dart';
+import 'package:mobile/app/core/services/snackbar/i_snackbar_service.dart';
 import 'package:mobile/app/domain/models/enums/category_type.dart';
 import 'package:mobile/app/domain/models/request/transaction_request_models.dart';
 import 'package:mobile/app/domain/models/response/transaction_response_model.dart';
 import 'package:mobile/app/domain/repositories/transaction_repository.dart';
 import 'package:mobile/app/utils/error_handler/error_handler.dart';
-import 'package:mobile/app/utils/snackbar_helper.dart';
 
 /// İşlem verilerini yönetmekten sorumlu servis sınıfı
 class TransactionDataService {
   final ITransactionRepository _transactionRepository;
-  final ErrorHandler _errorHandler = ErrorHandler();
+  final _errorHandler = ErrorHandler();
+  final _snackbarService = Get.find<ISnackbarService>();
 
   // Yüklenme durumu
   final RxBool isLoading = false.obs;
@@ -37,9 +38,18 @@ class TransactionDataService {
     try {
       isLoading.value = true;
       errorMessage.value = '';
-      currentPage.value = 1; // Sayfa numarasını sıfırla
 
-      final result = await _transactionRepository.getUserTransactions(filter);
+      // Sayfalama bilgisini sıfırla
+      currentPage.value = 1;
+      hasMoreData.value = true;
+
+      // Mevcut listeyi temizle
+      transactionList.clear();
+
+      // Filtre değiştiğinde sayfa 1'den başla
+      final result = await _transactionRepository.getUserTransactions(
+        filter.copyWith(pageNumber: 1),
+      );
 
       return result.when(
         success: (transactions) {
@@ -75,33 +85,35 @@ class TransactionDataService {
       isLoadingMore.value = true;
       currentPage.value++;
 
+      // Eğer sayfa 1'den büyükse ve liste boşsa, sayfayı 1'e çek
+      if (currentPage.value > 1 && transactionList.isEmpty) {
+        currentPage.value = 1;
+      }
+
       final result = await _transactionRepository.getUserTransactions(
         filter.copyWith(pageNumber: currentPage.value),
       );
 
       return result.when(
-        success: (newTransactions) {
-          if (newTransactions.isEmpty) {
+        success: (transactions) {
+          if (transactions.isEmpty) {
             hasMoreData.value = false;
-          } else {
-            transactionList.addAll(newTransactions);
-            hasMoreData.value = newTransactions.length == pageSize;
+            return false;
           }
+
+          transactionList.addAll(transactions);
+          hasMoreData.value = transactions.length == pageSize;
           _calculateTotals();
-          print(
-              '>>> More transactions loaded: ${newTransactions.length} transactions.');
           return true;
         },
         failure: (error) {
           print('>>> Failed to load more transactions: ${error.message}');
-          currentPage.value--; // Hata durumunda sayfa numarasını geri al
           errorMessage.value = error.message;
           return false;
         },
       );
     } catch (e) {
       print('>>> Unexpected error while loading more transactions: $e');
-      currentPage.value--; // Hata durumunda sayfa numarasını geri al
       errorMessage.value = 'Beklenmeyen bir hata oluştu';
       return false;
     } finally {
@@ -122,7 +134,7 @@ class TransactionDataService {
         success: (_) {
           transactionList.removeWhere((t) => t.id == transactionId);
           _calculateTotals();
-          SnackbarHelper.showSuccess(
+          _snackbarService.showSuccess(
             message: 'İşlem başarıyla silindi.',
             title: 'Başarılı',
           );

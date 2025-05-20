@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:mobile/app/core/di/service_bindings.dart';
 import 'package:mobile/app/data/datasources/local/auth_local_datasource.dart';
 import 'package:mobile/app/data/datasources/local/auth_local_datasource_impl.dart';
 import 'package:mobile/app/data/datasources/remote/account_remote_datasource.dart';
@@ -74,6 +75,9 @@ class InitialBinding extends Bindings {
       permanent: true,
     );
     print('>>> DioClient registered');
+
+    // NavigationServices
+    ServiceBindings().dependencies();
   }
 
   /// DataSource bağımlılıklarını kaydeder

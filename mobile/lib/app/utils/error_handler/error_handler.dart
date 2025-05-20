@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:mobile/app/core/services/snackbar/i_snackbar_service.dart';
 import 'package:mobile/app/data/network/exceptions/app_exception.dart';
 import 'package:mobile/app/utils/error_handler/auth_error_handler.dart';
 import 'package:mobile/app/utils/error_handler/i_error_handler.dart';
 import 'package:mobile/app/utils/error_handler/network_error_handler.dart';
 import 'package:mobile/app/utils/error_handler/unexpected_error_handler.dart';
 import 'package:mobile/app/utils/error_handler/validation_error_handler.dart';
-import 'package:mobile/app/utils/snackbar_helper.dart';
 
 /// Merkezi hata yöneticisi
 class ErrorHandler {
+  final _snackbarService = Get.find<ISnackbarService>();
+
   final List<IErrorHandler> _handlers = [
     AuthErrorHandler(),
     NetworkErrorHandler(),
@@ -36,7 +39,7 @@ class ErrorHandler {
     }
 
     // Hiçbir handler bulunamazsa genel hata göster
-    SnackbarHelper.showError(
+    _snackbarService.showError(
       title: customTitle ?? 'Hata',
       message: errorMessage,
     );

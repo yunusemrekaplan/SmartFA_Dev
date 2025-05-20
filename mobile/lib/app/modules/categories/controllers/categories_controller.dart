@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile/app/core/services/dialog/i_dialog_service.dart';
+import 'package:mobile/app/core/services/snackbar/i_snackbar_service.dart';
 import 'package:mobile/app/domain/models/enums/category_type.dart';
 import 'package:mobile/app/domain/models/request/category_request_models.dart';
 import 'package:mobile/app/domain/models/response/category_response_model.dart';
 import 'package:mobile/app/domain/repositories/category_repository.dart';
 import 'package:mobile/app/services/base_controller_mixin.dart';
-import 'package:mobile/app/services/dialog_service.dart';
-import 'package:mobile/app/utils/snackbar_helper.dart';
 
 /// Kategoriler ekranının state'ini ve iş mantığını yöneten GetX controller.
 class CategoriesController extends GetxController with BaseControllerMixin {
   final ICategoryRepository _categoryRepository;
+  final _snackbarService = Get.find<ISnackbarService>();
 
   CategoriesController({
     required ICategoryRepository categoryRepository,
@@ -112,7 +113,7 @@ class CategoriesController extends GetxController with BaseControllerMixin {
   /// Yeni kategori oluştur
   Future<void> createCategory() async {
     if (nameController.text.trim().isEmpty) {
-      SnackbarHelper.showWarning(
+      _snackbarService.showWarning(
         message: "Kategori adı boş olamaz",
         title: "Uyarı",
       );
@@ -120,7 +121,7 @@ class CategoriesController extends GetxController with BaseControllerMixin {
     }
 
     if (selectedIcon.value.isEmpty) {
-      SnackbarHelper.showWarning(
+      _snackbarService.showWarning(
         message: "Lütfen bir ikon seçin",
         title: "Uyarı",
       );
@@ -148,20 +149,20 @@ class CategoriesController extends GetxController with BaseControllerMixin {
           // Formu temizle
           _resetForm();
 
-          SnackbarHelper.showSuccess(
+          _snackbarService.showSuccess(
             message: "${category.name} kategorisi başarıyla oluşturuldu",
             title: "Başarılı",
           );
         },
         failure: (error) {
-          SnackbarHelper.showError(
+          _snackbarService.showError(
             message: "Kategori oluşturulurken hata: ${error.message}",
             title: "Hata",
           );
         },
       );
     } catch (e) {
-      SnackbarHelper.showError(
+      _snackbarService.showError(
         message: "Beklenmeyen bir hata oluştu",
         title: "Hata",
       );
@@ -173,7 +174,7 @@ class CategoriesController extends GetxController with BaseControllerMixin {
   /// Kategoriyi güncelle
   Future<void> updateCategory() async {
     if (editCategoryId.value <= 0) {
-      SnackbarHelper.showWarning(
+      _snackbarService.showWarning(
         message: "Güncellenecek kategori bulunamadı",
         title: "Uyarı",
       );
@@ -181,7 +182,7 @@ class CategoriesController extends GetxController with BaseControllerMixin {
     }
 
     if (nameController.text.trim().isEmpty) {
-      SnackbarHelper.showWarning(
+      _snackbarService.showWarning(
         message: "Kategori adı boş olamaz",
         title: "Uyarı",
       );
@@ -189,7 +190,7 @@ class CategoriesController extends GetxController with BaseControllerMixin {
     }
 
     if (selectedIcon.value.isEmpty) {
-      SnackbarHelper.showWarning(
+      _snackbarService.showWarning(
         message: "Lütfen bir ikon seçin",
         title: "Uyarı",
       );
@@ -240,20 +241,20 @@ class CategoriesController extends GetxController with BaseControllerMixin {
           _resetForm();
           isEditMode.value = false;
 
-          SnackbarHelper.showSuccess(
+          _snackbarService.showSuccess(
             message: "Kategori başarıyla güncellendi",
             title: "Başarılı",
           );
         },
         failure: (error) {
-          SnackbarHelper.showError(
+          _snackbarService.showError(
             message: "Kategori güncellenirken hata: ${error.message}",
             title: "Hata",
           );
         },
       );
     } catch (e) {
-      SnackbarHelper.showError(
+      _snackbarService.showError(
         message: "Beklenmeyen bir hata oluştu",
         title: "Hata",
       );
@@ -264,7 +265,7 @@ class CategoriesController extends GetxController with BaseControllerMixin {
 
   /// Kategoriyi sil
   Future<void> deleteCategory(int categoryId) async {
-    final result = await DialogService.showDeleteConfirmationDialog(
+    final result = await Get.find<IDialogService>().showDeleteConfirmation(
       title: "Kategoriyi Sil",
       message: "Bu kategoriyi silmek istediğinizden emin misiniz?",
     );
@@ -283,20 +284,20 @@ class CategoriesController extends GetxController with BaseControllerMixin {
           allCategories.removeWhere((c) => c.id == categoryId);
           _filterCategories();
 
-          SnackbarHelper.showSuccess(
+          _snackbarService.showSuccess(
             message: "Kategori başarıyla silindi",
             title: "Başarılı",
           );
         },
         failure: (error) {
-          SnackbarHelper.showError(
+          _snackbarService.showError(
             message: "Kategori silinirken hata: ${error.message}",
             title: "Hata",
           );
         },
       );
     } catch (e) {
-      SnackbarHelper.showError(
+      _snackbarService.showError(
         message: "Beklenmeyen bir hata oluştu",
         title: "Hata",
       );

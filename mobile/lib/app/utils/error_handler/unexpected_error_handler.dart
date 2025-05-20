@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:mobile/app/core/services/snackbar/i_snackbar_service.dart';
 import 'package:mobile/app/data/network/exceptions/app_exception.dart';
 import 'package:mobile/app/data/network/exceptions/unexpected_exception.dart';
 import 'package:mobile/app/utils/error_handler/i_error_handler.dart';
-import 'package:mobile/app/utils/snackbar_helper.dart';
 
 /// Beklenmeyen hataları işleyen handler
 class UnexpectedErrorHandler implements IErrorHandler {
@@ -16,10 +17,10 @@ class UnexpectedErrorHandler implements IErrorHandler {
     VoidCallback? onRetry,
     String? customTitle,
   }) {
-    SnackbarHelper.showError(
+    Get.find<ISnackbarService>().showError(
       title: customTitle ?? 'Beklenmeyen Hata',
       message: message,
-      icon: const Icon(Icons.warning_amber_rounded, color: Colors.white),
+      icon: Icons.warning_amber_rounded,
     );
   }
 }

@@ -86,12 +86,70 @@ class TransactionFilterService {
 
   /// Geçici filtreleri uygular
   void applyFilters() {
-    selectedStartDate.value = tempStartDate.value;
-    selectedEndDate.value = tempEndDate.value;
+    // Eğer hızlı tarih filtresi seçiliyse
+    if (tempQuickDate.value != null) {
+      selectedQuickDate.value = tempQuickDate.value;
+      // Tarih aralığını temizle
+      selectedStartDate.value = null;
+      selectedEndDate.value = null;
+      // Hızlı tarih filtresine göre tarihleri ayarla
+      final now = DateTime.now();
+      switch (tempQuickDate.value) {
+        case 'today':
+          selectedStartDate.value = DateTime(now.year, now.month, now.day);
+          selectedEndDate.value =
+              DateTime(now.year, now.month, now.day, 23, 59, 59);
+          break;
+        case 'yesterday':
+          final yesterday = now.subtract(const Duration(days: 1));
+          selectedStartDate.value =
+              DateTime(yesterday.year, yesterday.month, yesterday.day);
+          selectedEndDate.value = DateTime(
+              yesterday.year, yesterday.month, yesterday.day, 23, 59, 59);
+          break;
+        case 'thisWeek':
+          final firstDayOfWeek = now.subtract(Duration(days: now.weekday - 1));
+          selectedStartDate.value = DateTime(
+              firstDayOfWeek.year, firstDayOfWeek.month, firstDayOfWeek.day);
+          selectedEndDate.value =
+              DateTime(now.year, now.month, now.day, 23, 59, 59);
+          break;
+        case 'thisMonth':
+          selectedStartDate.value = DateTime(now.year, now.month, 1);
+          selectedEndDate.value =
+              DateTime(now.year, now.month, now.day, 23, 59, 59);
+          break;
+        case 'lastMonth':
+          final lastMonth = DateTime(now.year, now.month - 1, 1);
+          selectedStartDate.value =
+              DateTime(lastMonth.year, lastMonth.month, 1);
+          selectedEndDate.value =
+              DateTime(lastMonth.year, lastMonth.month + 1, 0, 23, 59, 59);
+          break;
+        case 'last3Months':
+          final threeMonthsAgo = DateTime(now.year, now.month - 3, 1);
+          selectedStartDate.value =
+              DateTime(threeMonthsAgo.year, threeMonthsAgo.month, 1);
+          selectedEndDate.value =
+              DateTime(now.year, now.month, now.day, 23, 59, 59);
+          break;
+      }
+    } else if (tempStartDate.value != null && tempEndDate.value != null) {
+      // Özel tarih aralığı seçilmişse
+      selectedStartDate.value = tempStartDate.value;
+      selectedEndDate.value = tempEndDate.value;
+      selectedQuickDate.value = null; // Hızlı tarih filtresini temizle
+    } else {
+      // Hiçbir tarih filtresi seçilmemişse hepsini temizle
+      selectedStartDate.value = null;
+      selectedEndDate.value = null;
+      selectedQuickDate.value = null;
+    }
+
+    // Diğer filtreleri uygula
     selectedAccount.value = tempAccount.value;
     selectedCategory.value = tempCategory.value;
     selectedType.value = tempType.value;
-    selectedQuickDate.value = tempQuickDate.value;
     sortCriteria.value = tempSortCriteria.value;
   }
 
@@ -168,77 +226,21 @@ class TransactionFilterService {
       tempEndDate.value = DateTime(
           picked.end.year, picked.end.month, picked.end.day, 23, 59, 59);
       tempQuickDate.value = null;
+      applyFilters();
     }
   }
 
   /// Hızlı tarih filtresi uygular
   Future<void> applyQuickDateFilter(String? period) async {
-    selectedQuickDate.value = period;
-    final now = DateTime.now();
-
-    switch (period) {
-      case 'today':
-        selectedStartDate.value = DateTime(now.year, now.month, now.day);
-        selectedEndDate.value =
-            DateTime(now.year, now.month, now.day, 23, 59, 59);
-        break;
-
-      case 'yesterday':
-        final yesterday = now.subtract(const Duration(days: 1));
-        selectedStartDate.value =
-            DateTime(yesterday.year, yesterday.month, yesterday.day);
-        selectedEndDate.value = DateTime(
-            yesterday.year, yesterday.month, yesterday.day, 23, 59, 59);
-        break;
-
-      case 'thisWeek':
-        final firstDayOfWeek = now.subtract(Duration(days: now.weekday - 1));
-        selectedStartDate.value = DateTime(
-            firstDayOfWeek.year, firstDayOfWeek.month, firstDayOfWeek.day);
-        selectedEndDate.value =
-            DateTime(now.year, now.month, now.day, 23, 59, 59);
-        break;
-
-      case 'thisMonth':
-        selectedStartDate.value = DateTime(now.year, now.month, 1);
-        selectedEndDate.value =
-            DateTime(now.year, now.month, now.day, 23, 59, 59);
-        break;
-
-      case 'lastMonth':
-        final lastMonth = DateTime(now.year, now.month - 1, 1);
-        selectedStartDate.value = DateTime(lastMonth.year, lastMonth.month, 1);
-        selectedEndDate.value =
-            DateTime(lastMonth.year, lastMonth.month + 1, 0, 23, 59, 59);
-        break;
-
-      case 'last3Months':
-        final threeMonthsAgo = DateTime(now.year, now.month - 3, 1);
-        selectedStartDate.value =
-            DateTime(threeMonthsAgo.year, threeMonthsAgo.month, 1);
-        selectedEndDate.value =
-            DateTime(now.year, now.month, now.day, 23, 59, 59);
-        break;
-
-      case 'lastYear':
-        final lastYear = DateTime(now.year - 1, now.month, now.day);
-        selectedStartDate.value =
-            DateTime(lastYear.year, lastYear.month, lastYear.day);
-        selectedEndDate.value =
-            DateTime(now.year, now.month, now.day, 23, 59, 59);
-        break;
-
-      case 'all':
-      default:
-        selectedStartDate.value = null;
-        selectedEndDate.value = null;
-        selectedQuickDate.value = null;
-        break;
-    }
+    tempQuickDate.value = period;
+    tempStartDate.value = null;
+    tempEndDate.value = null;
+    applyFilters();
   }
 
   /// Özet kart için tarih aralığı seçim menüsünü gösterir
-  void showQuickDateMenu(BuildContext context, Offset position) {
+  Future<String?> showQuickDateMenu(
+      BuildContext context, Offset position) async {
     final RenderBox overlay =
         Overlay.of(context).context.findRenderObject() as RenderBox;
 
@@ -249,7 +251,7 @@ class TransactionFilterService {
       overlay.size.height - position.dy - 40,
     );
 
-    showMenu<String>(
+    final String? value = await showMenu<String>(
       context: context,
       position: rect,
       elevation: 8,
@@ -274,15 +276,17 @@ class TransactionFilterService {
           ),
         ),
       ],
-    ).then((value) {
-      if (value == null) return;
+    );
 
-      if (value == 'custom') {
-        selectDateRange(context);
-      } else {
-        applyQuickDateFilter(value);
-      }
-    });
+    if (value == null) return null;
+
+    if (value == 'custom') {
+      await selectDateRange(context);
+    } else {
+      await applyQuickDateFilter(value == 'all' ? null : value);
+    }
+
+    return value;
   }
 
   /// Popup menü öğesi oluşturur
@@ -327,6 +331,7 @@ class TransactionFilterService {
       type: selectedType.value,
       pageNumber: pageNumber,
       pageSize: pageSize,
+      sortCriteria: sortCriteria.value,
     );
   }
 

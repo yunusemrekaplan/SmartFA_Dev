@@ -141,6 +141,31 @@ class ActiveFiltersRow extends StatelessWidget {
       }
     }
 
+    // Sıralama filtresi
+    if (controller.sortCriteria.value != 'date_desc') {
+      String sortText = '';
+      switch (controller.sortCriteria.value) {
+        case 'date_asc':
+          sortText = 'En Eski';
+          break;
+        case 'amount_asc':
+          sortText = 'Tutar (↑)';
+          break;
+        case 'amount_desc':
+          sortText = 'Tutar (↓)';
+          break;
+      }
+
+      if (sortText.isNotEmpty) {
+        chips.add(_buildChip(
+          context: context,
+          label: sortText,
+          onTap: () => FilterBottomSheet.show(context, controller),
+          color: AppColors.primary,
+        ));
+      }
+    }
+
     return chips;
   }
 

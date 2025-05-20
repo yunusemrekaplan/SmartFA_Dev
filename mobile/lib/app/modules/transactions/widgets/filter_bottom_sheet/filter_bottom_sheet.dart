@@ -78,6 +78,7 @@ class FilterBottomSheet extends StatelessWidget {
                   label: const Text('Sıfırla'),
                   onPressed: () {
                     controller.clearFilters();
+                    Navigator.pop(context);
                   },
                   style: TextButton.styleFrom(
                     foregroundColor: AppColors.primary,
@@ -138,32 +139,46 @@ class FilterBottomSheet extends StatelessWidget {
                             _buildTypeFilterButton(
                               context: context,
                               label: 'Tümü',
-                              selected: controller.selectedType.value == null,
+                              selected: controller.tempType.value == null,
                               icon: Icons.sync_alt_rounded,
                               color: AppColors.primary,
-                              onTap: () => controller.selectedType.value = null,
+                              onTap: () => controller.tempType.value = null,
                             ),
                             const SizedBox(width: 8),
                             _buildTypeFilterButton(
                               context: context,
                               label: 'Gelir',
-                              selected: controller.selectedType.value ==
+                              selected: controller.tempType.value ==
                                   CategoryType.Income,
                               icon: Icons.arrow_upward_rounded,
                               color: AppColors.income,
-                              onTap: () => controller.selectedType.value =
-                                  CategoryType.Income,
+                              onTap: () {
+                                if (controller.tempType.value ==
+                                    CategoryType.Income) {
+                                  controller.tempType.value = null;
+                                } else {
+                                  controller.tempType.value =
+                                      CategoryType.Income;
+                                }
+                              },
                             ),
                             const SizedBox(width: 8),
                             _buildTypeFilterButton(
                               context: context,
                               label: 'Gider',
-                              selected: controller.selectedType.value ==
+                              selected: controller.tempType.value ==
                                   CategoryType.Expense,
                               icon: Icons.arrow_downward_rounded,
                               color: AppColors.expense,
-                              onTap: () => controller.selectedType.value =
-                                  CategoryType.Expense,
+                              onTap: () {
+                                if (controller.tempType.value ==
+                                    CategoryType.Expense) {
+                                  controller.tempType.value = null;
+                                } else {
+                                  controller.tempType.value =
+                                      CategoryType.Expense;
+                                }
+                              },
                             ),
                           ],
                         )).animate().fadeIn(duration: 300.ms),
@@ -188,44 +203,98 @@ class FilterBottomSheet extends StatelessWidget {
                             _buildDateFilterChip(
                               label: 'Bugün',
                               selected:
-                                  controller.selectedQuickDate.value == 'today',
-                              onTap: () =>
-                                  controller.selectedQuickDate.value = 'today',
+                                  controller.tempQuickDate.value == 'today',
+                              onTap: () {
+                                if (controller.tempQuickDate.value == 'today') {
+                                  controller.tempQuickDate.value = null;
+                                } else {
+                                  controller.tempQuickDate.value = 'today';
+                                  // Tarih aralığını temizle
+                                  controller.tempStartDate.value = null;
+                                  controller.tempEndDate.value = null;
+                                }
+                              },
                             ),
                             _buildDateFilterChip(
                               label: 'Dün',
-                              selected: controller.selectedQuickDate.value ==
-                                  'yesterday',
-                              onTap: () => controller.selectedQuickDate.value =
-                                  'yesterday',
+                              selected:
+                                  controller.tempQuickDate.value == 'yesterday',
+                              onTap: () {
+                                if (controller.tempQuickDate.value ==
+                                    'yesterday') {
+                                  controller.tempQuickDate.value = null;
+                                } else {
+                                  controller.tempQuickDate.value = 'yesterday';
+                                  // Tarih aralığını temizle
+                                  controller.tempStartDate.value = null;
+                                  controller.tempEndDate.value = null;
+                                }
+                              },
                             ),
                             _buildDateFilterChip(
                               label: 'Bu Hafta',
-                              selected: controller.selectedQuickDate.value ==
-                                  'thisWeek',
-                              onTap: () => controller.selectedQuickDate.value =
-                                  'thisWeek',
+                              selected:
+                                  controller.tempQuickDate.value == 'thisWeek',
+                              onTap: () {
+                                if (controller.tempQuickDate.value ==
+                                    'thisWeek') {
+                                  controller.tempQuickDate.value = null;
+                                } else {
+                                  controller.tempQuickDate.value = 'thisWeek';
+                                  // Tarih aralığını temizle
+                                  controller.tempStartDate.value = null;
+                                  controller.tempEndDate.value = null;
+                                }
+                              },
                             ),
                             _buildDateFilterChip(
                               label: 'Bu Ay',
-                              selected: controller.selectedQuickDate.value ==
-                                  'thisMonth',
-                              onTap: () => controller.selectedQuickDate.value =
-                                  'thisMonth',
+                              selected:
+                                  controller.tempQuickDate.value == 'thisMonth',
+                              onTap: () {
+                                if (controller.tempQuickDate.value ==
+                                    'thisMonth') {
+                                  controller.tempQuickDate.value = null;
+                                } else {
+                                  controller.tempQuickDate.value = 'thisMonth';
+                                  // Tarih aralığını temizle
+                                  controller.tempStartDate.value = null;
+                                  controller.tempEndDate.value = null;
+                                }
+                              },
                             ),
                             _buildDateFilterChip(
                               label: 'Geçen Ay',
-                              selected: controller.selectedQuickDate.value ==
-                                  'lastMonth',
-                              onTap: () => controller.selectedQuickDate.value =
-                                  'lastMonth',
+                              selected:
+                                  controller.tempQuickDate.value == 'lastMonth',
+                              onTap: () {
+                                if (controller.tempQuickDate.value ==
+                                    'lastMonth') {
+                                  controller.tempQuickDate.value = null;
+                                } else {
+                                  controller.tempQuickDate.value = 'lastMonth';
+                                  // Tarih aralığını temizle
+                                  controller.tempStartDate.value = null;
+                                  controller.tempEndDate.value = null;
+                                }
+                              },
                             ),
                             _buildDateFilterChip(
                               label: 'Son 3 Ay',
-                              selected: controller.selectedQuickDate.value ==
+                              selected: controller.tempQuickDate.value ==
                                   'last3Months',
-                              onTap: () => controller.selectedQuickDate.value =
-                                  'last3Months',
+                              onTap: () {
+                                if (controller.tempQuickDate.value ==
+                                    'last3Months') {
+                                  controller.tempQuickDate.value = null;
+                                } else {
+                                  controller.tempQuickDate.value =
+                                      'last3Months';
+                                  // Tarih aralığını temizle
+                                  controller.tempStartDate.value = null;
+                                  controller.tempEndDate.value = null;
+                                }
+                              },
                             ),
                           ],
                         )).animate().fadeIn(duration: 300.ms, delay: 100.ms),
@@ -237,7 +306,11 @@ class FilterBottomSheet extends StatelessWidget {
                       icon:
                           Icon(Icons.calendar_month, color: AppColors.primary),
                       label: Text('Özel Tarih Aralığı Seç'),
-                      onPressed: () => controller.selectDateRange(context),
+                      onPressed: () {
+                        controller.tempQuickDate.value =
+                            null; // Hızlı tarih filtresini temizle
+                        controller.selectDateRange(context);
+                      },
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.primary,
                         side: BorderSide(color: AppColors.primary),
@@ -322,11 +395,10 @@ class FilterBottomSheet extends StatelessWidget {
                         runSpacing: 8,
                         children: controller.filterCategories.map((category) {
                           final isSelected =
-                              controller.selectedCategory.value?.id ==
-                                  category.id;
-                          final isIncome = category.type == CategoryType.Income;
-                          final chipColor =
-                              isIncome ? AppColors.income : AppColors.expense;
+                              controller.tempCategory.value?.id == category.id;
+                          final chipColor = category.type == CategoryType.Income
+                              ? AppColors.income
+                              : AppColors.expense;
 
                           return FilterChip(
                             label: Text(category.name),
@@ -361,9 +433,9 @@ class FilterBottomSheet extends StatelessWidget {
                             ),
                             onSelected: (selected) {
                               if (selected) {
-                                controller.selectedCategory.value = category;
+                                controller.tempCategory.value = category;
                               } else {
-                                controller.selectedCategory.value = null;
+                                controller.tempCategory.value = null;
                               }
                             },
                           ).animate().fadeIn(duration: 200.ms);
@@ -420,8 +492,7 @@ class FilterBottomSheet extends StatelessWidget {
                         runSpacing: 8,
                         children: controller.filterAccounts.map((account) {
                           final isSelected =
-                              controller.selectedAccount.value?.id ==
-                                  account.id;
+                              controller.tempAccount.value?.id == account.id;
 
                           return FilterChip(
                             label: Text(account.name),
@@ -454,9 +525,9 @@ class FilterBottomSheet extends StatelessWidget {
                             ),
                             onSelected: (selected) {
                               if (selected) {
-                                controller.selectedAccount.value = account;
+                                controller.tempAccount.value = account;
                               } else {
-                                controller.selectedAccount.value = null;
+                                controller.tempAccount.value = null;
                               }
                             },
                           ).animate().fadeIn(duration: 200.ms);
@@ -483,31 +554,37 @@ class FilterBottomSheet extends StatelessWidget {
                           children: [
                             _buildSortChip(
                               label: 'En Yeni',
-                              isSelected:
-                                  controller.sortCriteria.value == 'date_desc',
-                              onTap: () =>
-                                  controller.sortCriteria.value = 'date_desc',
+                              isSelected: controller.tempSortCriteria.value ==
+                                  'date_desc',
+                              onTap: () {
+                                controller.tempSortCriteria.value = 'date_desc';
+                              },
                             ),
                             _buildSortChip(
                               label: 'En Eski',
-                              isSelected:
-                                  controller.sortCriteria.value == 'date_asc',
-                              onTap: () =>
-                                  controller.sortCriteria.value = 'date_asc',
+                              isSelected: controller.tempSortCriteria.value ==
+                                  'date_asc',
+                              onTap: () {
+                                controller.tempSortCriteria.value = 'date_asc';
+                              },
                             ),
                             _buildSortChip(
                               label: 'Tutar (↑)',
-                              isSelected:
-                                  controller.sortCriteria.value == 'amount_asc',
-                              onTap: () =>
-                                  controller.sortCriteria.value = 'amount_asc',
+                              isSelected: controller.tempSortCriteria.value ==
+                                  'amount_asc',
+                              onTap: () {
+                                controller.tempSortCriteria.value =
+                                    'amount_asc';
+                              },
                             ),
                             _buildSortChip(
                               label: 'Tutar (↓)',
-                              isSelected: controller.sortCriteria.value ==
+                              isSelected: controller.tempSortCriteria.value ==
                                   'amount_desc',
-                              onTap: () =>
-                                  controller.sortCriteria.value = 'amount_desc',
+                              onTap: () {
+                                controller.tempSortCriteria.value =
+                                    'amount_desc';
+                              },
                             ),
                           ],
                         )).animate().fadeIn(duration: 300.ms, delay: 350.ms),
