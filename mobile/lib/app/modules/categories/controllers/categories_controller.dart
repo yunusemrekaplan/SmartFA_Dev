@@ -9,8 +9,7 @@ import 'package:mobile/app/services/dialog_service.dart';
 import 'package:mobile/app/utils/snackbar_helper.dart';
 
 /// Kategoriler ekranının state'ini ve iş mantığını yöneten GetX controller.
-class CategoriesController extends GetxController
-    with RefreshableControllerMixin {
+class CategoriesController extends GetxController with BaseControllerMixin {
   final ICategoryRepository _categoryRepository;
 
   CategoriesController({
@@ -77,8 +76,11 @@ class CategoriesController extends GetxController
   }
 
   /// Kategorileri yeniden yüklemek için public metod
-  Future<void> refreshCategories() async {
-    await _fetchCategories();
+  Future<void> loadCategories() async {
+    await loadData(
+      fetchFunc: _fetchCategories,
+      loadingErrorMessage: "Kategoriler yüklenirken bir hata oluştu.",
+    );
   }
 
   /// Belirli bir türdeki kategorileri getirir
@@ -100,7 +102,7 @@ class CategoriesController extends GetxController
       failure: (error) {
         // Hata durumunda mixin'deki errorMessage güncellenir
         errorMessage.value = "Kategoriler yüklenirken hata: ${error.message}";
-        throw error; // RefreshableControllerMixin için hatayı fırlat
+        throw error; // BaseControllerMixin için hatayı fırlat
       },
     );
   }
@@ -262,19 +264,12 @@ class CategoriesController extends GetxController
 
   /// Kategoriyi sil
   Future<void> deleteCategory(int categoryId) async {
-    // Kategoriyi bul (isim için)
-    final category = allCategories.firstWhere((c) => c.id == categoryId);
-
-    // Onay dialogu
-    final confirm = await DialogService.showDeleteConfirmationDialog(
+    final result = await DialogService.showDeleteConfirmationDialog(
       title: "Kategoriyi Sil",
-      message:
-          "${category.name} kategorisini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
-      onConfirm:
-          null, // Dialog kapanınca işlem yapmak istemiyoruz, burada yapacağız
+      message: "Bu kategoriyi silmek istediğinizden emin misiniz?",
     );
 
-    if (confirm != true) return; // Kullanıcı onaylamadıysa çık
+    if (result != true) return;
 
     isLoading.value = true;
 
@@ -283,7 +278,7 @@ class CategoriesController extends GetxController
 
       result.when(
         success: (_) {
-          // Listeleri güncelle
+          // Kategoriyi listelerden kaldır
           userCategories.removeWhere((c) => c.id == categoryId);
           allCategories.removeWhere((c) => c.id == categoryId);
           _filterCategories();
@@ -347,31 +342,27 @@ class CategoriesController extends GetxController
 
   /// Kategorileri filtrele
   void _filterCategories() {
-    List<CategoryModel> filtered = List.from(allCategories);
+    var filtered = List<CategoryModel>.from(allCategories);
 
-    // Tür filtreleme
+    // Tür filtresi
     if (selectedType.value != null) {
       filtered = filtered.where((c) => c.type == selectedType.value).toList();
     }
 
-    // Metin araması
-    if (searchQuery.isNotEmpty) {
+    // Arama filtresi
+    if (searchQuery.value.isNotEmpty) {
       final query = searchQuery.value.toLowerCase();
       filtered =
           filtered.where((c) => c.name.toLowerCase().contains(query)).toList();
     }
 
-    // Görüntülenen listeyi güncelle
+    // Filtrelenmiş listeyi güncelle
     displayedCategories.assignAll(filtered);
   }
 
-  /// Kategori türü filtresini ayarla
+  /// Tür filtresini güncelle
   void setTypeFilter(CategoryType? type) {
-    if (selectedType.value == type) {
-      selectedType.value = null; // Aynı türe tekrar tıklanırsa filtreyi kaldır
-    } else {
-      selectedType.value = type;
-    }
+    selectedType.value = type;
     _filterCategories();
   }
 

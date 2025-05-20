@@ -1,16 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:mobile/app/data/network/exceptions/app_exception.dart';
-import 'package:mobile/app/services/page_refresh_service.dart';
 import 'package:mobile/app/utils/error_handler/error_handler.dart';
 
-/// Tüm controller'lar için standart veri yükleme, yenileme ve hata yönetimi
+/// Tüm controller'lar için standart veri yükleme ve hata yönetimi
 /// işlevlerini sağlayan mixin.
 ///
-/// Bu mixin, controller'larda veri yükleme ve yenileme işlemlerini
-/// standartlaştırmak için kullanılır. Her controller yükleme ve hata
+/// Bu mixin, controller'larda veri yükleme ve hata
 /// durumlarını aynı şekilde yönetir.
-mixin RefreshableControllerMixin on GetxController {
+mixin BaseControllerMixin on GetxController {
   /// Yükleme durumu göstergesi
   late final RxBool isLoading = false.obs;
 
@@ -34,7 +32,6 @@ mixin RefreshableControllerMixin on GetxController {
   }
 
   /// Veri yükleme işlemini standart hata yönetimi ile gerçekleştirir
-  /// [fetchFunc] fonksiyonu asıl veri getirme işlemini yapar
   Future<void> loadData({
     required Future<void> Function() fetchFunc,
     String? loadingErrorMessage,
@@ -42,57 +39,24 @@ mixin RefreshableControllerMixin on GetxController {
     Function(dynamic)? onError,
     bool preventMultipleRequests = true,
   }) async {
-    // Hali hazırda yükleme yapılıyorsa ve engellemek isteniyorsa, çık
     if (isLoading.value && preventMultipleRequests) {
       _logDebug('Veri yükleme zaten devam ediyor, yeni istek engellendi');
       return;
     }
 
-    await PageRefreshService.refreshWithErrorHandling(
-      refreshAction: fetchFunc,
-      isLoading: isLoading,
-      errorMessage: errorMessage,
-      onSuccess: onSuccess,
-      onError: (e) {
-        _handleError(
-            e, loadingErrorMessage ?? 'Veriler yüklenirken bir hata oluştu');
-        if (onError != null) onError(e);
-      },
-    );
-  }
+    isLoading.value = true;
+    errorMessage.value = '';
 
-  /// Verileri yeniler (genellikle UI'dan, pull-to-refresh ile çağrılır)
-  Future<void> refreshData({
-    required Future<void> Function() fetchFunc,
-    String? refreshErrorMessage,
-    VoidCallback? onSuccess,
-  }) async {
-    await PageRefreshService.refreshWithErrorHandling(
-      refreshAction: fetchFunc,
-      isLoading: isLoading,
-      errorMessage: errorMessage,
-      onSuccess: onSuccess,
-      onError: (e) => _handleError(
-          e, refreshErrorMessage ?? 'Veriler yenilenirken bir hata oluştu'),
-    );
-
-    // RefreshIndicator için Future'ı her zaman tamamla
-    return Future.value();
-  }
-
-  /// Token yenileme sonrası verileri güvenli bir şekilde yeniler
-  Future<void> refreshAfterTokenRenewal({
-    required Future<void> Function() fetchFunc,
-  }) async {
-    await PageRefreshService.safeRefreshAfterTokenRefresh(
-      refreshAction: fetchFunc,
-      isLoading: isLoading,
-    );
-  }
-
-  /// İlk yükleme ve yenileme işlemlerinde tutarlılık için yükleme durumunu sıfırlar
-  void resetLoadingState() {
-    isLoading.value = false;
+    try {
+      await fetchFunc();
+      if (onSuccess != null) onSuccess();
+    } catch (e) {
+      _handleError(
+          e, loadingErrorMessage ?? 'Veriler yüklenirken bir hata oluştu');
+      if (onError != null) onError(e);
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   /// Hata mesajını temizler
@@ -103,19 +67,13 @@ mixin RefreshableControllerMixin on GetxController {
   /// Hataları standart bir şekilde işler
   void _handleError(dynamic error, String defaultMessage) {
     if (error is AppException) {
-      // ErrorHandler'ı kullanarak hatayı göster
       _errorHandler.handleError(
         error,
         message: defaultMessage,
-        onRetry: () => loadData(
-            fetchFunc:
-                () async {}), // Boş fonksiyon, alt sınıflarda override edilecek
+        onRetry: () => loadData(fetchFunc: () async {}),
       );
-
-      // Hata mesajını ayarla
       errorMessage.value = error.message;
     } else {
-      // Beklenmeyen hata durumu
       _logDebug('Beklenmeyen hata: $error');
       errorMessage.value = defaultMessage;
     }

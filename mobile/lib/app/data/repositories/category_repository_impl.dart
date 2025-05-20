@@ -96,9 +96,9 @@ class CategoryRepositoryImpl implements ICategoryRepository {
   }
 
   @override
-  Future<Result<List<CategoryModel>, AppException>> getUserCategories() async {
+  Future<Result<List<CategoryModel>, AppException>> getAllCategories() async {
     try {
-      final categories = await _remoteDataSource.getUserCategories();
+      final categories = await _remoteDataSource.getAllCategories();
       return Success(categories);
     } on DioException catch (e) {
       return Failure(NetworkException.fromDioError(e));

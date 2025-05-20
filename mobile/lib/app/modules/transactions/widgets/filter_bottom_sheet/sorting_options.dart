@@ -23,22 +23,22 @@ class SortingOptions extends StatelessWidget {
               SortOptionChip(
                 label: 'Tarih ↓',
                 isSelected: controller.sortCriteria.value == 'date_desc',
-                onSelected: () => controller.setSortingCriteria('date_desc'),
+                onSelected: () => controller.sortCriteria.value = 'date_desc',
               ),
               SortOptionChip(
                 label: 'Tarih ↑',
                 isSelected: controller.sortCriteria.value == 'date_asc',
-                onSelected: () => controller.setSortingCriteria('date_asc'),
+                onSelected: () => controller.sortCriteria.value = 'date_asc',
               ),
               SortOptionChip(
                 label: 'Tutar ↓',
                 isSelected: controller.sortCriteria.value == 'amount_desc',
-                onSelected: () => controller.setSortingCriteria('amount_desc'),
+                onSelected: () => controller.sortCriteria.value = 'amount_desc',
               ),
               SortOptionChip(
                 label: 'Tutar ↑',
                 isSelected: controller.sortCriteria.value == 'amount_asc',
-                onSelected: () => controller.setSortingCriteria('amount_asc'),
+                onSelected: () => controller.sortCriteria.value = 'amount_asc',
               ),
             ],
           ),

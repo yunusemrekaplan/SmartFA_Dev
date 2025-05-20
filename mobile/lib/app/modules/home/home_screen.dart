@@ -25,20 +25,39 @@ class HomeScreen extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
+      if (controller.isInitialLoading.value) {
+        return Scaffold(
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: 16),
+                Text(
+                  controller.loadingMessage.value,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
       return Scaffold(
         extendBody: false,
         // FAB ve bottom bar için body'yi uzat
 
         // Seçili sekmeye göre body'yi değiştirmek için PageView
         body: PageView(
-          physics: const NeverScrollableScrollPhysics(), // Sayfa kaydırmayı devre dışı bırak
+          physics:
+              const NeverScrollableScrollPhysics(), // Sayfa kaydırmayı devre dışı bırak
           controller: controller.pageController,
           onPageChanged: controller.changeTabIndex,
           children: [
-            _buildAnimatedPage(const DashboardScreen(), 0), // Index 0
-            _buildAnimatedPage(const AccountsScreen(), 1), // Index 1
-            _buildAnimatedPage(const TransactionsScreen(), 2), // Index 2
-            _buildAnimatedPage(const BudgetsScreen(), 3), // Index 3
+            _buildAnimatedScreen(const DashboardScreen(), 0),
+            _buildAnimatedScreen(const AccountsScreen(), 1),
+            _buildAnimatedScreen(const TransactionsScreen(), 2),
+            _buildAnimatedScreen(const BudgetsScreen(), 3),
           ],
         ),
 
@@ -61,18 +80,17 @@ class HomeScreen extends GetView<HomeController> {
     });
   }
 
-  /// Sekme sayfalarını animasyonlu olarak oluşturur
-  Widget _buildAnimatedPage(Widget page, int index) {
+  /// Sekme sayfası oluşturur
+  Widget _buildAnimatedScreen(Widget screen, int index) {
     return Obx(() {
       final isActive = controller.selectedIndex.value == index;
-
       return AnimatedOpacity(
         duration: const Duration(milliseconds: 300),
         opacity: isActive ? 1.0 : 0.0,
         child: AnimatedScale(
           duration: const Duration(milliseconds: 300),
           scale: isActive ? 1.0 : 0.92,
-          child: page,
+          child: screen,
         ),
       );
     });
@@ -154,13 +172,19 @@ class HomeScreen extends GetView<HomeController> {
     switch (controller.selectedIndex.value) {
       case 0: // Dashboard
       case 2: // Transactions
-        Get.toNamed(AppRoutes.ADD_EDIT_TRANSACTION);
+        Get.toNamed(AppRoutes.ADD_EDIT_TRANSACTION)?.then((_) {
+          controller.refreshModuleData(controller.selectedIndex.value);
+        });
         break;
       case 1: // Accounts
-        Get.toNamed(AppRoutes.ADD_EDIT_ACCOUNT);
+        Get.toNamed(AppRoutes.ADD_EDIT_ACCOUNT)?.then((_) {
+          controller.refreshModuleData(controller.selectedIndex.value);
+        });
         break;
       case 3: // Budgets
-        Get.toNamed(AppRoutes.ADD_EDIT_BUDGET);
+        Get.toNamed(AppRoutes.ADD_EDIT_BUDGET)?.then((_) {
+          controller.refreshModuleData(controller.selectedIndex.value);
+        });
         break;
     }
   }

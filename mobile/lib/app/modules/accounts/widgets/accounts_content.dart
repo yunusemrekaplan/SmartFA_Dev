@@ -15,38 +15,45 @@ class AccountsContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      children: [
-        // Yükleniyor göstergesi (ilk yüklemeden sonra)
-        Obx(() => controller.isLoading.value
-            ? Container(
-                margin: const EdgeInsets.only(bottom: 16.0, top: 8.0),
-                child: const LinearProgressIndicator(
-                  backgroundColor: Colors.transparent,
-                  minHeight: 3,
-                ),
-              ).animate().fadeIn(duration: 200.ms)
-            : const SizedBox(height: 8)),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0, left: 16.0, right: 16.0),
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Yükleniyor göstergesi (ilk yüklemeden sonra)
+            Obx(() => controller.isLoading.value
+                ? Container(
+                    margin: const EdgeInsets.only(bottom: 16.0, top: 8.0),
+                    child: const LinearProgressIndicator(
+                      backgroundColor: Colors.transparent,
+                      minHeight: 3,
+                    ),
+                  ).animate().fadeIn(duration: 200.ms)
+                : const SizedBox(height: 8)),
 
-        // Hesaplar başlığı
-        AccountsHeader(
-          accountCount: controller.accountList.length,
-          totalBalance: controller.totalBalance,
-        ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.1, end: 0),
+            // Hesaplar başlığı
+            Obx(() => AccountsHeader(
+                      accountCount: controller.accountList.length,
+                      totalBalance: controller.totalBalance.value,
+                    ))
+                .animate()
+                .fadeIn(duration: 500.ms)
+                .slideY(begin: 0.1, end: 0),
 
-        const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-        // Hesaplarım bölümü başlığı
-        _buildSectionHeader(context)
-            .animate()
-            .fadeIn(delay: 200.ms, duration: 400.ms),
+            // Hesaplarım bölümü başlığı
+            _buildSectionHeader(context)
+                .animate()
+                .fadeIn(delay: 200.ms, duration: 400.ms),
 
-        // Hesap listesi
-        _buildAccountList(),
+            // Hesap listesi
+            _buildAccountList(),
 
-        const SizedBox(height: 80), // Alt boşluk (FAB için)
-      ],
+            // const SizedBox(height: 80), // Alt boşluk (FAB için)
+          ],
+        ),
+      ),
     );
   }
 
@@ -96,11 +103,8 @@ class AccountsContent extends StatelessWidget {
 
   /// Hesap listesini oluşturur
   Widget _buildAccountList() {
-    return Obx(() => ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: controller.accountList.length,
-          itemBuilder: (context, index) {
+    return Obx(() => Column(
+          children: List.generate(controller.accountList.length, (index) {
             final account = controller.accountList[index];
             return Padding(
               padding: const EdgeInsets.only(bottom: 12.0),
@@ -117,7 +121,7 @@ class AccountsContent extends StatelessWidget {
                       duration: 300.ms,
                       curve: Curves.easeOutQuad),
             );
-          },
+          }),
         ));
   }
 }

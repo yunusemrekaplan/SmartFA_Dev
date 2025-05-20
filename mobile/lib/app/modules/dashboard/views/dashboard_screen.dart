@@ -14,7 +14,7 @@ import 'package:mobile/app/theme/app_theme.dart';
 import 'package:mobile/app/widgets/custom_app_bar.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:mobile/app/modules/dashboard/widgets/grouped_transactions/grouped_transaction_list.dart';
-import 'package:mobile/app/widgets/refreshable_content_view.dart';
+import 'package:mobile/app/widgets/content_view.dart';
 
 /// Modern dashboard ekranı, finans özetini görsel öğelerle gösterir
 class DashboardScreen extends GetView<DashboardController> {
@@ -53,7 +53,7 @@ class DashboardScreen extends GetView<DashboardController> {
             icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Yenile',
             onPressed: () {
-              controller.refreshDashboardData();
+              controller.loadDashboardData();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Veriler yenileniyor...'),
@@ -65,17 +65,17 @@ class DashboardScreen extends GetView<DashboardController> {
           ),
         ],
       ),
-      body: Obx(() => RefreshableContentView<dynamic>(
+      body: Obx(() => ContentView<dynamic>(
             isLoading: controller.isLoading,
             errorMessage: controller.errorMessage,
-            onRefresh: controller.refreshDashboardData,
             contentPadding: const EdgeInsets.all(AppTheme.kHorizontalPadding),
             showLoadingOverlay: true,
             progressColor: AppColors.primary,
             loadingMessage: 'Finans verileri yükleniyor...',
             items: _hasContent()
                 ? null // İçerik var, kontrol etmeye gerek yok
-                : RxList<int>.empty(), // İçerik yok, boş liste gönder
+                : RxList<int>.empty(),
+            // İçerik yok, boş liste gönder
             emptyStateView: _buildEmptyState(),
             contentView: _buildDashboardContent(context),
           )),
@@ -96,55 +96,56 @@ class DashboardScreen extends GetView<DashboardController> {
 
   /// Dashboard içeriğini oluşturur
   Widget _buildDashboardContent(BuildContext context) {
-    return ListView(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      children: [
-        // --- Gelir-Gider Özeti Grafik ---
-        Obx(() => IncomeExpenseChart(
-              income: controller.totalIncome.value,
-              expense: controller.totalExpense.value,
-              period: 'Bu Ay',
-              onViewDetails: controller.navigateToAnalysis,
-            )),
+    return Padding(
+      padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 16.0),
+      child: ListView(
+        shrinkWrap: true,
+        children: [
+          // --- Gelir-Gider Özeti Grafik ---
+          Obx(() => IncomeExpenseChart(
+                income: controller.totalIncome.value,
+                expense: controller.totalExpense.value,
+                period: 'Bu Ay',
+                onViewDetails: controller.navigateToAnalysis,
+              )),
 
-        const SizedBox(height: 24),
+          const SizedBox(height: 24),
 
-        // --- Bütçe Özetleri Bölümü ---
-        _buildBudgetSection(context),
+          // --- Bütçe Özetleri Bölümü ---
+          _buildBudgetSection(context),
 
-        // Aşılan bütçe uyarısı (varsa)
-        Obx(() {
-          if (controller.hasOverspentBudgets.value) {
-            return Padding(
-              padding: const EdgeInsets.only(top: 8.0, bottom: 24.0),
-              child: InfoPanel.warning(
-                title: 'Bütçe Aşımı',
-                message:
-                    'Bazı bütçelerinizde aşım tespit edildi. Lütfen harcamalarınızı kontrol edin.',
-                onActionPressed: controller.navigateToBudgets,
-                actionText: 'Bütçeleri Görüntüle',
-              ),
-            ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, end: 0);
-          } else {
-            return const SizedBox(height: 16);
-          }
-        }),
+          // Aşılan bütçe uyarısı (varsa)
+          Obx(() {
+            if (controller.hasOverspentBudgets.value) {
+              return Padding(
+                padding: const EdgeInsets.only(top: 8.0, bottom: 24.0),
+                child: InfoPanel.warning(
+                  title: 'Bütçe Aşımı',
+                  message:
+                      'Bazı bütçelerinizde aşım tespit edildi. Lütfen harcamalarınızı kontrol edin.',
+                  onActionPressed: controller.navigateToBudgets,
+                  actionText: 'Bütçeleri Görüntüle',
+                ),
+              ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, end: 0);
+            } else {
+              return const SizedBox(height: 16);
+            }
+          }),
 
-        // --- Son İşlemler Bölümü ---
-        _buildRecentTransactionsSection(context),
+          // --- Son İşlemler Bölümü ---
+          _buildRecentTransactionsSection(context),
 
-        const SizedBox(height: 16),
+          const SizedBox(height: 16),
 
-        // --- Hesap Bilgisi ---
-        Obx(() => InfoPanel.info(
-              title: 'Hesap Bilgisi',
-              message:
-                  '${controller.accountCount} aktif hesabınız bulunmaktadır.',
-              onActionPressed: controller.navigateToAccounts,
-              actionText: 'Hesapları Yönet',
-            )).animate(delay: 400.ms).fadeIn().slideY(begin: 0.2, end: 0),
-      ],
+          // --- Hesap Bilgisi ---
+          Obx(() => InfoPanel.info(
+                title: 'Hesap Bilgisi',
+                message: '${controller.accountCount} aktif hesabınız bulunmaktadır.',
+                onActionPressed: controller.navigateToAccounts,
+                actionText: 'Hesapları Yönet',
+              )).animate(delay: 400.ms).fadeIn().slideY(begin: 0.2, end: 0),
+        ],
+      ),
     );
   }
 
@@ -176,8 +177,7 @@ class DashboardScreen extends GetView<DashboardController> {
 
           // Bütçe listesi
           Obx(() {
-            if (controller.budgetSummaries.isEmpty &&
-                !controller.isLoading.value) {
+            if (controller.budgetSummaries.isEmpty && !controller.isLoading.value) {
               return EmptyStateView(
                 title: 'Henüz bütçe yok',
                 message:
@@ -188,8 +188,7 @@ class DashboardScreen extends GetView<DashboardController> {
               );
             }
 
-            if (controller.budgetSummaries.isEmpty &&
-                controller.isLoading.value) {
+            if (controller.budgetSummaries.isEmpty && controller.isLoading.value) {
               return const SizedBox(
                 height: 200,
                 child: Center(child: CircularProgressIndicator()),
@@ -206,9 +205,7 @@ class DashboardScreen extends GetView<DashboardController> {
                   final budget = controller.budgetSummaries[index];
                   return Padding(
                     padding: EdgeInsets.only(
-                      right: index == controller.budgetSummaries.length - 1
-                          ? 0
-                          : 12,
+                      right: index == controller.budgetSummaries.length - 1 ? 0 : 12,
                     ),
                     child: BudgetSummaryCard(
                       budget: budget,
@@ -252,8 +249,7 @@ class DashboardScreen extends GetView<DashboardController> {
 
           // İşlem listesi
           Obx(() {
-            if (controller.recentTransactions.isEmpty &&
-                !controller.isLoading.value) {
+            if (controller.recentTransactions.isEmpty && !controller.isLoading.value) {
               return EmptyStateView(
                 title: 'İşlem kaydı yok',
                 message:
@@ -264,8 +260,7 @@ class DashboardScreen extends GetView<DashboardController> {
               );
             }
 
-            if (controller.recentTransactions.isEmpty &&
-                controller.isLoading.value) {
+            if (controller.recentTransactions.isEmpty && controller.isLoading.value) {
               return const SizedBox(
                 height: 200,
                 child: Center(child: CircularProgressIndicator()),
@@ -287,7 +282,6 @@ class DashboardScreen extends GetView<DashboardController> {
 
   bool _hasContent() {
     return controller.accountCount.value > 0 &&
-        (controller.recentTransactions.isNotEmpty ||
-            controller.budgetSummaries.isNotEmpty);
+        (controller.recentTransactions.isNotEmpty || controller.budgetSummaries.isNotEmpty);
   }
 }

@@ -6,12 +6,12 @@ import 'package:mobile/app/modules/transactions/widgets/active_filters_row.dart'
 import 'package:mobile/app/modules/transactions/widgets/filter_bottom_sheet/filter_bottom_sheet.dart';
 import 'package:mobile/app/modules/transactions/widgets/transaction_list_view.dart';
 import 'package:mobile/app/modules/transactions/widgets/transaction_summary.dart';
-import 'package:mobile/app/theme/app_colors.dart'; // Sayı ve tarih formatlama için
+import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/app/theme/app_theme.dart';
-import 'package:mobile/app/widgets/empty_state_view.dart';
 import 'package:mobile/app/widgets/custom_app_bar.dart';
-import 'package:mobile/app/widgets/refreshable_content_view.dart';
 import 'package:mobile/app/domain/models/response/transaction_response_model.dart';
+import 'package:mobile/app/widgets/content_view.dart';
+import 'package:mobile/app/widgets/empty_state_view.dart';
 
 /// İşlemleri listeleyen ve filtreleyen modern ekran.
 class TransactionsScreen extends GetView<TransactionsController> {
@@ -62,7 +62,7 @@ class TransactionsScreen extends GetView<TransactionsController> {
             currencyFormatter: currencyFormatter,
           ),
 
-          // Ana içerik - RefreshableContentView ile sarmalanmış
+          // Ana içerik - ContentView ile sarmalanmış
           Expanded(
             child: Obx(() {
               // Aktif filtreler varsa göster
@@ -71,18 +71,16 @@ class TransactionsScreen extends GetView<TransactionsController> {
                 filtersWidget = ActiveFiltersRow(controller: controller);
               }
 
-              return RefreshableContentView<TransactionModel>(
+              return ContentView<TransactionModel>(
+                contentView: _buildTransactionList(),
                 isLoading: controller.isLoading,
                 errorMessage: controller.errorMessage,
-                onRefresh: () =>
-                    controller.fetchTransactions(isInitialLoad: false),
                 contentPadding: EdgeInsets.zero, // Padding'i kaldırdık
                 showLoadingOverlay: true,
                 progressColor: AppColors.primary,
                 loadingMessage: 'İşlemler yükleniyor...',
                 items: controller.transactionList,
-                headerWidget:
-                    filtersWidget, // Filtreleri header olarak ekliyoruz
+                headerWidget: filtersWidget,
                 emptyStateView: EmptyStateView(
                   title: 'İşlem kaydı bulunamadı',
                   message: controller.hasActiveFilters
@@ -99,14 +97,6 @@ class TransactionsScreen extends GetView<TransactionsController> {
                       ? Icons.filter_alt_off_rounded
                       : Icons.add_circle_outline_rounded,
                 ),
-                contentView: Padding(
-                  padding: const EdgeInsets.all(AppTheme.kHorizontalPadding),
-                  child: TransactionListView(
-                    controller: controller,
-                    currencyFormatter: currencyFormatter,
-                    getCategoryIcon: _getCategoryIcon,
-                  ),
-                ),
               );
             }),
           ),
@@ -118,5 +108,16 @@ class TransactionsScreen extends GetView<TransactionsController> {
   /// Filtreleme seçeneklerini gösteren Bottom Sheet'i açar
   void _showFilterBottomSheet(BuildContext context) {
     FilterBottomSheet.show(context, controller);
+  }
+
+  Widget _buildTransactionList() {
+    return Padding(
+      padding: const EdgeInsets.all(AppTheme.kHorizontalPadding),
+      child: TransactionListView(
+        controller: controller,
+        currencyFormatter: currencyFormatter,
+        getCategoryIcon: _getCategoryIcon,
+      ),
+    );
   }
 }

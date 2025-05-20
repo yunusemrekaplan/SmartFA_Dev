@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:get/get.dart';
-import 'package:mobile/app/services/page_refresh_service.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/app/widgets/empty_state_view.dart';
 import 'package:mobile/app/widgets/error_view.dart';
 import 'package:mobile/app/widgets/loading_state_view.dart';
 
-/// Standart içerik görüntüleme ve yenileme davranışı sağlayan widget.
+/// Standart içerik görüntüleme davranışı sağlayan widget.
 /// İçeriğin durumuna göre (yükleniyor, hata, boş veya dolu) uygun UI gösterir.
-/// Pull-to-refresh desteği ile kullanıcının içeriği yenilemesine olanak tanır.
-class RefreshableContentView<T> extends StatelessWidget {
+class ContentView<T> extends StatelessWidget {
   /// İçeriğin kendisi (liste, grid veya başka bir widget olabilir)
   final Widget contentView;
 
@@ -26,10 +24,7 @@ class RefreshableContentView<T> extends StatelessWidget {
   /// Boş durum mesajı ve görünümü (items boşsa gösterilir)
   final EmptyStateView? emptyStateView;
 
-  /// İçeriği yenileme işlevi
-  final Future<void> Function() onRefresh;
-
-  /// Hata durumunda yeniden deneme işlevi (genellikle onRefresh ile aynı)
+  /// Hata durumunda yeniden deneme işlevi
   final VoidCallback? onRetry;
 
   /// Yükleniyor mesajı
@@ -56,12 +51,11 @@ class RefreshableContentView<T> extends StatelessWidget {
   /// ScrollController (opsiyonel, dışarıdan kontrol için)
   final ScrollController? scrollController;
 
-  const RefreshableContentView({
+  const ContentView({
     super.key,
     required this.contentView,
     required this.isLoading,
     required this.errorMessage,
-    required this.onRefresh,
     this.items,
     this.emptyStateView,
     this.onRetry,
@@ -77,15 +71,7 @@ class RefreshableContentView<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // RefreshIndicator'un çalışması için ListView veya Builder içermesi gerekiyor
-    return RefreshIndicator(
-      color: progressColor ?? AppColors.primary,
-      onRefresh: () => PageRefreshService.handlePullToRefresh(
-        refreshAction: onRefresh,
-        isLoading: isLoading,
-      ),
-      child: Obx(() => _buildMainContent(context)),
-    );
+    return Obx(() => _buildMainContent(context));
   }
 
   /// İçeriğin ana durumunu belirler ve uygun widget'ı döndürür
@@ -99,17 +85,13 @@ class RefreshableContentView<T> extends StatelessWidget {
     if (errorMessage.isNotEmpty && _isContentEmpty()) {
       return ErrorView(
         message: errorMessage.value,
-        onRetry: onRetry ?? onRefresh,
+        onRetry: onRetry,
         isLarge: true,
       );
     }
 
     // Boş içerik durumu (yükleme veya hata yok)
     if (_isContentEmpty() && !isLoading.value && errorMessage.isEmpty) {
-      // İçerik boş ama yükleme durumunda değilse, yeniden yüklemeyi dene
-      // Bu özellikle ilk yüklemede içerik alınamadığında yardımcı olur
-      Future.microtask(() => onRefresh());
-
       if (emptyStateView != null) {
         return emptyStateView!;
       }
@@ -178,14 +160,15 @@ class RefreshableContentView<T> extends StatelessWidget {
                         style: const TextStyle(color: Colors.red, fontSize: 12),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.refresh,
-                          color: Colors.red, size: 18),
-                      onPressed: onRetry ?? onRefresh,
-                      tooltip: 'Yeniden Dene',
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                    ),
+                    if (onRetry != null)
+                      IconButton(
+                        icon: const Icon(Icons.refresh,
+                            color: Colors.red, size: 18),
+                        onPressed: onRetry,
+                        tooltip: 'Yeniden Dene',
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
                   ],
                 ),
               ),
@@ -195,25 +178,13 @@ class RefreshableContentView<T> extends StatelessWidget {
     );
   }
 
-  /// Kaydırılabilir içerik oluşturur, header ve footer ekler
+  /// İçeriği oluşturur, header ve footer ekler
   Widget _buildScrollableContent() {
-    // Daha basit ve güvenli bir yaklaşımla ListView kullanarak burada sorundan kaçınalım
-    return ListView(
-      controller: scrollController,
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: contentPadding,
+    return Column(
       children: [
-        // Header widget
         if (headerWidget != null) headerWidget!,
-
-        // Ana içerik
-        contentView,
-
-        // Footer widget
+        Expanded(child: contentView),
         if (footerWidget != null) footerWidget!,
-
-        // Ekstra boşluk - pull-to-refresh için
-        const SizedBox(height: 20),
       ],
     );
   }
@@ -223,7 +194,6 @@ class RefreshableContentView<T> extends StatelessWidget {
     if (items != null) {
       return items!.isEmpty;
     }
-    // items null ise, içeriğin dolu olduğunu varsayıyoruz
     return false;
   }
 }

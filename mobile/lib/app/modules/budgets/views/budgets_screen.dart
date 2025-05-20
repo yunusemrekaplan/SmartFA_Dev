@@ -7,10 +7,10 @@ import 'package:mobile/app/modules/budgets/widgets/budgets/budget_card/budget_ca
 import 'package:mobile/app/modules/budgets/widgets/budgets/budget_filter_bottom_sheet/budget_filter_bottom_sheet.dart';
 import 'package:mobile/app/modules/budgets/widgets/budgets/month_selector.dart';
 import 'package:mobile/app/theme/app_colors.dart';
+import 'package:mobile/app/widgets/content_view.dart';
 import 'package:mobile/app/widgets/empty_state_view.dart';
 import 'package:mobile/app/widgets/custom_app_bar.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:mobile/app/widgets/refreshable_content_view.dart';
 
 /// Kullanıcının bütçelerini listeleyen ekran.
 class BudgetsScreen extends GetView<BudgetsController> {
@@ -89,10 +89,9 @@ class BudgetsScreen extends GetView<BudgetsController> {
           // Bütçe listesi - RefreshableContentView kullanarak
           Expanded(
             child: Obx(() {
-              return RefreshableContentView<dynamic>(
+              return ContentView<dynamic>(
                 isLoading: controller.isLoading,
                 errorMessage: controller.errorMessage,
-                onRefresh: controller.refreshBudgets,
                 items: controller.filteredBudgetList,
                 contentPadding: const EdgeInsets.all(16.0),
                 showLoadingOverlay: true,

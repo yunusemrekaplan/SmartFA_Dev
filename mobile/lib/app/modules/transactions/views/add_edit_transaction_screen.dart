@@ -159,9 +159,7 @@ class AddEditTransactionScreen extends GetView<AddEditTransactionController> {
     DialogService.showDeleteConfirmationDialog(
       title: 'İşlemi Sil',
       message: 'Bu işlemi silmek istediğinizden emin misiniz?',
-      onConfirm: () {
-        controller.deleteTransaction();
-      },
+      onConfirm: () => controller.deleteTransaction(),
     );
   }
 }
@@ -189,7 +187,7 @@ class _TypeSelectorWidget extends StatelessWidget {
 
               return Expanded(
                 child: InkWell(
-                  onTap: () => controller.selectType(type),
+                  onTap: () => controller.selectedType.value = type,
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     decoration: BoxDecoration(
@@ -291,7 +289,7 @@ class _DateSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() => InkWell(
-          onTap: () => controller.selectDate(context),
+          onTap: () => controller.selectDate(),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             decoration: BoxDecoration(
@@ -428,18 +426,33 @@ class _CategorySelectorWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      // Filtrelenmiş kategoriler
-      final filteredCategories = controller.categories
+      if (controller.categories.isEmpty) {
+        return _EmptyStateCardWidget(
+          message: 'Seçilen işlem türü için kategori bulunamadı.',
+          buttonText: 'Kategori Ekle',
+          onButtonPressed: () => Get.toNamed('/categories/add'),
+        );
+      }
+
+      // Benzersiz kategorileri al
+      final uniqueCategories = controller.categories.toSet().toList();
+
+      // Seçili tipe göre kategorileri filtrele
+      final filteredCategories = uniqueCategories
           .where((category) => category.type == controller.selectedType.value)
           .toList();
 
       if (filteredCategories.isEmpty) {
         return _EmptyStateCardWidget(
-          // Yeni widget çağrısı
           message: 'Seçilen işlem türü için kategori bulunamadı.',
           buttonText: 'Kategori Ekle',
           onButtonPressed: () => Get.toNamed('/categories/add'),
         );
+      }
+
+      // selectedCategory'nin filteredCategories içinde olduğundan emin ol
+      if (!filteredCategories.contains(controller.selectedCategory.value)) {
+        controller.selectedCategory.value = filteredCategories.first;
       }
 
       return DropdownButtonFormField<CategoryModel>(

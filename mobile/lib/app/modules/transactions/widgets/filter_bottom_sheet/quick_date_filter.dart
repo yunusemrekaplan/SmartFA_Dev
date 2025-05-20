@@ -17,17 +17,17 @@ class QuickDateFilter extends StatelessWidget {
         runSpacing: 8,
         children: [
           _buildQuickDateButton(
-              'Bugün', () => controller.setQuickDateFilter('today')),
+              'Bugün', () => controller.selectedQuickDate.value = 'today'),
           _buildQuickDateButton(
-              'Dün', () => controller.setQuickDateFilter('yesterday')),
+              'Dün', () => controller.selectedQuickDate.value = 'yesterday'),
+          _buildQuickDateButton('Bu Hafta',
+              () => controller.selectedQuickDate.value = 'thisWeek'),
           _buildQuickDateButton(
-              'Bu Hafta', () => controller.setQuickDateFilter('thisWeek')),
-          _buildQuickDateButton(
-              'Bu Ay', () => controller.setQuickDateFilter('thisMonth')),
-          _buildQuickDateButton(
-              'Geçen Ay', () => controller.setQuickDateFilter('lastMonth')),
-          _buildQuickDateButton(
-              'Son 3 Ay', () => controller.setQuickDateFilter('last3Months')),
+              'Bu Ay', () => controller.selectedQuickDate.value = 'thisMonth'),
+          _buildQuickDateButton('Geçen Ay',
+              () => controller.selectedQuickDate.value = 'lastMonth'),
+          _buildQuickDateButton('Son 3 Ay',
+              () => controller.selectedQuickDate.value = 'last3Months'),
         ],
       ),
     );

@@ -174,7 +174,7 @@ class AccountCard extends StatelessWidget {
         }
       },
       itemBuilder: (context) => [
-        PopupMenuItem(
+        /*PopupMenuItem(
           value: 'edit',
           child: Row(
             children: [
@@ -187,7 +187,7 @@ class AccountCard extends StatelessWidget {
               const Text('Düzenle'),
             ],
           ),
-        ),
+        ),*/
         PopupMenuItem(
           value: 'delete',
           child: Row(

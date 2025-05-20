@@ -23,7 +23,7 @@ class TransactionTypeFilter extends StatelessWidget {
                   title: 'Tümü',
                   icon: Icons.sync_alt_rounded,
                   isSelected: controller.selectedType.value == null,
-                  onTap: () => controller.selectTypeFilter(null),
+                  onTap: () => controller.selectedType.value = null,
                 ),
                 const SizedBox(width: 12),
                 TypeFilterButton(
@@ -31,7 +31,8 @@ class TransactionTypeFilter extends StatelessWidget {
                   icon: Icons.arrow_upward,
                   isSelected:
                       controller.selectedType.value == CategoryType.Income,
-                  onTap: () => controller.selectTypeFilter(CategoryType.Income),
+                  onTap: () =>
+                      controller.selectedType.value = CategoryType.Income,
                   color: AppColors.success,
                 ),
                 const SizedBox(width: 12),
@@ -41,7 +42,7 @@ class TransactionTypeFilter extends StatelessWidget {
                   isSelected:
                       controller.selectedType.value == CategoryType.Expense,
                   onTap: () =>
-                      controller.selectTypeFilter(CategoryType.Expense),
+                      controller.selectedType.value = CategoryType.Expense,
                   color: AppColors.error,
                 ),
               ],

@@ -11,7 +11,7 @@ class BudgetDataService {
   final ErrorHandler _errorHandler = ErrorHandler();
 
   // Yüklenme durumu
-  final RxBool isLoading = true.obs;
+  final RxBool isLoading = false.obs;
 
   // Hata durumu
   final RxString errorMessage = ''.obs;
@@ -23,10 +23,10 @@ class BudgetDataService {
 
   /// Kullanıcının seçili dönemdeki bütçelerini API'den çeker ve state'i günceller.
   Future<bool> fetchBudgetsByPeriod(int year, int month) async {
-    isLoading.value = true;
-    errorMessage.value = ''; // Hata mesajını temizle
-
     try {
+      isLoading.value = true;
+      errorMessage.value = ''; // Hata mesajını temizle
+
       final result =
           await _budgetRepository.getUserBudgetsByPeriod(year, month);
 
@@ -41,25 +41,12 @@ class BudgetDataService {
           // Başarısız: Hata mesajını state'e ata
           print('>>> Failed to fetch budgets: ${error.message}');
           errorMessage.value = error.message;
-
-          // ErrorHandler ile hata yönetimi
-          _errorHandler.handleError(
-            error,
-            message: error.message,
-            onRetry: () => fetchBudgetsByPeriod(year, month),
-            customTitle: 'Bütçeler Yüklenemedi',
-          );
           return false;
         },
       );
-    } on UnexpectedException catch (e) {
-      // Beklenmedik genel hatalar
-      print('>>> Fetch budgets unexpected error: $e');
-      errorMessage.value = 'Bütçeler yüklenirken beklenmedik bir hata oluştu.';
-
-      // ErrorHandler ile beklenmeyen hata yönetimi
-      _errorHandler.handleError(e,
-          message: errorMessage.value, customTitle: 'Bütçeler Yüklenemedi');
+    } catch (e) {
+      print('>>> Unexpected error while fetching budgets: $e');
+      errorMessage.value = 'Beklenmeyen bir hata oluştu';
       return false;
     } finally {
       isLoading.value = false;

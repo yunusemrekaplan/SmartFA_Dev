@@ -24,7 +24,7 @@ abstract class ICategoryRemoteDataSource {
   Future<void> deleteCategory(int categoryId);
 
   /// Kullanıcının kategorilerini getirir
-  Future<List<CategoryModel>> getUserCategories();
+  Future<List<CategoryModel>> getAllCategories();
 }
 
 class CategoryRemoteDataSource implements ICategoryRemoteDataSource {
@@ -114,9 +114,9 @@ class CategoryRemoteDataSource implements ICategoryRemoteDataSource {
   }
 
   @override
-  Future<List<CategoryModel>> getUserCategories() async {
+  Future<List<CategoryModel>> getAllCategories() async {
     try {
-      final response = await _dioClient.get(_categoriesEndpoint);
+      final response = await _dioClient.get('$_categoriesEndpoint/all');
       final List<dynamic> data = response.data as List<dynamic>;
       return data
           .map((json) => CategoryModel.fromJson(json as Map<String, dynamic>))

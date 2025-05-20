@@ -13,7 +13,7 @@ export 'package:mobile/app/modules/budgets/services/budgets/budget_filter_servic
     show BudgetFilterType, BudgetSortType;
 
 /// Bütçeler ekranının state'ini ve iş mantığını yöneten GetX controller.
-class BudgetsController extends GetxController with RefreshableControllerMixin {
+class BudgetsController extends GetxController with BaseControllerMixin {
   // Servisler
   late final BudgetDataService _dataService;
   late final BudgetFilterService _filterService;
@@ -22,9 +22,6 @@ class BudgetsController extends GetxController with RefreshableControllerMixin {
 
   // Filtrelenmiş bütçe listesi - UI bu listeyi kullanacak
   final RxList<BudgetModel> filteredBudgetList = <BudgetModel>[].obs;
-
-  // Çift istek kontrolü için bir zaman damgası
-  DateTime? _lastFetchTimestamp;
 
   BudgetsController({required IBudgetRepository budgetRepository}) {
     _dataService = BudgetDataService(budgetRepository);
@@ -63,7 +60,7 @@ class BudgetsController extends GetxController with RefreshableControllerMixin {
     _syncStates();
 
     // Controller ilk oluşturulduğunda bütçeleri çek
-    fetchBudgets(isInitialLoad: true);
+    loadBudgets();
 
     // Filtreleme değişikliklerini dinle
     ever(activeFilter, (_) => applyFilters());
@@ -87,80 +84,21 @@ class BudgetsController extends GetxController with RefreshableControllerMixin {
 
   // --- Veri İşlemleri ---
 
-  /// Kullanıcının seçili dönemdeki bütçelerini API'den çeker ve state'i günceller.
-  Future<void> fetchBudgets(
-      {bool isInitialLoad = false, bool force = false}) async {
-    // İşlem başlatmadan önce debug log ekleyelim
-    _logDebug(
-        'fetchBudgets çağırıldı: isInitialLoad=$isInitialLoad, force=$force, '
-        'current isLoading=${super.isLoading.value}');
-
-    // Son işlem çağrısı ile şu anki çağrı arasındaki farkı kontrol et
-    // Çok kısa süre içinde gelen çağrıları engelle (300ms)
-    if (_lastFetchTimestamp != null) {
-      final difference = DateTime.now().difference(_lastFetchTimestamp!);
-      if (difference.inMilliseconds < 300 && !force) {
-        _logDebug(
-            'Son istekten bu yana çok kısa süre geçti (${difference.inMilliseconds}ms). İstek engellendi.');
-        return;
-      }
-    }
-
-    // Zaman damgasını güncelle
-    _lastFetchTimestamp = DateTime.now();
-
-    // Halihazırda yükleme yapılıyorsa ve zorlanmıyorsa, çık
-    if (super.isLoading.value && !force) {
-      _logDebug('Bütçeler zaten yükleniyor, yenileme iptal edildi.');
-      return;
-    }
-
-    // Force modunda ise önce yükleme durumunu sıfırla
-    if (force && super.isLoading.value) {
-      _logDebug('Zorla yenileme: Yükleme durumu sıfırlanıyor');
-      resetLoadingState();
-      // Kısa bir gecikme ekle
-      await Future.delayed(const Duration(milliseconds: 100));
-    }
-
+  /// Bütçeleri yükler
+  Future<void> loadBudgets() async {
     final year = selectedPeriod.value.year;
     final month = selectedPeriod.value.month;
 
-    // İş mantığını yeni metoda taşıyalım
-    if (isInitialLoad) {
-      // Halihazırda token yenileme süreci nedeniyle çağrı yapılıp yapılmadığını
-      // kontrol etmek için bir flag ekleyelim
-      bool requestStarted = false;
-
-      await loadData(
-        fetchFunc: () async {
-          // Eğer bu istek zaten başlatıldıysa, ikinci çağrıyı engelle
-          if (requestStarted) {
-            _logDebug('Duplicate request detected. Skipping...');
-            return;
-          }
-          requestStarted = true;
-
-          // Veri çağırma işini BudgetDataService aracılığıyla yap
-          await _dataService.fetchBudgetsByPeriod(year, month);
-        },
-        loadingErrorMessage: 'Bütçeler yüklenirken bir hata oluştu',
-        preventMultipleRequests: !force,
-      );
-    } else {
-      // Yenileme için loadData değil refreshData kullanılmalı
-      await refreshData(
-        fetchFunc: () => _dataService.fetchBudgetsByPeriod(year, month),
-        refreshErrorMessage: 'Bütçeler yenilenirken bir hata oluştu',
-      );
-    }
-
-    _logDebug('fetchBudgets tamamlandı');
-  }
-
-  /// Verileri manuel olarak yenilemek için metot (Pull-to-refresh vb.).
-  Future<void> refreshBudgets({bool force = false}) async {
-    await fetchBudgets(isInitialLoad: false, force: force);
+    await loadData(
+      fetchFunc: () async {
+        final success = await _dataService.fetchBudgetsByPeriod(year, month);
+        if (!success) {
+          throw Exception(_dataService.errorMessage.value);
+        }
+      },
+      loadingErrorMessage: 'Bütçeler yüklenirken bir hata oluştu',
+      preventMultipleRequests: true,
+    );
   }
 
   /// Tüm filtreleme ve sıralama seçeneklerini uygular
@@ -198,57 +136,51 @@ class BudgetsController extends GetxController with RefreshableControllerMixin {
 
   // --- Dönem İşlemleri ---
 
-  /// Dönemi değiştir ve bütçeleri yeniden yükle
-  void changePeriod(DateTime newPeriod) {
-    _periodService.changePeriod(newPeriod);
-    fetchBudgets(isInitialLoad: true);
-  }
-
-  /// Sonraki aya geç
-  void goToNextMonth() {
-    _periodService.goToNextMonth();
-    fetchBudgets(isInitialLoad: true);
-  }
-
-  /// Önceki aya geç
+  /// Önceki döneme geçer
   void goToPreviousMonth() {
     _periodService.goToPreviousMonth();
-    fetchBudgets(isInitialLoad: true);
+    loadBudgets();
   }
 
-  /// Bütçe formatı
-  String formatMonth(DateTime date) {
-    return _periodService.formatMonthName(date);
+  /// Sonraki döneme geçer
+  void goToNextMonth() {
+    _periodService.goToNextMonth();
+    loadBudgets();
   }
 
-  // --- Bütçe İşlemleri ---
-
-  /// Belirli bir bütçeyi siler.
-  Future<void> deleteBudget(int budgetId) async {
-    await loadData(
-      fetchFunc: () => _dataService.deleteBudget(budgetId),
-      loadingErrorMessage: 'Bütçe silinirken bir hata oluştu',
-    );
+  /// Belirli bir döneme gider
+  void goToMonth(DateTime date) {
+    _periodService.changePeriod(date);
+    loadBudgets();
   }
 
   // --- Navigasyon İşlemleri ---
 
-  /// Yeni bütçe ekleme ekranına yönlendirir.
+  /// Bütçe ekleme sayfasına yönlendirir
   void goToAddBudget() {
     _navigationService.goToAddBudget()?.then((result) {
       if (result == true) {
-        refreshBudgets();
+        loadBudgets();
       }
     });
   }
 
-  /// Bütçe düzenleme ekranına yönlendirir.
+  /// Bütçe düzenleme sayfasına yönlendirir
   void goToEditBudget(BudgetModel budget) {
     _navigationService.goToEditBudget(budget)?.then((result) {
       if (result == true) {
-        refreshBudgets();
+        loadBudgets();
       }
     });
+  }
+
+  /// Bütçe silme işlemini gerçekleştirir
+  Future<void> deleteBudget(int budgetId) async {
+    await loadData(
+      fetchFunc: () => _dataService.deleteBudget(budgetId),
+      loadingErrorMessage: 'Bütçe silinirken bir hata oluştu',
+      onSuccess: () => loadBudgets(),
+    );
   }
 
   /// Debug log için yardımcı metot

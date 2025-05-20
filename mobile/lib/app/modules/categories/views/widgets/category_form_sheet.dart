@@ -1,17 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile/app/domain/models/enums/category_type.dart';
+import 'package:mobile/app/domain/models/response/category_response_model.dart';
 import 'package:mobile/app/modules/categories/controllers/categories_controller.dart';
 import 'package:mobile/app/modules/categories/views/widgets/icon_picker.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/app/theme/app_theme.dart';
 
 class CategoryFormSheet extends StatelessWidget {
-  const CategoryFormSheet({Key? key}) : super(key: key);
+  final CategoryModel? category;
+
+  const CategoryFormSheet({
+    super.key,
+    this.category,
+  });
 
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<CategoriesController>();
+
+    // Düzenleme modu ise formu doldur
+    if (category != null) {
+      controller.startEdit(category!);
+    }
 
     return Container(
       decoration: const BoxDecoration(
@@ -164,7 +175,7 @@ class CategoryFormSheet extends StatelessWidget {
                           : () async {
                               await controller.submitForm();
                               if (!controller.isLoading.value) {
-                                Navigator.pop(context);
+                                Get.back();
                               }
                             },
                       style: FilledButton.styleFrom(

@@ -52,11 +52,11 @@ class TransactionListView extends StatelessWidget {
       }
 
       return ListView.builder(
-        primary: false, // Nested kaydırma için, parent'a bırakıyoruz
-        shrinkWrap: true, // İçeriğe göre boyutlandır
-        padding: EdgeInsets.zero, // Padding'i contentView'den alıyoruz
-        controller:
-            controller.scrollController, // Kaydırma kontrolünü geri ekliyoruz
+        primary: false,
+        shrinkWrap: false,
+        padding: EdgeInsets.zero,
+        controller: controller.scrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
         itemCount: sortedDates.length + (controller.hasMoreData.value ? 1 : 0),
         itemBuilder: (context, index) {
           // Listenin sonuna geldik mi?

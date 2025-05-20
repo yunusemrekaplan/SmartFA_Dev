@@ -38,7 +38,7 @@ class ActiveFiltersRow extends StatelessWidget {
             // Tüm filtreleri temizle butonu
             IconButton(
               icon: const Icon(Icons.clear_all),
-              onPressed: controller.clearAndApplyFilters,
+              onPressed: controller.clearFilters,
               tooltip: 'Filtreleri Temizle',
               visualDensity: VisualDensity.compact,
               color: AppColors.error,

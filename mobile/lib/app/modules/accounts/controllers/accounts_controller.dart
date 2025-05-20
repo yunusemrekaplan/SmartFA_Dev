@@ -4,13 +4,11 @@ import 'package:mobile/app/modules/accounts/services/account_data_service.dart';
 import 'package:mobile/app/modules/accounts/services/account_navigation_service.dart';
 import 'package:mobile/app/modules/accounts/services/account_ui_service.dart';
 import 'package:mobile/app/services/base_controller_mixin.dart';
-import 'package:flutter/foundation.dart';
 
 /// Hesaplar ekranının controller'ı
 /// DIP (Dependency Inversion Principle) - Yüksek seviyeli modüller düşük seviyeli modüllere bağlı değil
 /// Hem yüksek seviyeli hem de düşük seviyeli modüller soyutlamalara bağlı
-class AccountsController extends GetxController
-    with RefreshableControllerMixin {
+class AccountsController extends GetxController with BaseControllerMixin {
   // Servisler - Bağımlılık Enjeksiyonu
   final AccountDataService _dataService;
   final AccountNavigationService _navigationService;
@@ -29,8 +27,8 @@ class AccountsController extends GetxController
   // AccountDataService'den RxList'i doğrudan alıyoruz
   RxList<AccountModel> get accountList => _dataService.accountList;
 
-  // Hesapların toplam bakiyesini hesaplar
-  double get totalBalance => _dataService.calculateTotalBalance();
+  // Hesapların toplam bakiyesi
+  RxDouble get totalBalance => _dataService.totalBalance;
 
   // --- Lifecycle Metotları ---
 
@@ -68,33 +66,12 @@ class AccountsController extends GetxController
     );
   }
 
-  /// Pull-to-refresh için hesapları yeniler
-  /// [force] parametresi true ise, halihazırda bir yükleme işlemi devam etse bile
-  /// yenileme işlemini zorla başlatır
-  Future<void> refreshAccounts({bool force = false}) async {
-    // Halihazırda yükleme yapılıyorsa ve zorlanmıyorsa, çık
-    if (isLoading.value && !force) {
-      _logDebug('Hesaplar zaten yükleniyor, yenileme iptal edildi.');
-      return;
-    }
-
-    // Force modunda ise önce yükleme durumunu sıfırla
-    if (force && isLoading.value) {
-      _logDebug('Zorla yenileme: Yükleme durumu sıfırlanıyor');
-      resetLoadingState();
-    }
-
-    return await refreshData(
-      fetchFunc: () => _dataService.fetchAccounts(),
-      refreshErrorMessage: 'Hesaplar yenilenirken bir hata oluştu.',
-    );
-  }
-
   /// Belirli bir hesabı siler
   Future<void> deleteAccount(int accountId) async {
     await loadData(
       fetchFunc: () => _dataService.deleteAccount(accountId),
       loadingErrorMessage: 'Hesap silinirken bir hata oluştu.',
+      onSuccess: () => loadAccounts(),
     );
   }
 
@@ -102,7 +79,7 @@ class AccountsController extends GetxController
   void goToAddAccount() {
     _navigationService.goToAddAccount().then((result) {
       if (result == true) {
-        refreshAccounts();
+        loadAccounts();
       }
     });
   }
@@ -111,7 +88,7 @@ class AccountsController extends GetxController
   void goToEditAccount(AccountModel account) {
     _navigationService.goToEditAccount(account).then((result) {
       if (result == true) {
-        refreshAccounts();
+        loadAccounts();
       }
     });
   }
@@ -122,13 +99,6 @@ class AccountsController extends GetxController
 
     if (result == true) {
       await deleteAccount(account.id);
-    }
-  }
-
-  /// Debug log için yardımcı metot
-  void _logDebug(String message) {
-    if (kDebugMode) {
-      print('>>> AccountsController: $message');
     }
   }
 }

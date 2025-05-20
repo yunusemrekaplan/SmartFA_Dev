@@ -15,8 +15,12 @@ class AccountDataService {
   final RxBool isLoading = false.obs;
   final RxString errorMessage = ''.obs;
   final RxList<AccountModel> accountList = <AccountModel>[].obs;
+  final RxDouble totalBalance = 0.0.obs;
 
-  AccountDataService(this._accountRepository);
+  AccountDataService(this._accountRepository) {
+    // Hesap listesi değiştiğinde toplam bakiyeyi güncelle
+    ever(accountList, (_) => calculateTotalBalance());
+  }
 
   /// Kullanıcının hesaplarını API'den çeker ve state'i günceller
   Future<bool> fetchAccounts() async {
@@ -95,8 +99,8 @@ class AccountDataService {
   }
 
   /// Hesapların toplam bakiyesini hesaplar
-  double calculateTotalBalance() {
-    return accountList.fold<double>(
+  void calculateTotalBalance() {
+    totalBalance.value = accountList.fold<double>(
         0, (sum, account) => sum + account.currentBalance);
   }
 }

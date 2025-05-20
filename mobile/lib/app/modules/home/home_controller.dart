@@ -6,7 +6,7 @@ import 'package:mobile/app/modules/dashboard/controllers/dashboard_controller.da
 import 'package:mobile/app/modules/settings/settings_controller.dart';
 import 'package:mobile/app/modules/transactions/controllers/transactions_controller.dart';
 
-/// HomeScreen'in state'ini (özellikle aktif sekme index'ini) yönetir.
+/// HomeScreen'in state'ini ve modül verilerinin yüklenmesini yönetir.
 class HomeController extends GetxController {
   // Alt navigasyon ve sayfa görünümü için kullanılan kontrolcüler
   final RxInt selectedIndex = 0.obs;
@@ -16,6 +16,12 @@ class HomeController extends GetxController {
   final RxBool isChangingTab = false.obs;
   final Rx<double> navigationBarAnimationValue = 1.0.obs;
 
+  // Uygulama geneli yükleme durumları
+  final RxBool isInitialLoading = false.obs;
+  final RxString loadingMessage = ''.obs;
+  final RxBool hasError = false.obs;
+  final RxString errorMessage = ''.obs;
+
   // Alt sekmelerin controller'larını saklamak için değişkenler
   late final DashboardController _dashboardController;
   late final AccountsController _accountsController;
@@ -23,42 +29,60 @@ class HomeController extends GetxController {
   late final BudgetsController _budgetsController;
   late final SettingsController _settingsController;
 
-  // Yenileme kilitlerini tutan değişkenler (duplicate istekleri önlemek için)
-  final RxBool _isRefreshingDashboard = false.obs;
-  final RxBool _isRefreshingAccounts = false.obs;
-  final RxBool _isRefreshingTransactions = false.obs;
-  final RxBool _isRefreshingBudgets = false.obs;
+  // Her modül için yükleme durumlarını tutan değişkenler
+  final RxBool isDashboardLoaded = false.obs;
+  final RxBool isAccountsLoaded = false.obs;
+  final RxBool isTransactionsLoaded = false.obs;
+  final RxBool isBudgetsLoaded = false.obs;
 
   // Alt sekmelerin her birine erişecek getter'lar
   DashboardController get dashboardController => _dashboardController;
-  AccountsController get accountsController => _accountsController;
-  TransactionsController get transactionsController => _transactionsController;
-  BudgetsController get budgetsController => _budgetsController;
-  SettingsController get settingsController => _settingsController;
 
-  // Son yenileme zamanını tutmak için değişken
-  DateTime? _lastDashboardRefresh;
+  AccountsController get accountsController => _accountsController;
+
+  TransactionsController get transactionsController => _transactionsController;
+
+  BudgetsController get budgetsController => _budgetsController;
+
+  SettingsController get settingsController => _settingsController;
 
   @override
   void onInit() {
     super.onInit();
-    // PageController'ı başlat
-    pageController = PageController(initialPage: selectedIndex.value);
-    _initControllers();
-
-    // Sekme değişimlerini dinleyerek gerekli işlemleri yap
-    ever(selectedIndex, _handleTabChange);
+    _initializeApp();
   }
 
-  @override
-  void onClose() {
-    // Controller'ları dispose et
-    pageController.dispose();
-    super.onClose();
+  /// Uygulama başlangıç işlemlerini yönetir
+  Future<void> _initializeApp() async {
+    try {
+      isInitialLoading.value = true;
+      loadingMessage.value = 'Uygulama başlatılıyor...';
+
+      // PageController'ı başlat
+      pageController = PageController(initialPage: selectedIndex.value);
+
+      // Controller'ları başlat
+      loadingMessage.value = 'Controller\'lar yükleniyor...';
+      await _initControllers();
+
+      // İlk verileri yükle (sadece dashboard için)
+      loadingMessage.value = 'Veriler yükleniyor...';
+      await _loadInitialDashboardData();
+
+      hasError.value = false;
+      errorMessage.value = '';
+    } catch (e) {
+      hasError.value = true;
+      errorMessage.value = 'Uygulama başlatılırken hata oluştu: $e';
+      printError(info: 'Error during app initialization: $e');
+    } finally {
+      isInitialLoading.value = false;
+      loadingMessage.value = '';
+    }
   }
 
-  /// Alt modül controller'larına erişim için onları bulur ve saklar
-  void _initControllers() {
+  /// Alt modül controller'larını başlatır
+  Future<void> _initControllers() async {
     try {
       _dashboardController = Get.find<DashboardController>();
       _accountsController = Get.find<AccountsController>();
@@ -66,225 +90,131 @@ class HomeController extends GetxController {
       _budgetsController = Get.find<BudgetsController>();
       _settingsController = Get.find<SettingsController>();
     } catch (e) {
-      printError(info: 'Tab controllers could not be loaded: $e');
-      // Hata durumunda binding'leri kontrol et
+      throw Exception('Controller\'lar yüklenemedi: $e');
     }
+  }
+
+  /// Sadece dashboard verilerini yükler
+  Future<void> _loadInitialDashboardData() async {
+    try {
+      if (!isDashboardLoaded.value) {
+        await _dashboardController.loadDashboardData();
+        isDashboardLoaded.value = true;
+      }
+    } catch (e) {
+      printError(info: 'Error loading initial dashboard data: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  void onClose() {
+    pageController.dispose();
+    super.onClose();
   }
 
   /// Sekme değiştirildiğinde çağrılacak metot.
-  /// Animasyonlu geçiş için sayfa geçişlerini yönetir.
-  void changeTabIndex(int index) {
-    if (selectedIndex.value == index) {
-      return; // Zaten seçili sekme seçilirse işlem yapma
-    }
+  void changeTabIndex(int index) async {
+    if (selectedIndex.value == index) return;
 
     // Animasyonu başlat
     isChangingTab.value = true;
-    navigationBarAnimationValue.value = 0.8; // Küçült
+    navigationBarAnimationValue.value = 0.8;
 
     // Kısa gecikme ile tam animasyonu görünür yap
-    Future.delayed(const Duration(milliseconds: 100), () {
-      selectedIndex.value = index;
+    await Future.delayed(const Duration(milliseconds: 100));
+    selectedIndex.value = index;
 
-      // PageView'i de güncelle
-      if (pageController.hasClients) {
-        pageController.jumpToPage(index);
-      }
-
-      // Animasyonu tamamla
-      Future.delayed(const Duration(milliseconds: 200), () {
-        navigationBarAnimationValue.value = 1.0; // Geri büyüt
-        isChangingTab.value = false;
-      });
-    });
-  }
-
-  /// Sekme değiştiğinde yapılacak işlemleri yönetir
-  void _handleTabChange(int index) {
-    // Sekmeye göre yenileme veya veri getirme işlemleri
-    // Eğer aynı sekmeye tekrar tıklanırsa yenileme yapma
-    if (index == selectedIndex.value) {
-      return;
+    // PageView'i güncelle
+    if (pageController.hasClients) {
+      pageController.jumpToPage(index);
     }
 
-    switch (index) {
-      case 0: // Dashboard
-        // Dashboard için özel kontrol - sadece gerektiğinde yenile
-        if (_dashboardController.isLoading.value ||
-            _isRefreshingDashboard.value) {
-          print(
-              '>>> HomeController: Dashboard is already loading or refreshing, skipping');
-          return;
+    // Seçilen sekmenin verilerini yükle
+    await _loadModuleData(index);
+
+    // Animasyonu tamamla
+    await Future.delayed(const Duration(milliseconds: 200));
+    navigationBarAnimationValue.value = 1.0;
+    isChangingTab.value = false;
+  }
+
+  /// Seçilen sekmenin verilerini yükler
+  Future<void> _loadModuleData(int index) async {
+    try {
+      switch (index) {
+        case 0: // Dashboard
+          if (!isDashboardLoaded.value) {
+            await _dashboardController.loadDashboardData();
+            isDashboardLoaded.value = true;
+          }
+          break;
+        case 1: // Accounts
+          if (!isAccountsLoaded.value) {
+            await _accountsController.loadAccounts();
+            isAccountsLoaded.value = true;
+          }
+          break;
+        case 2: // Transactions
+          if (!isTransactionsLoaded.value) {
+            await _transactionsController.loadTransactions();
+            isTransactionsLoaded.value = true;
+          }
+          break;
+        case 3: // Budgets
+          if (!isBudgetsLoaded.value) {
+            await _budgetsController.loadBudgets();
+            isBudgetsLoaded.value = true;
+          }
+          break;
+      }
+    } catch (e) {
+      printError(info: 'Error loading module data for index $index: $e');
+    }
+  }
+
+  /// Tüm modüllerin verilerini yeniler
+  Future<void> refreshAllData() async {
+    try {
+      isDashboardLoaded.value = false;
+      isAccountsLoaded.value = false;
+      isTransactionsLoaded.value = false;
+      isBudgetsLoaded.value = false;
+
+      // Aktif sekmenin verilerini öncelikli olarak yükle
+      await _loadModuleData(selectedIndex.value);
+
+      // Diğer modüllerin verilerini arka planda yükle
+      for (var i = 0; i < 4; i++) {
+        if (i != selectedIndex.value) {
+          _loadModuleData(i);
         }
-        _refreshDashboard();
-        break;
-      case 1: // Accounts
-        _refreshAccounts();
-        break;
-      case 2: // Transactions
-        _refreshTransactions();
-        break;
-      case 3: // Budgets
-        _refreshBudgets();
-        break;
-    }
-  }
-
-  /// Dashboard verilerini yeniler
-  void _refreshDashboard() {
-    // Zaten yenileniyor mu kontrol et
-    if (_isRefreshingDashboard.value) {
-      print(
-          '>>> HomeController: Dashboard refresh already in progress, skipping');
-      return;
-    }
-
-    // Son yenileme zamanını kontrol et
-    final now = DateTime.now();
-    if (_lastDashboardRefresh != null) {
-      final difference = now.difference(_lastDashboardRefresh!);
-      if (difference.inSeconds < 5) {
-        // Minimum 5 saniye ara
-        print('>>> HomeController: Dashboard refresh too frequent, skipping');
-        return;
       }
-    }
-
-    try {
-      print('>>> HomeController: Refreshing dashboard data');
-      _isRefreshingDashboard.value = true;
-      _lastDashboardRefresh = now;
-
-      // Önce yükleme durumunu kontrol edelim
-      if (_dashboardController.isLoading.value) {
-        print('>>> HomeController: Dashboard already loading, resetting state');
-        _dashboardController.resetLoadingState();
-        // Yükleme durumunun tamamen sıfırlandığından emin olmak için kısa bir gecikme
-        Future.delayed(const Duration(milliseconds: 100));
-      }
-
-      _dashboardController.refreshDashboardData().then((_) {
-        print('>>> HomeController: Dashboard refresh completed');
-      }).catchError((error) {
-        printError(info: 'Error during dashboard refresh: $error');
-      }).whenComplete(() {
-        _isRefreshingDashboard.value = false;
-      });
     } catch (e) {
-      printError(info: 'Error refreshing dashboard: $e');
-      _isRefreshingDashboard.value = false;
+      printError(info: 'Error refreshing all data: $e');
     }
   }
 
-  /// Hesaplar verilerini yeniler
-  void _refreshAccounts() async {
-    // Zaten yenileniyor mu kontrol et
-    if (_isRefreshingAccounts.value) {
-      print(
-          '>>> HomeController: Accounts refresh already in progress, skipping');
-      return;
-    }
-
+  /// Belirli bir modülün verilerini yeniler
+  Future<void> refreshModuleData(int moduleIndex) async {
     try {
-      print('>>> HomeController: Refreshing accounts data');
-      _isRefreshingAccounts.value = true;
-
-      // Force parametresini true olarak geçerek yükleme durumunu sıfırlamayı sağla
-      await _accountsController.refreshAccounts(force: true);
-      print('>>> HomeController: Accounts refresh completed');
+      switch (moduleIndex) {
+        case 0:
+          isDashboardLoaded.value = false;
+          break;
+        case 1:
+          isAccountsLoaded.value = false;
+          break;
+        case 2:
+          isTransactionsLoaded.value = false;
+          break;
+        case 3:
+          isBudgetsLoaded.value = false;
+          break;
+      }
+      await _loadModuleData(moduleIndex);
     } catch (e) {
-      printError(info: 'Error refreshing accounts: $e');
-
-      // Hata durumunda yükleme durumunu sıfırla
-      if (_accountsController.isLoading.value) {
-        _accountsController.resetLoadingState();
-      }
-    } finally {
-      _isRefreshingAccounts.value = false;
+      printError(info: 'Error refreshing module $moduleIndex: $e');
     }
-  }
-
-  /// İşlemler verilerini yeniler
-  void _refreshTransactions() async {
-    // Zaten yenileniyor mu kontrol et
-    if (_isRefreshingTransactions.value) {
-      print(
-          '>>> HomeController: Transactions refresh already in progress, skipping');
-      return;
-    }
-
-    try {
-      print('>>> HomeController: Refreshing transactions data');
-      _isRefreshingTransactions.value = true;
-
-      // Önce yükleme durumunu kontrol edelim ve gerekirse sıfırlayalım
-      if (_transactionsController.isLoading.value) {
-        print(
-            '>>> HomeController: Transactions already loading, resetting state');
-        _transactionsController.resetLoadingState();
-
-        // Yükleme durumunun tamamen sıfırlandığından emin olmak için kısa bir gecikme
-        await Future.delayed(const Duration(milliseconds: 100));
-      }
-
-      // Force parametresini true olarak geçerek yükleme durumunu sıfırlamayı sağla
-      await _transactionsController.fetchTransactions(
-          isInitialLoad: true, force: true);
-      print('>>> HomeController: Transactions refresh completed');
-    } catch (e) {
-      printError(info: 'Error refreshing transactions: $e');
-
-      // Hata durumunda yükleme durumunu sıfırla
-      if (_transactionsController.isLoading.value) {
-        _transactionsController.resetLoadingState();
-      }
-    } finally {
-      _isRefreshingTransactions.value = false;
-    }
-  }
-
-  /// Bütçeler verilerini yeniler
-  void _refreshBudgets() async {
-    // Zaten yenileniyor mu kontrol et
-    if (_isRefreshingBudgets.value) {
-      print(
-          '>>> HomeController: Budgets refresh already in progress, skipping');
-      return;
-    }
-
-    try {
-      print('>>> HomeController: Refreshing budgets data');
-      _isRefreshingBudgets.value = true;
-
-      // Önce yükleme durumunu kontrol edelim ve gerekirse sıfırlayalım
-      if (_budgetsController.isLoading.value) {
-        print('>>> HomeController: Budgets already loading, resetting state');
-        _budgetsController.resetLoadingState();
-
-        // Yükleme durumunun tamamen sıfırlandığından emin olmak için kısa bir gecikme
-        await Future.delayed(const Duration(milliseconds: 100));
-      }
-
-      // Force parametresini true olarak geçerek yükleme durumunu sıfırlamayı sağla
-      await _budgetsController.refreshBudgets(force: true);
-      print('>>> HomeController: Budgets refresh completed');
-    } catch (e) {
-      printError(info: 'Error refreshing budgets: $e');
-
-      // Hata durumunda yükleme durumunu sıfırla
-      if (_budgetsController.isLoading.value) {
-        _budgetsController.resetLoadingState();
-      }
-    } finally {
-      _isRefreshingBudgets.value = false;
-    }
-  }
-
-  /// Uygulama genelinde veri yenileme
-  void refreshAllData() {
-    _refreshDashboard();
-    _refreshAccounts();
-    _refreshTransactions();
-    _refreshBudgets();
   }
 }

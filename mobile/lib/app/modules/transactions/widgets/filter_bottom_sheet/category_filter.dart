@@ -31,7 +31,7 @@ class CategoryFilter extends StatelessWidget {
                 ),
               ),
             ],
-            onChanged: controller.selectCategoryFilter,
+            onChanged: (value) => controller.selectedCategory.value = value,
             icon: Icons.category_outlined,
           ),
         ),

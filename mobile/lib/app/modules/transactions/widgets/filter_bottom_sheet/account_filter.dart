@@ -31,7 +31,7 @@ class AccountFilter extends StatelessWidget {
                 ),
               ),
             ],
-            onChanged: controller.selectAccountFilter,
+            onChanged: (value) => controller.selectedAccount.value = value,
             icon: Icons.account_balance_wallet_outlined,
           ),
         ),

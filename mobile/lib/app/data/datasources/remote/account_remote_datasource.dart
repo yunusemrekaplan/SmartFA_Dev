@@ -19,8 +19,7 @@ abstract class IAccountRemoteDataSource {
   Future<AccountModel> createAccount(CreateAccountRequestModel accountData);
 
   /// Varolan hesabı günceller
-  Future<void> updateAccount(
-      int accountId, UpdateAccountRequestModel accountData);
+  Future<void> updateAccount(int accountId, UpdateAccountRequestModel accountData);
 
   /// Hesabı siler
   Future<void> deleteAccount(int accountId);
@@ -37,9 +36,7 @@ class AccountRemoteDataSource implements IAccountRemoteDataSource {
       final response = await _dioClient.get(_accountsEndpoint);
       // Yanıt listesini AccountModel listesine dönüştür
       final List<dynamic> data = response.data as List<dynamic>;
-      return data
-          .map((json) => AccountModel.fromJson(json as Map<String, dynamic>))
-          .toList();
+      return data.map((json) => AccountModel.fromJson(json as Map<String, dynamic>)).toList();
     } on DioException {
       // DioException'ı ErrorInterceptor işleyecek
       rethrow;
@@ -69,8 +66,7 @@ class AccountRemoteDataSource implements IAccountRemoteDataSource {
   }
 
   @override
-  Future<AccountModel> createAccount(
-      CreateAccountRequestModel accountData) async {
+  Future<AccountModel> createAccount(CreateAccountRequestModel accountData) async {
     try {
       final response = await _dioClient.post(
         _accountsEndpoint,
@@ -90,8 +86,7 @@ class AccountRemoteDataSource implements IAccountRemoteDataSource {
   }
 
   @override
-  Future<void> updateAccount(
-      int accountId, UpdateAccountRequestModel accountData) async {
+  Future<void> updateAccount(int accountId, UpdateAccountRequestModel accountData) async {
     try {
       // Put genellikle 204 No Content döner
       await _dioClient.put(

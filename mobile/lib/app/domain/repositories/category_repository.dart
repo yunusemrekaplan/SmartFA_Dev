@@ -21,5 +21,5 @@ abstract class ICategoryRepository {
   Future<Result<void, AppException>> deleteCategory(int categoryId);
 
   /// Kullanıcının kategorilerini getirir.
-  Future<Result<List<CategoryModel>, AppException>> getUserCategories();
+  Future<Result<List<CategoryModel>, AppException>> getAllCategories();
 }

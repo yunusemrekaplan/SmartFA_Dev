@@ -15,8 +15,7 @@ import 'package:mobile/app/utils/result.dart';
 
 /// Dashboard ekranının koordinatörü.
 /// Servisleri yöneterek daha ince bir yapıya sahip.
-class DashboardController extends GetxController
-    with RefreshableControllerMixin {
+class DashboardController extends GetxController with BaseControllerMixin {
   // Servisler - Sorumluluklar farklı servislere dağıtıldı
   final DashboardSummaryService _summaryService;
   final FinancialOverviewService _financialService;
@@ -121,52 +120,6 @@ class DashboardController extends GetxController
     }
   }
 
-  /// Verileri yeniler - Pull-to-refresh için
-  Future<void> refreshDashboardData() async {
-    if (_shouldPreventRefresh()) {
-      print(
-          '>>> DashboardController: Preventing refresh due to recent update or ongoing refresh');
-      return;
-    }
-
-    _isRefreshing.value = true;
-    _lastRefreshTime = DateTime.now();
-
-    try {
-      return await refreshData(
-        fetchFunc: _fetchAllDashboardData,
-        refreshErrorMessage: 'Dashboard verileri yenilenirken bir hata oluştu',
-      );
-    } finally {
-      _isRefreshing.value = false;
-    }
-  }
-
-  /// Yenileme yapılıp yapılmayacağını kontrol eder
-  bool _shouldPreventRefresh() {
-    if (_isRefreshing.value) {
-      return true;
-    }
-
-    if (_lastRefreshTime != null) {
-      final difference = DateTime.now().difference(_lastRefreshTime!);
-      if (difference.inSeconds < _minimumRefreshInterval) {
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  /// Yükleme durumunu sıfırlar - Token yenileme sonrası kullanılır
-  @override
-  void resetLoadingState() {
-    super.resetLoadingState(); // Mixin'in metodu
-    // StateManager'ı da bilgilendir (UI için gerekli)
-    _stateManager.setLoadingState(false);
-    _isRefreshing.value = false;
-  }
-
   /// Hesaplar sayfasına yönlendirir
   void navigateToAccounts() {
     _stateManager.navigateToAccounts();
@@ -229,5 +182,21 @@ class DashboardController extends GetxController
     _financialService.processIncomeExpense(
         results[3] as Result<Map<String, double>, AppException>,
         _stateManager.handleError);
+  }
+
+  /// Yenileme yapılıp yapılmayacağını kontrol eder
+  bool _shouldPreventRefresh() {
+    if (_isRefreshing.value) {
+      return true;
+    }
+
+    if (_lastRefreshTime != null) {
+      final difference = DateTime.now().difference(_lastRefreshTime!);
+      if (difference.inSeconds < _minimumRefreshInterval) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }

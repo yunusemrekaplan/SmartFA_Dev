@@ -138,32 +138,32 @@ class FilterBottomSheet extends StatelessWidget {
                             _buildTypeFilterButton(
                               context: context,
                               label: 'Tümü',
-                              selected: controller.tempType.value == null,
+                              selected: controller.selectedType.value == null,
                               icon: Icons.sync_alt_rounded,
                               color: AppColors.primary,
-                              onTap: () => controller.selectTypeFilter(null),
+                              onTap: () => controller.selectedType.value = null,
                             ),
                             const SizedBox(width: 8),
                             _buildTypeFilterButton(
                               context: context,
                               label: 'Gelir',
-                              selected: controller.tempType.value ==
+                              selected: controller.selectedType.value ==
                                   CategoryType.Income,
                               icon: Icons.arrow_upward_rounded,
                               color: AppColors.income,
-                              onTap: () => controller
-                                  .selectTypeFilter(CategoryType.Income),
+                              onTap: () => controller.selectedType.value =
+                                  CategoryType.Income,
                             ),
                             const SizedBox(width: 8),
                             _buildTypeFilterButton(
                               context: context,
                               label: 'Gider',
-                              selected: controller.tempType.value ==
+                              selected: controller.selectedType.value ==
                                   CategoryType.Expense,
                               icon: Icons.arrow_downward_rounded,
                               color: AppColors.expense,
-                              onTap: () => controller
-                                  .selectTypeFilter(CategoryType.Expense),
+                              onTap: () => controller.selectedType.value =
+                                  CategoryType.Expense,
                             ),
                           ],
                         )).animate().fadeIn(duration: 300.ms),
@@ -188,44 +188,44 @@ class FilterBottomSheet extends StatelessWidget {
                             _buildDateFilterChip(
                               label: 'Bugün',
                               selected:
-                                  controller.tempQuickDate.value == 'today',
+                                  controller.selectedQuickDate.value == 'today',
                               onTap: () =>
-                                  controller.setQuickDateFilter('today'),
+                                  controller.selectedQuickDate.value = 'today',
                             ),
                             _buildDateFilterChip(
                               label: 'Dün',
-                              selected:
-                                  controller.tempQuickDate.value == 'yesterday',
-                              onTap: () =>
-                                  controller.setQuickDateFilter('yesterday'),
+                              selected: controller.selectedQuickDate.value ==
+                                  'yesterday',
+                              onTap: () => controller.selectedQuickDate.value =
+                                  'yesterday',
                             ),
                             _buildDateFilterChip(
                               label: 'Bu Hafta',
-                              selected:
-                                  controller.tempQuickDate.value == 'thisWeek',
-                              onTap: () =>
-                                  controller.setQuickDateFilter('thisWeek'),
+                              selected: controller.selectedQuickDate.value ==
+                                  'thisWeek',
+                              onTap: () => controller.selectedQuickDate.value =
+                                  'thisWeek',
                             ),
                             _buildDateFilterChip(
                               label: 'Bu Ay',
-                              selected:
-                                  controller.tempQuickDate.value == 'thisMonth',
-                              onTap: () =>
-                                  controller.setQuickDateFilter('thisMonth'),
+                              selected: controller.selectedQuickDate.value ==
+                                  'thisMonth',
+                              onTap: () => controller.selectedQuickDate.value =
+                                  'thisMonth',
                             ),
                             _buildDateFilterChip(
                               label: 'Geçen Ay',
-                              selected:
-                                  controller.tempQuickDate.value == 'lastMonth',
-                              onTap: () =>
-                                  controller.setQuickDateFilter('lastMonth'),
+                              selected: controller.selectedQuickDate.value ==
+                                  'lastMonth',
+                              onTap: () => controller.selectedQuickDate.value =
+                                  'lastMonth',
                             ),
                             _buildDateFilterChip(
                               label: 'Son 3 Ay',
-                              selected: controller.tempQuickDate.value ==
+                              selected: controller.selectedQuickDate.value ==
                                   'last3Months',
-                              onTap: () =>
-                                  controller.setQuickDateFilter('last3Months'),
+                              onTap: () => controller.selectedQuickDate.value =
+                                  'last3Months',
                             ),
                           ],
                         )).animate().fadeIn(duration: 300.ms, delay: 100.ms),
@@ -322,7 +322,8 @@ class FilterBottomSheet extends StatelessWidget {
                         runSpacing: 8,
                         children: controller.filterCategories.map((category) {
                           final isSelected =
-                              controller.tempCategory.value?.id == category.id;
+                              controller.selectedCategory.value?.id ==
+                                  category.id;
                           final isIncome = category.type == CategoryType.Income;
                           final chipColor =
                               isIncome ? AppColors.income : AppColors.expense;
@@ -360,9 +361,9 @@ class FilterBottomSheet extends StatelessWidget {
                             ),
                             onSelected: (selected) {
                               if (selected) {
-                                controller.selectCategoryFilter(category);
+                                controller.selectedCategory.value = category;
                               } else {
-                                controller.selectCategoryFilter(null);
+                                controller.selectedCategory.value = null;
                               }
                             },
                           ).animate().fadeIn(duration: 200.ms);
@@ -419,7 +420,8 @@ class FilterBottomSheet extends StatelessWidget {
                         runSpacing: 8,
                         children: controller.filterAccounts.map((account) {
                           final isSelected =
-                              controller.tempAccount.value?.id == account.id;
+                              controller.selectedAccount.value?.id ==
+                                  account.id;
 
                           return FilterChip(
                             label: Text(account.name),
@@ -452,9 +454,9 @@ class FilterBottomSheet extends StatelessWidget {
                             ),
                             onSelected: (selected) {
                               if (selected) {
-                                controller.selectAccountFilter(account);
+                                controller.selectedAccount.value = account;
                               } else {
-                                controller.selectAccountFilter(null);
+                                controller.selectedAccount.value = null;
                               }
                             },
                           ).animate().fadeIn(duration: 200.ms);
@@ -481,31 +483,31 @@ class FilterBottomSheet extends StatelessWidget {
                           children: [
                             _buildSortChip(
                               label: 'En Yeni',
-                              isSelected: controller.tempSortCriteria.value ==
-                                  'date_desc',
+                              isSelected:
+                                  controller.sortCriteria.value == 'date_desc',
                               onTap: () =>
-                                  controller.setSortingCriteria('date_desc'),
+                                  controller.sortCriteria.value = 'date_desc',
                             ),
                             _buildSortChip(
                               label: 'En Eski',
-                              isSelected: controller.tempSortCriteria.value ==
-                                  'date_asc',
+                              isSelected:
+                                  controller.sortCriteria.value == 'date_asc',
                               onTap: () =>
-                                  controller.setSortingCriteria('date_asc'),
+                                  controller.sortCriteria.value = 'date_asc',
                             ),
                             _buildSortChip(
                               label: 'Tutar (↑)',
-                              isSelected: controller.tempSortCriteria.value ==
-                                  'amount_asc',
+                              isSelected:
+                                  controller.sortCriteria.value == 'amount_asc',
                               onTap: () =>
-                                  controller.setSortingCriteria('amount_asc'),
+                                  controller.sortCriteria.value = 'amount_asc',
                             ),
                             _buildSortChip(
                               label: 'Tutar (↓)',
-                              isSelected: controller.tempSortCriteria.value ==
+                              isSelected: controller.sortCriteria.value ==
                                   'amount_desc',
                               onTap: () =>
-                                  controller.setSortingCriteria('amount_desc'),
+                                  controller.sortCriteria.value = 'amount_desc',
                             ),
                           ],
                         )).animate().fadeIn(duration: 300.ms, delay: 350.ms),

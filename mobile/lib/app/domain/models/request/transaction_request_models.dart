@@ -85,4 +85,25 @@ class TransactionFilterDto {
     if (type != null) params['type'] = categoryTypeToJson(type!);
     return params;
   }
+
+  // Copy constructor
+  TransactionFilterDto copyWith({
+    int? accountId,
+    int? categoryId,
+    DateTime? startDate,
+    DateTime? endDate,
+    CategoryType? type,
+    int? pageNumber,
+    int? pageSize,
+  }) {
+    return TransactionFilterDto(
+      accountId: accountId ?? this.accountId,
+      categoryId: categoryId ?? this.categoryId,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      type: type ?? this.type,
+      pageNumber: pageNumber ?? this.pageNumber,
+      pageSize: pageSize ?? this.pageSize,
+    );
+  }
 }

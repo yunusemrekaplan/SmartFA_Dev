@@ -8,19 +8,12 @@ import 'package:mobile/app/domain/models/response/transaction_response_model.dar
 import 'package:mobile/app/domain/repositories/account_repository.dart';
 import 'package:mobile/app/domain/repositories/category_repository.dart';
 import 'package:mobile/app/domain/repositories/transaction_repository.dart';
+import 'package:mobile/app/modules/transactions/services/transaction_add_edit_service.dart';
 
+/// İşlem ekleme/düzenleme ekranının state'ini ve iş mantığını yöneten GetX controller.
 class AddEditTransactionController extends GetxController {
-  final ITransactionRepository _transactionRepository;
-  final IAccountRepository _accountRepository;
-  final ICategoryRepository _categoryRepository;
-
-  AddEditTransactionController({
-    required ITransactionRepository transactionRepository,
-    required IAccountRepository accountRepository,
-    required ICategoryRepository categoryRepository,
-  })  : _transactionRepository = transactionRepository,
-        _accountRepository = accountRepository,
-        _categoryRepository = categoryRepository;
+  // Servis
+  late final TransactionAddEditService _service;
 
   // Form anahtarı
   final formKey = GlobalKey<FormState>();
@@ -29,22 +22,30 @@ class AddEditTransactionController extends GetxController {
   final amountController = TextEditingController();
   final notesController = TextEditingController();
 
-  // State değişkenleri
-  final RxBool isLoading = false.obs;
-  final RxBool isSubmitting = false.obs;
-  final RxString errorMessage = ''.obs;
-  final Rx<CategoryType> selectedType = CategoryType.Income.obs;
-  final Rx<AccountModel?> selectedAccount = Rx<AccountModel?>(null);
-  final Rx<CategoryModel?> selectedCategory = Rx<CategoryModel?>(null);
-  final Rx<DateTime> selectedDate = DateTime.now().obs;
+  AddEditTransactionController({
+    required ITransactionRepository transactionRepository,
+    required IAccountRepository accountRepository,
+    required ICategoryRepository categoryRepository,
+  }) {
+    _service = TransactionAddEditService(
+      transactionRepository,
+      accountRepository,
+      categoryRepository,
+    );
+  }
 
-  // Listeler
-  final RxList<AccountModel> accounts = <AccountModel>[].obs;
-  final RxList<CategoryModel> categories = <CategoryModel>[].obs;
-
-  // Düzenleme modu için
-  final RxBool isEditing = false.obs;
-  final Rx<TransactionModel?> editingTransaction = Rx<TransactionModel?>(null);
+  // --- Getters ---
+  RxBool get isLoading => _service.isLoading;
+  RxBool get isSubmitting => _service.isSubmitting;
+  RxString get errorMessage => _service.errorMessage;
+  Rx<CategoryType> get selectedType => _service.selectedType;
+  Rx<AccountModel?> get selectedAccount => _service.selectedAccount;
+  Rx<CategoryModel?> get selectedCategory => _service.selectedCategory;
+  Rx<DateTime> get selectedDate => _service.selectedDate;
+  RxList<AccountModel> get accounts => _service.accounts;
+  RxList<CategoryModel> get categories => _service.categories;
+  RxBool get isEditing => _service.isEditing;
+  Rx<TransactionModel?> get editingTransaction => _service.editingTransaction;
 
   @override
   void onInit() {
@@ -60,115 +61,56 @@ class AddEditTransactionController extends GetxController {
     super.onClose();
   }
 
+  /// İlk verileri yükler
+  Future<void> _loadInitialData() async {
+    await _service.loadInitialData();
+  }
+
+  /// Düzenleme modunu kontrol eder
   void _checkIfEditing() {
     final args = Get.arguments;
     if (args is TransactionModel) {
-      isEditing.value = true;
-      editingTransaction.value = args;
+      _service.setupEditMode(args);
       _populateFormWithTransaction(args);
     }
   }
 
+  /// Form alanlarını mevcut işlem verileriyle doldurur
   void _populateFormWithTransaction(TransactionModel transaction) {
-    selectedType.value = transaction.categoryType;
     amountController.text = transaction.amount.toString();
     notesController.text = transaction.notes ?? '';
-    selectedDate.value = transaction.transactionDate;
   }
 
-  Future<void> _loadInitialData() async {
-    isLoading.value = true;
-    errorMessage.value = '';
-
-    try {
-      // Hesapları yükle
-      final accountsResult = await _accountRepository.getUserAccounts();
-      accountsResult.when(
-        success: (loadedAccounts) => accounts.value = loadedAccounts,
-        failure: (error) => errorMessage.value = error.message,
-      );
-
-      // Kategorileri yükle
-      final categoriesResult =
-          await _categoryRepository.getCategories(selectedType.value);
-      categoriesResult.when(
-        success: (loadedCategories) {
-          categories.value = loadedCategories;
-          // İlk kategoriyi seç
-          if (categories.isNotEmpty) {
-            selectedCategory.value = categories.firstWhere(
-              (category) => category.type == selectedType.value,
-              orElse: () => categories.first,
-            );
-          }
-        },
-        failure: (error) => errorMessage.value = error.message,
-      );
-
-      // İlk hesabı seç
-      if (accounts.isNotEmpty) {
-        selectedAccount.value = accounts.first;
-      }
-    } catch (e) {
-      errorMessage.value = 'Veriler yüklenirken bir hata oluştu.';
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  void selectType(CategoryType type) async {
+  /// İşlem tipini değiştirir ve kategorileri yeniden yükler
+  Future<void> changeType(CategoryType type) async {
+    if (selectedType.value == type) return;
     selectedType.value = type;
-
-    if (categories.isEmpty) {
-      selectedCategory.value = null;
-      return;
-    }
-
-    // Kategorileri güncelle
-    final categoriesResult = await _categoryRepository.getCategories(type);
-    categoriesResult.when(
-      success: (loadedCategories) {
-        categories.value = loadedCategories;
-        // İlk kategoriyi seç
-        if (categories.isNotEmpty) {
-          selectedCategory.value = categories.firstWhere(
-            (category) => category.type == type,
-            orElse: () => categories.first,
-          );
-        }
-      },
-      failure: (error) => errorMessage.value = error.message,
-    );
-
-    // Seçilen tipe göre ilk kategoriyi bul
-    final matchingCategory = categories.firstWhere(
-      (category) => category.type == type,
-      orElse: () => categories.first,
-    );
-
-    selectedCategory.value = matchingCategory;
+    await _service.reloadCategories();
   }
 
-  void selectAccount(AccountModel account) {
+  /// Hesap seçimini günceller
+  void selectAccount(AccountModel? account) {
     selectedAccount.value = account;
   }
 
-  void selectCategory(CategoryModel category) {
+  /// Kategori seçimini günceller
+  void selectCategory(CategoryModel? category) {
     selectedCategory.value = category;
   }
 
-  Future<void> selectDate(BuildContext context) async {
-    final picked = await showDatePicker(
-      context: context,
+  /// Tarih seçimini günceller
+  void selectDate() {
+    showDatePicker(
+      context: Get.context!,
       initialDate: selectedDate.value,
       firstDate: DateTime(2000),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-    );
-    if (picked != null) {
-      selectedDate.value = picked;
-    }
+      lastDate: DateTime(2100),
+    ).then((date) {
+      selectedDate.value = date ?? selectedDate.value;
+    });
   }
 
+  /// Form verilerini kaydeder
   Future<void> saveTransaction() async {
     if (!formKey.currentState!.validate()) return;
 
@@ -182,114 +124,44 @@ class AddEditTransactionController extends GetxController {
       return;
     }
 
-    isLoading.value = true;
-    isSubmitting.value = true;
-    errorMessage.value = '';
+    bool success;
+    if (isEditing.value) {
+      success = await _service.updateTransaction(
+        editingTransaction.value!.id,
+        UpdateTransactionRequestModel(
+          accountId: selectedAccount.value!.id,
+          categoryId: selectedCategory.value!.id,
+          amount: double.parse(amountController.text),
+          transactionDate: selectedDate.value,
+          notes: notesController.text,
+        ),
+      );
+    } else {
+      success = await _service.createTransaction(
+        CreateTransactionRequestModel(
+          accountId: selectedAccount.value!.id,
+          categoryId: selectedCategory.value!.id,
+          amount: double.parse(amountController.text),
+          transactionDate: selectedDate.value,
+          notes: notesController.text,
+        ),
+      );
+    }
 
-    try {
-      if (isEditing.value) {
-        // Düzenleme modu
-        final result = await _transactionRepository.updateTransaction(
-          editingTransaction.value!.id,
-          UpdateTransactionRequestModel(
-            accountId: selectedAccount.value!.id,
-            categoryId: selectedCategory.value!.id,
-            amount: double.parse(amountController.text),
-            transactionDate: selectedDate.value,
-            notes: notesController.text,
-          ),
-        );
-
-        result.when(
-          success: (_) {
-            Get.back(result: true);
-            Get.snackbar(
-              'Başarılı',
-              'İşlem başarıyla güncellendi',
-              snackPosition: SnackPosition.BOTTOM,
-            );
-          },
-          failure: (error) => errorMessage.value = error.message,
-        );
-      } else {
-        // Yeni işlem ekleme
-        final result = await _transactionRepository.createTransaction(
-          CreateTransactionRequestModel(
-            accountId: selectedAccount.value!.id,
-            categoryId: selectedCategory.value!.id,
-            amount: double.parse(amountController.text),
-            transactionDate: selectedDate.value,
-            notes: notesController.text,
-          ),
-        );
-
-        result.when(
-          success: (_) {
-            Get.back(result: true);
-            Get.snackbar(
-              'Başarılı',
-              'İşlem başarıyla eklendi',
-              snackPosition: SnackPosition.BOTTOM,
-            );
-          },
-          failure: (error) => errorMessage.value = error.message,
-        );
-      }
-    } catch (e) {
-      errorMessage.value = 'İşlem kaydedilirken bir hata oluştu.';
-    } finally {
-      isLoading.value = false;
-      isSubmitting.value = false;
+    if (success) {
+      Get.back(result: true);
     }
   }
 
+  /// İşlemi siler
   Future<void> deleteTransaction() async {
-    if (!isEditing.value) return;
+    await _service.deleteTransaction(editingTransaction.value!.id);
+  }
 
-    final confirm = await Get.dialog<bool>(
-      AlertDialog(
-        title: const Text('İşlemi Sil'),
-        content: const Text('Bu işlemi silmek istediğinizden emin misiniz?'),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(result: false),
-            child: const Text('İptal'),
-          ),
-          TextButton(
-            onPressed: () => Get.back(result: true),
-            child: const Text('Sil'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm != true) return;
-
-    isLoading.value = true;
-    isSubmitting.value = true;
-    errorMessage.value = '';
-
-    try {
-      final result = await _transactionRepository.deleteTransaction(
-        editingTransaction.value!.id,
-      );
-
-      result.when(
-        success: (_) {
-          Get.back(result: true);
-          Get.snackbar(
-            'Başarılı',
-            'İşlem başarıyla silindi',
-            snackPosition: SnackPosition.BOTTOM,
-          );
-        },
-        failure: (error) => errorMessage.value = error.message,
-      );
-    } catch (e) {
-      errorMessage.value = 'İşlem silinirken bir hata oluştu.';
-    } finally {
-      isLoading.value = false;
-      isSubmitting.value = false;
-    }
+  /// Form verilerini temizler
+  void resetForm() {
+    _service.resetForm();
+    amountController.clear();
+    notesController.clear();
   }
 }
