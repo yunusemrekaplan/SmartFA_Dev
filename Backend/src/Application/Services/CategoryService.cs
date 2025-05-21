@@ -35,13 +35,23 @@ public class CategoryService : ICategoryService
         _logger = logger;
     }
 
-    public async Task<Result<IReadOnlyList<CategoryDto>>> GetUserAndPredefinedCategoriesAsync(int userId, CategoryType type)
+    public async Task<Result<IReadOnlyList<CategoryDto>>> GetUserAndPredefinedCategoriesAsync(int userId, CategoryType? type)
     {
         try
         {
             // Repository'ye UoW üzerinden erişim
-            var categories = await _unitOfWork.Categories.GetCategoriesByUserIdAndTypeAsync(userId, type);
-            var categoryDtos = _mapper.Map<IReadOnlyList<CategoryDto>>(categories);
+            var categories = await _unitOfWork.Categories.GetAsync(
+                predicate: c => c.UserId == userId && (type == null || c.Type == type) && !c.IsDeleted,
+                disableTracking: true, // Tracking kapalı
+                includeString: null
+            );
+            var predefinedCategories = await _unitOfWork.Categories.GetAsync(
+                predicate: c => c.UserId == null && (type == null || c.Type == type) && !c.IsDeleted,
+                disableTracking: true, // Tracking kapalı
+                includeString: null
+            );
+            var allCategories = categories.Concat(predefinedCategories).ToList();
+            var categoryDtos = _mapper.Map<IReadOnlyList<CategoryDto>>(allCategories);
             return Result<IReadOnlyList<CategoryDto>>.Success(categoryDtos);
         }
         catch (Exception ex)

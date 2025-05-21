@@ -36,4 +36,11 @@ public interface IAuthService
     /// <param name="refreshToken">İptal edilecek refresh token.</param>
     /// <returns>Başarı veya hata sonucu</returns>
     Task<Result> RevokeTokenAsync(string refreshToken);
+
+    /// <summary>
+    /// Verilen refresh token ile ilişkili kullanıcı ID'sini alır.
+    /// </summary>
+    /// <param name="requestDtoRefreshToken">Refresh token</param>
+    /// <returns>Kullanıcı ID'si veya null</returns>
+    Task<int?> GetUserIdFromRefreshTokenAsync(string requestDtoRefreshToken);
 }

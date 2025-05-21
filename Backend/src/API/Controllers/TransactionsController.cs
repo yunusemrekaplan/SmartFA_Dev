@@ -93,6 +93,7 @@ public class TransactionsController : BaseApiController
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> DeleteTransaction(int id)
     {
+        //return BadRequest("Bu işlem geçici olarak devre dışı bırakılmıştır.");
         var userId = GetUserIdFromToken();
         if (!userId.HasValue) return Unauthorized("Geçersiz kullanıcı kimliği.");
 

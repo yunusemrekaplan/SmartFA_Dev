@@ -81,10 +81,15 @@ public class AuthController : BaseApiController
             return BadRequest("Refresh token gereklidir.");
         }
 
-        // Opsiyonel: Token'daki kullanıcı ID'si ile refresh token'ın sahibi eşleşiyor mu kontrolü
-        // var userIdFromToken = GetUserIdFromToken();
-        // ... (Token'ı DB'den çekip UserId'sini kontrol et) ...
-
+        // Token'daki kullanıcı ID'si ile refresh token'ın sahibi eşleşiyor mu kontrolü
+        var userIdFromToken = GetUserIdFromToken();
+        var tokenOwnerId = await _authService.GetUserIdFromRefreshTokenAsync(requestDto.RefreshToken);
+        if (userIdFromToken != tokenOwnerId)
+        {
+            return Unauthorized("Bu refresh token sizin değil.");
+        }
+        
+        // Token iptali
         var result = await _authService.RevokeTokenAsync(requestDto.RefreshToken);
         return HandleResult(result);
     }

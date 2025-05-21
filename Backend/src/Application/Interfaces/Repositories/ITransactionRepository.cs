@@ -17,10 +17,11 @@ public interface ITransactionRepository : IRepository<Transaction>
     /// <param name="endDate">Bitiş tarihi (opsiyonel filtre)</param>
     /// <param name="pageNumber">Sayfa numarası</param>
     /// <param name="pageSize">Sayfa boyutu</param>
+    /// <param name="sortCriteria">Sıralama kriteri (örn. "Date DESC")</param>
     /// <returns>Sayfalanmış işlem listesi</returns>
     Task<IReadOnlyList<Transaction>> GetTransactionsByUserIdFilteredAsync(
         int userId, int? accountId, int? categoryId, DateTime? startDate, DateTime? endDate,
-        int pageNumber, int pageSize);
+        int pageNumber, int pageSize, string sortCriteria);
 
     /// <summary>
     /// Belirli bir kullanıcının belirli bir hesaba ait işlemlerini getirir.

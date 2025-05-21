@@ -301,4 +301,16 @@ public class AuthService : IAuthService
         }
         // SaveChanges çağıran metotta yapılmalı (RefreshTokenAsync içinde)
     }
+    
+    // Verilen refresh token ile ilişkili kullanıcı ID'sini alır
+    public async Task<int?> GetUserIdFromRefreshTokenAsync(string refreshToken)
+    {
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            return null;
+        }
+
+        var storedToken = await _unitOfWork.UserRefreshTokens.GetByTokenAsync(refreshToken);
+        return storedToken?.UserId;
+    }
 }

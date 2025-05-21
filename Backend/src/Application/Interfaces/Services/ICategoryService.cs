@@ -15,7 +15,7 @@ public interface ICategoryService
     /// <param name="userId">Kullanıcı ID'si</param>
     /// <param name="type">Kategori Tipi (Gelir/Gider)</param>
     /// <returns>Kategori DTO listesi veya hata sonucu</returns>
-    Task<Result<IReadOnlyList<CategoryDto>>> GetUserAndPredefinedCategoriesAsync(int userId, CategoryType type);
+    Task<Result<IReadOnlyList<CategoryDto>>> GetUserAndPredefinedCategoriesAsync(int userId, CategoryType? type);
 
     /// <summary>
     /// Belirli bir kullanıcı için yeni bir özel kategori oluşturur.

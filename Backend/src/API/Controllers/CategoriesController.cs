@@ -36,6 +36,21 @@ public class CategoriesController : BaseApiController
     }
 
     /// <summary>
+    /// Kullanıcının erişim iznine sahip olduğu tüm kategorileri listeler.
+    /// </summary>
+    [HttpGet("all")]
+    [ProducesResponseType(typeof(IReadOnlyList<CategoryDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetAllCategories()
+    {
+        var userId = GetUserIdFromToken();
+        if (!userId.HasValue) return Unauthorized("Geçersiz kullanıcı kimliği.");
+
+        var result = await _categoryService.GetUserAndPredefinedCategoriesAsync(userId.Value, null);
+        return HandleResult(result);
+    }
+    
+    /// <summary>
     /// Yeni bir özel kategori oluşturur.
     /// </summary>
     [HttpPost]

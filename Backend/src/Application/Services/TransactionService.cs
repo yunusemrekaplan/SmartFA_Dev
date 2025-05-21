@@ -43,7 +43,7 @@ public class TransactionService : ITransactionService
             // Repository'ye UoW üzerinden erişim
             var transactions = await _unitOfWork.Transactions.GetTransactionsByUserIdFilteredAsync(
                 userId, filterDto.AccountId, filterDto.CategoryId, filterDto.StartDate, filterDto.EndDate,
-                filterDto.PageNumber, filterDto.PageSize);
+                filterDto.PageNumber, filterDto.PageSize, filterDto.SortCriteria);
 
             var transactionDtos = _mapper.Map<IReadOnlyList<TransactionDto>>(transactions);
 

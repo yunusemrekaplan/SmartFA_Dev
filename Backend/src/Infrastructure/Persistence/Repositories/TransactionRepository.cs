@@ -17,7 +17,7 @@ public class TransactionRepository : BaseRepository<Transaction>, ITransactionRe
 
     public async Task<IReadOnlyList<Transaction>> GetTransactionsByUserIdFilteredAsync(
         int userId, int? accountId, int? categoryId, DateTime? startDate, DateTime? endDate,
-        int pageNumber, int pageSize)
+        int pageNumber, int pageSize, string sortCriteria)
     {
         // İlişkili Account ve Category bilgilerini de getirmek için Include kullanılır.
         // IsDeleted kontrolü BaseRepository'den gelir.
@@ -33,16 +33,25 @@ public class TransactionRepository : BaseRepository<Transaction>, ITransactionRe
             query = query.Where(t => t.TransactionDate.Date >= startDate.Value.Date); // Sadece tarih kısmı karşılaştırılır
         if (endDate.HasValue) query = query.Where(t => t.TransactionDate.Date <= endDate.Value.Date); // Sadece tarih kısmı karşılaştırılır
 
-        // Sayfalama
-        // Önce sıralama yapılmalı (genellikle tarihe göre tersten)
-        query = query.OrderByDescending(t => t.TransactionDate)
-            .ThenByDescending(t => t.CreatedAt); // Aynı gün içindekileri eklenme sırasına göre sırala
+        // Sıralama
+        // Sıralama kriteri "date_desc" veya "date_asc" şeklinde olabilir
+        // Sıralama kriteri "amount_desc" veya "amount_asc" şeklinde olabilir
+        query = sortCriteria switch
+        {
+            "date_asc" => query.OrderBy(t => t.TransactionDate),
+            "date_desc" => query.OrderByDescending(t => t.TransactionDate),
+            "amount_asc" => query.OrderBy(t => t.Amount),
+            "amount_desc" => query.OrderByDescending(t => t.Amount),
+            _ => query.OrderByDescending(t => t.TransactionDate) // Varsayılan sıralama
+        };
 
-        // Skip ve Take ile sayfalama uygulanır.
-        return await query.Skip((pageNumber - 1) * pageSize)
+        // Sayfalama
+        var transactions = await query
+            .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
-            .AsNoTracking() // Sonuç listesi okunacağı için tracking kapatılır.
             .ToListAsync();
+        
+        return transactions;
     }
 
     public async Task<IReadOnlyList<Transaction>> GetTransactionsByAccountIdAsync(int userId, int accountId)

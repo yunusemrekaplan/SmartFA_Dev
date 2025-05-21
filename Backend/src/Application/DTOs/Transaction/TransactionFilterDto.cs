@@ -12,5 +12,6 @@ public record TransactionFilterDto(
     DateTime? EndDate,
     CategoryType? Type, // Gelir/Gider filtresi
     int PageNumber = 1,
-    int PageSize = 20
+    int PageSize = 20,
+    string SortCriteria = "Date" // Varsayılan sıralama kriteri
 );
