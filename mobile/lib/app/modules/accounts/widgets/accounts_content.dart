@@ -83,19 +83,6 @@ class AccountsContent extends StatelessWidget {
               ),
             ],
           ),
-          TextButton.icon(
-            onPressed: controller.goToAddAccount,
-            icon: const Icon(Icons.add, size: 16),
-            label: const Text('Yeni'),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              backgroundColor: AppColors.primary.withOpacity(0.1),
-              foregroundColor: AppColors.primary,
-            ),
-          ),
         ],
       ),
     );
@@ -111,7 +98,7 @@ class AccountsContent extends StatelessWidget {
               child: AccountCard(
                 account: account,
                 onTap: () => controller.goToEditAccount(account),
-                onDelete: () => controller.confirmAndDeleteAccount(account),
+                onDelete: () => controller.deleteAccount(account.id),
               )
                   .animate(delay: Duration(milliseconds: 100 * index))
                   .fadeIn(duration: 400.ms)

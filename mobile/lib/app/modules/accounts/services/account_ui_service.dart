@@ -13,8 +13,6 @@ class AccountUIService {
       title: "Hesabı Sil",
       message:
           "'${account.name}' hesabını silmek istediğinizden emin misiniz?\n\nBu işlem geri alınamaz ve hesaba bağlı tüm işlemler etkilenebilir.",
-      onConfirm:
-          null, // Dialog kapanınca işlem yapmak istemiyoruz, result'ı kullanacağız
     );
   }
 }

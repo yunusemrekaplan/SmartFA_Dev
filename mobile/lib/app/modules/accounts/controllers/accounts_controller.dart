@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:mobile/app/core/services/page/i_page_service.dart';
 import 'package:mobile/app/domain/models/response/account_response_model.dart';
 import 'package:mobile/app/modules/accounts/services/account_data_service.dart';
 import 'package:mobile/app/modules/accounts/services/account_navigation_service.dart';
@@ -13,6 +14,7 @@ class AccountsController extends GetxController with BaseControllerMixin {
   final AccountDataService _dataService;
   final AccountNavigationService _navigationService;
   final AccountUIService _uiService;
+  final _pageService = Get.find<IPageService>();
 
   AccountsController({
     required AccountDataService dataService,
@@ -47,13 +49,11 @@ class AccountsController extends GetxController with BaseControllerMixin {
   void _syncStates() {
     // Controller → DataService
     ever(super.isLoading, (value) => _dataService.isLoading.value = value);
-    ever(
-        super.errorMessage, (value) => _dataService.errorMessage.value = value);
+    ever(super.errorMessage, (value) => _dataService.errorMessage.value = value);
 
     // DataService → Controller
     ever(_dataService.isLoading, (value) => super.isLoading.value = value);
-    ever(
-        _dataService.errorMessage, (value) => super.errorMessage.value = value);
+    ever(_dataService.errorMessage, (value) => super.errorMessage.value = value);
   }
 
   // --- PUBLIC API ---
@@ -68,37 +68,28 @@ class AccountsController extends GetxController with BaseControllerMixin {
 
   /// Belirli bir hesabı siler
   Future<void> deleteAccount(int accountId) async {
-    await loadData(
-      fetchFunc: () => _dataService.deleteAccount(accountId),
-      loadingErrorMessage: 'Hesap silinirken bir hata oluştu.',
-      onSuccess: () => loadAccounts(),
-    );
+    final account = _dataService.accountList.firstWhere((account) => account.id == accountId);
+    final confirm = await _uiService.showDeleteConfirmation(account);
+
+    if (confirm == true) {
+      final success = await _dataService.deleteAccount(accountId);
+
+      if (success) {
+        //_pageService.closeLastPage();
+
+        // Hesap silindikten sonra hesaplar listesinden silinir
+        _dataService.accountList.removeWhere((account) => account.id == accountId);
+      }
+    }
   }
 
   /// Yeni hesap ekleme ekranına yönlendirir
   void goToAddAccount() {
-    _navigationService.goToAddAccount().then((result) {
-      if (result == true) {
-        loadAccounts();
-      }
-    });
+    _navigationService.goToAddAccount();
   }
 
   /// Hesap düzenleme ekranına yönlendirir
   void goToEditAccount(AccountModel account) {
-    _navigationService.goToEditAccount(account).then((result) {
-      if (result == true) {
-        loadAccounts();
-      }
-    });
-  }
-
-  /// Hesap silme onay dialogunu gösterir ve onaylanırsa hesabı siler
-  Future<void> confirmAndDeleteAccount(AccountModel account) async {
-    final result = await _uiService.showDeleteConfirmation(account);
-
-    if (result == true) {
-      await deleteAccount(account.id);
-    }
+    _navigationService.goToEditAccount(account);
   }
 }

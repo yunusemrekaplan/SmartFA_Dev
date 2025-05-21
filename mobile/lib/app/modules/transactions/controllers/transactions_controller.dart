@@ -191,59 +191,6 @@ class TransactionsController extends GetxController with BaseControllerMixin {
     }
   }
 
-  /// İşlem siler
-  Future<void> deleteTransaction(int transactionId) async {
-    try {
-      // Loading göstergesi başlat
-      Get.dialog(
-        const Center(child: CircularProgressIndicator()),
-        barrierDismissible: false,
-      );
-
-      // İşlemi sil
-      final success = await _dataService.deleteTransaction(transactionId);
-
-      // Loading göstergesini kapat
-      Get.back();
-
-      if (success) {
-        // Snackbar göster
-        Get.snackbar(
-          'Başarılı',
-          'İşlem başarıyla silindi',
-          snackPosition: SnackPosition.TOP,
-          duration: const Duration(seconds: 2),
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
-
-        // Kısa bir gecikme ekle
-        await Future.delayed(const Duration(milliseconds: 500));
-
-        // Sayfayı kapat ve listeyi yenile
-        Get.back();
-        await _fetchTransactions();
-      } else {
-        Get.snackbar(
-          'Hata',
-          'İşlem silinirken bir hata oluştu',
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-      }
-    } catch (e) {
-      Get.back(); // Loading göstergesini kapat
-      Get.snackbar(
-        'Hata',
-        'Beklenmeyen bir hata oluştu',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    }
-  }
-
   /// İşlem detayına gider
   void goToTransactionDetail(TransactionModel transaction) {
     _navigationService.goToTransactionDetail(transaction);

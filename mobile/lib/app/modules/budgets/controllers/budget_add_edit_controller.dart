@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:mobile/app/core/services/dialog/i_dialog_service.dart';
+import 'package:mobile/app/core/services/page/i_page_service.dart';
 import 'package:mobile/app/domain/models/response/budget_response_model.dart';
 import 'package:mobile/app/domain/models/response/category_response_model.dart';
 import 'package:mobile/app/domain/repositories/budget_repository.dart';
 import 'package:mobile/app/domain/repositories/category_repository.dart';
+import 'package:mobile/app/modules/budgets/controllers/budgets_controller.dart';
 import 'package:mobile/app/modules/budgets/services/budget_add_edit/budget_amount_service.dart';
 import 'package:mobile/app/modules/budgets/services/budget_add_edit/budget_animation_service.dart';
 import 'package:mobile/app/modules/budgets/services/budget_add_edit/budget_category_service.dart';
@@ -27,6 +30,9 @@ class BudgetAddEditController extends GetxController {
   late final BudgetAnimationService _animationService;
   late final BudgetStateService _stateService;
   late final BudgetAddEditDataService _dataService;
+  final _budgetsController = Get.find<BudgetsController>();
+  final _pageService = Get.find<IPageService>();
+  final _dialogService = Get.find<IDialogService>();
 
   BudgetAddEditController(this._budgetRepository, this._categoryRepository) {
     _validationService = BudgetValidationService();
@@ -151,41 +157,24 @@ class BudgetAddEditController extends GetxController {
       return;
     }
 
-    try {
-      if (_stateService.isEditMode()) {
-        await _updateBudget();
-      } else {
-        await _createBudget();
-        clearForm();
-      }
-    } finally {
-      // İşlem durumu serviste yönetiliyor
+    bool success;
+    if (isEditing.value) {
+      success = await _dataService.updateBudget(
+        budgetId: _stateService.getBudgetId()!,
+        amount: _amountService.getAmount(),
+      );
+    } else {
+      success = await _dataService.createBudget(
+        categoryId: _categoryService.getCategoryId()!,
+        amount: _amountService.getAmount(),
+        month: _periodService.month.value,
+        year: _periodService.year.value,
+      );
     }
-  }
-
-  /// Bütçeyi günceller
-  Future<void> _updateBudget() async {
-    final success = await _dataService.updateBudget(
-      budgetId: _stateService.getBudgetId()!,
-      amount: _amountService.getAmount(),
-    );
 
     if (success) {
-      Get.back(result: true); // Önceki ekrana dön ve güncelleme olduğunu bildir
-    }
-  }
-
-  /// Yeni bütçe oluşturur
-  Future<void> _createBudget() async {
-    final success = await _dataService.createBudget(
-      categoryId: _categoryService.getCategoryId()!,
-      amount: _amountService.getAmount(),
-      month: _periodService.month.value,
-      year: _periodService.year.value,
-    );
-
-    if (success) {
-      Get.back(result: true); // Önceki ekrana dön ve ekleme olduğunu bildir
+      _pageService.closeLastPage();
+      _budgetsController.loadBudgets();
     }
   }
 
@@ -198,9 +187,18 @@ class BudgetAddEditController extends GetxController {
   }
 
   /// Bütçeyi siler
-  Future<void> deleteBudget(int budgetId) async {
-    await _dataService.deleteBudget(budgetId);
+  Future<void> deleteBudget() async {
+    final confirm = await _dialogService.showDeleteConfirmation(
+      title: 'Bütçeyi Sil',
+      message: 'Bu bütçeyi silmek istediğinize emin misiniz?',
+    );
 
-    Get.back(result: true);
+    if (confirm == true && budgetId.value != null) {
+      final success = await _dataService.deleteBudget(budgetId.value!);
+      if (success) {
+        _pageService.closeLastPage();
+        _budgetsController.loadBudgets();
+      }
+    }
   }
 }

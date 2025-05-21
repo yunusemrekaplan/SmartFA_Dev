@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mobile/app/core/services/dialog/i_dialog_service.dart';
+import 'package:mobile/app/core/services/page/i_page_service.dart';
 import 'package:mobile/app/domain/models/enums/account_type.dart';
 import 'package:mobile/app/domain/models/response/account_response_model.dart';
+import 'package:mobile/app/modules/accounts/controllers/accounts_controller.dart';
 import 'package:mobile/app/modules/accounts/services/account_form_service.dart';
 import 'package:mobile/app/modules/accounts/services/account_navigation_service.dart';
 import 'package:mobile/app/modules/accounts/services/account_ui_service.dart';
@@ -16,6 +18,9 @@ class AddEditAccountController extends GetxController {
   final AccountFormService _formService;
   final AccountUpdateService _updateService;
   final AccountNavigationService _navigationService;
+  final _pageService = Get.find<IPageService>();
+  final _accountsController = Get.find<AccountsController>();
+  final _dialogService = Get.find<IDialogService>();
 
   AddEditAccountController({
     required AccountFormService formService,
@@ -30,16 +35,24 @@ class AddEditAccountController extends GetxController {
 
   // Form Servisi Delegasyonları
   GlobalKey<FormState> get formKey => _formService.formKey;
+
   TextEditingController get nameController => _formService.nameController;
+
   TextEditingController get balanceController => _formService.balanceController;
+
   RxBool get isEditing => _formService.isEditing;
+
   Rx<AccountModel?> get editingAccount => _formService.editingAccount;
+
   Rx<AccountType> get selectedAccountType => _formService.selectedAccountType;
+
   List<AccountType> get accountTypes => _formService.accountTypes;
+
   RxBool get isSubmitting => _formService.isSubmitting;
 
   // Güncelleme Servisi Delegasyonları
   RxBool get isLoading => _updateService.isLoading;
+
   RxString get errorMessage => _updateService.errorMessage;
 
   // --- Lifecycle Metotları ---
@@ -78,17 +91,14 @@ class AddEditAccountController extends GetxController {
   /// Hesap verilerini kaydeder (ekle veya güncelle)
   Future<void> saveAccount() async {
     // Form validasyonu
-    if (!_formService.validateForm()) {
-      return;
-    }
+    if (!_formService.validateForm()) return;
 
     _formService.startSubmitting();
 
     try {
       bool success;
 
-      if (_formService.isEditing.value &&
-          _formService.editingAccount.value != null) {
+      if (_formService.isEditing.value && _formService.editingAccount.value != null) {
         // Hesabı güncelle
         success = await _updateService.updateAccount(
           accountId: _formService.editingAccount.value!.id,
@@ -104,7 +114,8 @@ class AddEditAccountController extends GetxController {
       }
 
       if (success) {
-        _navigationService.goBack(result: true);
+        _pageService.closeLastPage();
+        _accountsController.loadAccounts();
       }
     } finally {
       _formService.finishSubmitting();
@@ -113,36 +124,23 @@ class AddEditAccountController extends GetxController {
 
   /// Hesabı siler
   Future<void> deleteAccount() async {
-    if (!_formService.isEditing.value ||
-        _formService.editingAccount.value == null) {
+    if (!_formService.isEditing.value || _formService.editingAccount.value == null) {
       return;
     }
 
     // Silme onayı
-    final confirm = await Get.find<IDialogService>().showDeleteConfirmation(
+    final confirm = await _dialogService.showDeleteConfirmation(
       title: 'Hesabı Sil',
-      message:
-          'Bu hesabı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
-      onConfirm:
-          null, // Dialog kapanınca işlem yapmak istemiyoruz, result'ı kullanacağız
+      message: 'Bu hesabı silmek istediğinize emin misiniz?',
     );
 
-    if (confirm != true) {
-      return;
-    }
-
-    _formService.startSubmitting();
-
-    try {
-      final success = await _updateService.deleteAccount(
-        _formService.editingAccount.value!.id,
-      );
+    if (confirm == true) {
+      final success = await _updateService.deleteAccount(_formService.editingAccount.value!.id);
 
       if (success) {
-        _navigationService.goBack(result: true);
+        _pageService.closeLastPage();
+        _accountsController.loadAccounts();
       }
-    } finally {
-      _formService.finishSubmitting();
     }
   }
 

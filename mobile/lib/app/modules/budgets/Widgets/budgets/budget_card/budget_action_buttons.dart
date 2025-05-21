@@ -22,15 +22,7 @@ class BudgetActionButtons extends StatelessWidget {
         if (result == 'edit') {
           controller.goToEditBudget(budget);
         } else if (result == 'delete') {
-          // Onay dialogu göster
-          Get.find<IDialogService>().showDeleteConfirmation(
-            title: "Bütçeyi Sil",
-            message:
-                "'${budget.categoryName}' kategorisi için bütçeyi silmek istediğinizden emin misiniz?",
-            onConfirm: () {
-              controller.deleteBudget(budget.id);
-            },
-          );
+          controller.deleteBudget(budget.id);
         }
       },
       itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[

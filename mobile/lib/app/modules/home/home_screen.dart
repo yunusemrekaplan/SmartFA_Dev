@@ -179,12 +179,12 @@ class HomeScreen extends GetView<HomeController> {
         });
         break;
       case 1: // Accounts
-        pageService.toNamed(AppRoutes.ADD_EDIT_ACCOUNT)?.then((_) {
+        pageService.toNamed(AppRoutes.ADD_EDIT_ACCOUNT).then((_) {
           controller.refreshModuleData(controller.selectedIndex.value);
         });
         break;
       case 3: // Budgets
-        pageService.toNamed(AppRoutes.ADD_EDIT_BUDGET)?.then((_) {
+        pageService.toNamed(AppRoutes.ADD_EDIT_BUDGET).then((_) {
           controller.refreshModuleData(controller.selectedIndex.value);
         });
         break;

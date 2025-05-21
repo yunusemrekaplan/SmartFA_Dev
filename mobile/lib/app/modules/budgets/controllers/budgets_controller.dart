@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:mobile/app/core/services/dialog/i_dialog_service.dart';
 import 'package:mobile/app/domain/models/response/budget_response_model.dart';
 import 'package:mobile/app/domain/repositories/budget_repository.dart';
 import 'package:mobile/app/modules/budgets/services/budgets/budget_data_service.dart';
@@ -19,6 +20,7 @@ class BudgetsController extends GetxController with BaseControllerMixin {
   late final BudgetFilterService _filterService;
   late final BudgetPeriodService _periodService;
   late final BudgetNavigationService _navigationService;
+  final _dialogService = Get.find<IDialogService>();
 
   // Filtrelenmiş bütçe listesi - UI bu listeyi kullanacak
   final RxList<BudgetModel> filteredBudgetList = <BudgetModel>[].obs;
@@ -74,8 +76,7 @@ class BudgetsController extends GetxController with BaseControllerMixin {
   void _syncStates() {
     // Controller → DataService
     ever(super.isLoading, (value) => _dataService.isLoading.value = value);
-    ever(
-        super.errorMessage, (value) => _dataService.errorMessage.value = value);
+    ever(super.errorMessage, (value) => _dataService.errorMessage.value = value);
 
     // DataService → Controller (ilk başta değerlerini al)
     super.isLoading.value = _dataService.isLoading.value;
@@ -158,29 +159,28 @@ class BudgetsController extends GetxController with BaseControllerMixin {
 
   /// Bütçe ekleme sayfasına yönlendirir
   void goToAddBudget() {
-    _navigationService.goToAddBudget()?.then((result) {
-      if (result == true) {
-        loadBudgets();
-      }
-    });
+    _navigationService.goToAddBudget();
   }
 
   /// Bütçe düzenleme sayfasına yönlendirir
   void goToEditBudget(BudgetModel budget) {
-    _navigationService.goToEditBudget(budget)?.then((result) {
-      if (result == true) {
-        loadBudgets();
-      }
-    });
+    _navigationService.goToEditBudget(budget);
   }
 
   /// Bütçe silme işlemini gerçekleştirir
   Future<void> deleteBudget(int budgetId) async {
-    await loadData(
-      fetchFunc: () => _dataService.deleteBudget(budgetId),
-      loadingErrorMessage: 'Bütçe silinirken bir hata oluştu',
-      onSuccess: () => loadBudgets(),
+    final confirm = await _dialogService.showDeleteConfirmation(
+      title: 'Bütçeyi sil',
+      message: 'Bu bütçeyi silmek istediğinize emin misiniz?',
     );
+
+    if (confirm == true) {
+      final success = await _dataService.deleteBudget(budgetId);
+
+      if (success) {
+        _dataService.budgetList.removeWhere((budget) => budget.id == budgetId);
+      }
+    }
   }
 
   /// Debug log için yardımcı metot

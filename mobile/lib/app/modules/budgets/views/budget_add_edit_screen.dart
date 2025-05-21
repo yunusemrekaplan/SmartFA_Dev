@@ -16,7 +16,7 @@ class BudgetAddEditScreen extends GetView<BudgetAddEditController> {
       backgroundColor: AppColors.background,
       appBar: BudgetEditAppBar(
         controller: controller,
-        onDeletePressed: () => _showDeleteConfirmation(context),
+        onDeletePressed: () => controller.deleteBudget(),
       ),
       body: SafeArea(
         child: Column(
@@ -52,18 +52,6 @@ class BudgetAddEditScreen extends GetView<BudgetAddEditController> {
           ],
         ),
       ),
-    );
-  }
-
-  /// Silme onayı dialog'unu göster
-  void _showDeleteConfirmation(BuildContext context) {
-    Get.find<IDialogService>().showDeleteConfirmation(
-      title: "Bütçeyi Sil",
-      message:
-          "Bu bütçeyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
-      onConfirm: () async {
-        await controller.deleteBudget(controller.budgetId.value!);
-      },
     );
   }
 }
