@@ -24,6 +24,15 @@ dependencies:
   flutter_svg: ^2.0.10
   flutter_animate: ^4.5.0
   table_calendar: ^3.0.9
+  
+  # Raporlama için yeni paketler
+  fl_chart: ^0.68.0              # Grafik çizimi
+  pdf: ^3.10.8                   # PDF oluşturma
+  printing: ^5.12.0              # PDF yazdırma/paylaşma
+  path_provider: ^2.1.2          # Dosya yolu
+  share_plus: ^7.2.2             # Dosya paylaşma
+  syncfusion_flutter_charts: ^24.2.9  # Gelişmiş grafikler
+  file_picker: ^8.0.0+1          # Dosya seçimi
 
 dev_dependencies:
   flutter_test:

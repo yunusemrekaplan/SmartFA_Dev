@@ -85,7 +85,7 @@ class AppDrawer extends StatelessWidget {
 
                     _buildDivider()
                         .animate()
-                        .fadeIn(delay: 250.ms, duration: 400.ms),
+                        .fadeIn(delay: 350.ms, duration: 400.ms),
 
                     // Kategori Yönetimi - Vurgulu Bölüm
                     _buildFeatureSection(
@@ -99,6 +99,19 @@ class AppDrawer extends StatelessWidget {
                         Get.toNamed(AppRoutes.CATEGORIES);
                       },
                     ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
+
+                    // Raporlama Sistemi - Vurgulu Bölüm
+                    _buildFeatureSection(
+                      context: context,
+                      title: 'RAPORLAR',
+                      icon: Icons.analytics_rounded,
+                      description: 'Finansal raporlar ve analiz araçları',
+                      isActive: currentRoute == AppRoutes.REPORTS,
+                      onTap: () {
+                        Get.back();
+                        Get.toNamed(AppRoutes.REPORTS);
+                      },
+                    ).animate().fadeIn(delay: 325.ms, duration: 400.ms),
 
                     /*
                     // Borç Yönetimi - Vurgulu Bölüm
@@ -132,7 +145,7 @@ class AppDrawer extends StatelessWidget {
                         _showNotImplementedMessage(context);
                         Navigator.pop(context);
                       },
-                    ).animate().fadeIn(delay: 500.ms, duration: 400.ms),
+                    ).animate().fadeIn(delay: 475.ms, duration: 400.ms),
 
                     _buildMenuTile(
                       context: context,
@@ -143,16 +156,16 @@ class AppDrawer extends StatelessWidget {
                         _showNotImplementedMessage(context);
                         Navigator.pop(context);
                       },
-                    ).animate().fadeIn(delay: 550.ms, duration: 400.ms),
+                    ).animate().fadeIn(delay: 500.ms, duration: 400.ms),
 
                     _buildDivider()
                         .animate()
-                        .fadeIn(delay: 600.ms, duration: 400.ms),
+                        .fadeIn(delay: 525.ms, duration: 400.ms),
 
                     // Hesap menü öğeleri
                     _buildDrawerHeader(context, 'HESAP')
                         .animate()
-                        .fadeIn(delay: 650.ms, duration: 400.ms),
+                        .fadeIn(delay: 550.ms, duration: 400.ms),
 
                     _buildMenuTile(
                       context: context,
@@ -163,7 +176,7 @@ class AppDrawer extends StatelessWidget {
                         _showNotImplementedMessage(context);
                         Navigator.pop(context);
                       },
-                    ).animate().fadeIn(delay: 700.ms, duration: 400.ms),
+                    ).animate().fadeIn(delay: 575.ms, duration: 400.ms),
 
                     _buildMenuTile(
                       context: context,
@@ -174,13 +187,13 @@ class AppDrawer extends StatelessWidget {
                       onTap: () {
                         _showLogoutDialog(context);
                       },
-                    ).animate().fadeIn(delay: 750.ms, duration: 400.ms),
+                    ).animate().fadeIn(delay: 600.ms, duration: 400.ms),
                   ],
                 ),
               ),
               _buildFooter(context)
                   .animate()
-                  .fadeIn(delay: 800.ms, duration: 400.ms),
+                  .fadeIn(delay: 625.ms, duration: 400.ms),
             ],
           ),
         ),

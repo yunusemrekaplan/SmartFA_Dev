@@ -37,6 +37,9 @@ abstract class AppRoutes {
       '/categories'; // Kategori yönetimi (Ayarlar altında)
   // static const ADD_EDIT_CATEGORY = '/add-edit-category'; // Genellikle modal ile yapılır
 
+  static const REPORTS = '/reports'; // Raporlama sistemi
+  static const REPORT_DETAIL = '/report-detail'; // Rapor detayı
+
   static const SETTINGS =
       '/settings'; // Ayarlar ekranı (HOME içinde bir sekme olabilir)
   static const PROFILE = '/profile'; // Profil düzenleme (Ayarlar altında)

@@ -14,6 +14,9 @@ import 'package:mobile/app/modules/splash/splash_binding.dart';
 import 'package:mobile/app/modules/splash/splash_screen.dart';
 import 'package:mobile/app/modules/transactions/bindings/add_edit_transaction_binding.dart';
 import 'package:mobile/app/modules/transactions/views/add_edit_transaction_screen.dart';
+import 'package:mobile/app/modules/reports/bindings/reports_binding.dart';
+import 'package:mobile/app/modules/reports/views/reports_page.dart';
+import 'package:mobile/app/modules/reports/views/report_detail_page.dart';
 
 // Rota isimlerini import et
 import 'app_routes.dart';
@@ -141,6 +144,23 @@ class AppPages {
       name: AppRoutes.DEBTS,
       page: () => const DebtView(),
       binding: DebtBinding(),
+    ),
+
+    // --- Raporlama Rotaları ---
+    GetPage(
+      name: AppRoutes.REPORTS,
+      page: () => const ReportsPage(),
+      binding: ReportsBinding(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
+      children: [
+        GetPage(
+          name: '/detail',
+          page: () => const ReportDetailPage(),
+          transition: Transition.rightToLeft,
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
+      ],
     ),
   ];
 }
