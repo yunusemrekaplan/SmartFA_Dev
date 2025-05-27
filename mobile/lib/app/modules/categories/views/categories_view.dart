@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:mobile/app/domain/models/enums/category_type.dart';
 import 'package:mobile/app/domain/models/response/category_response_model.dart';
 import 'package:mobile/app/modules/categories/controllers/categories_controller.dart';
-import 'package:mobile/app/modules/categories/views/widgets/category_form_sheet.dart';
+import 'package:mobile/app/modules/categories/widgets/category_form_sheet.dart';
 import 'package:mobile/app/theme/app_colors.dart';
 import 'package:mobile/app/widgets/content_view.dart';
 import 'package:mobile/app/widgets/empty_state_view.dart';
@@ -31,6 +31,9 @@ class CategoriesView extends GetView<CategoriesController> {
         isLoading: controller.isLoading,
         errorMessage: controller.errorMessage,
         onRetry: () => controller.loadCategories(),
+        showLoadingOverlay: true,
+        progressColor: AppColors.primary,
+        loadingMessage: 'Kategoriler yükleniyor...',
         emptyStateView: EmptyStateView(
           icon: Icons.category_outlined,
           title: 'Henüz kategori yok',

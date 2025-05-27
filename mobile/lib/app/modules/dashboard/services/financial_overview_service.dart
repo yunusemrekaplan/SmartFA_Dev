@@ -37,8 +37,12 @@ class FinancialOverviewService {
 
   /// Son işlemler için filtre oluşturur
   TransactionFilterDto _createRecentTransactionsFilter() {
-    // Dashboard için son 10 işlem yeterli
-    return TransactionFilterDto(pageNumber: 1, pageSize: 10);
+    // Dashboard için son 10 işlem yeterli, tarih sıralaması ile en yeniden eskiye
+    return TransactionFilterDto(
+      pageNumber: 1,
+      pageSize: 10,
+      sortCriteria: 'date_desc', // En yeni işlemler önce gelsin
+    );
   }
 
   /// Aylık gelir ve giderleri çeker
@@ -132,10 +136,15 @@ class FinancialOverviewService {
       Function(AppException, String, VoidCallback) errorHandler) {
     result.when(
       success: (transactions) {
-        recentTransactions.assignAll(transactions);
+        // İşlemleri tarih sıralamasına göre sırala (en yeni önce)
+        final sortedTransactions = List<TransactionModel>.from(transactions);
+        sortedTransactions
+            .sort((a, b) => b.transactionDate.compareTo(a.transactionDate));
+
+        recentTransactions.assignAll(sortedTransactions);
 
         // Kategori bazlı gruplandırma
-        final grouped = groupTransactionsByCategory(transactions);
+        final grouped = groupTransactionsByCategory(sortedTransactions);
         groupedTransactions.assignAll(grouped);
       },
       failure: (error) => errorHandler(

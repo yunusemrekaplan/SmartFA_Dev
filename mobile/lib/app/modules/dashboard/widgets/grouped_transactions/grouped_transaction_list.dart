@@ -63,6 +63,12 @@ class GroupedTransactionList extends StatelessWidget {
       grouped[categoryName]!.add(transaction);
     }
 
+    // Her kategori içindeki işlemleri tarih sıralamasına göre sırala (en yeni önce)
+    for (final categoryTransactions in grouped.values) {
+      categoryTransactions
+          .sort((a, b) => b.transactionDate.compareTo(a.transactionDate));
+    }
+
     // Kategorileri toplam tutara göre sırala (büyükten küçüğe)
     final sortedKeys = grouped.keys.toList()
       ..sort((a, b) {
