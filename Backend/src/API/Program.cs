@@ -153,6 +153,12 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>(); // YourDbContext yerine kendi DbContext sınıfınızın adını yazın
+    dbContext.Database.Migrate();
+}
+
 app.UseMiddleware<ErrorHandlerMiddleware>();
 
 // Geliştirme ortamı ayarları
