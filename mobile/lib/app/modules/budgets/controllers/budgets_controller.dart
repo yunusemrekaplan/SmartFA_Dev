@@ -6,7 +6,7 @@ import 'package:mobile/app/modules/budgets/services/budgets/budget_data_service.
 import 'package:mobile/app/modules/budgets/services/budgets/budget_filter_service.dart';
 import 'package:mobile/app/modules/budgets/services/budgets/budget_navigation_service.dart';
 import 'package:mobile/app/modules/budgets/services/budgets/budget_period_service.dart';
-import 'package:mobile/app/services/base_controller_mixin.dart';
+import 'package:mobile/app/core/services/base_controller_mixin.dart';
 import 'package:flutter/foundation.dart';
 
 // Enum'ları budget_filter_service'ten yeniden export et
@@ -76,7 +76,8 @@ class BudgetsController extends GetxController with BaseControllerMixin {
   void _syncStates() {
     // Controller → DataService
     ever(super.isLoading, (value) => _dataService.isLoading.value = value);
-    ever(super.errorMessage, (value) => _dataService.errorMessage.value = value);
+    ever(
+        super.errorMessage, (value) => _dataService.errorMessage.value = value);
 
     // DataService → Controller (ilk başta değerlerini al)
     super.isLoading.value = _dataService.isLoading.value;

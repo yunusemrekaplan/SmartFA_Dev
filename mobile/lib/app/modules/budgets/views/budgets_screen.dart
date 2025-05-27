@@ -97,6 +97,8 @@ class BudgetsScreen extends GetView<BudgetsController> {
                   items: controller.filteredBudgetList,
                   contentPadding: const EdgeInsets.all(16.0),
                   showLoadingOverlay: true,
+                  progressColor: AppColors.primary,
+                  loadingMessage: 'Bütçeler yükleniyor...',
                   emptyStateView: controller.budgetList.isEmpty
                       ? EmptyStateView(
                           title: 'Bütçe Bulunamadı',

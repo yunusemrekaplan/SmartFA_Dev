@@ -42,6 +42,8 @@ abstract class ISnackbarService {
     String? actionLabel,
   });
 
+  void showNotImplemented();
+
   /// En son snackbar'ı kapatır
   void closeLastSnackbar();
 

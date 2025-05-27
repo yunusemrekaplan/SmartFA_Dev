@@ -34,35 +34,38 @@ class AuthInterceptor extends Interceptor {
 
     if (!isPublicPath) {
       try {
-        // Güvenli depolamadan access token'ı oku
+        // Güvenli depolamadan access token'ı oku (timeout ile)
         print(
             '>>> AuthInterceptor: Reading access token for protected route ${options.path}');
+
         final String? accessToken =
-            await _secureStorage.read(key: _accessTokenKey);
+            await _secureStorage.read(key: _accessTokenKey).timeout(
+          const Duration(milliseconds: 2000), // 2 saniye timeout
+          onTimeout: () {
+            print('>>> AuthInterceptor: Token read timeout');
+            return null;
+          },
+        );
 
         if (accessToken != null && accessToken.isNotEmpty) {
-          // Header'a Bearer token'ı ekle
+          // Authorization header'ını ekle
           options.headers['Authorization'] = 'Bearer $accessToken';
-          print(
-              '>>> AuthInterceptor: Token added to header for ${options.path}');
-          print(
-              '>>> AuthInterceptor: Token: Bearer ${accessToken.substring(0, min(10, accessToken.length))}...');
+          print('>>> AuthInterceptor: Access token added to request headers');
         } else {
           print(
-              '>>> AuthInterceptor: ⚠️ No access token found for protected route ${options.path}');
-          // Token yoksa backend 401 döndürecek ve ErrorInterceptor tarafından işlenecek
+              '>>> AuthInterceptor: No valid access token found for protected route');
         }
       } catch (e) {
-        print('>>> AuthInterceptor: ⚠️ Error reading token: $e');
-        // Hata durumunda devam et, backend 401 döndürecek
+        print('>>> AuthInterceptor: Error reading access token: $e');
+        // Token okuma hatası durumunda header eklemeden devam et
+        // ErrorInterceptor 401 hatasını yakalayıp token yenileme işlemini başlatacak
       }
     } else {
-      print(
-          '>>> AuthInterceptor: Public path, no token required for ${options.path}');
+      print('>>> AuthInterceptor: Public endpoint, skipping token check');
     }
 
     // İsteği devam ettir
-    super.onRequest(options, handler);
+    handler.next(options);
   }
 
   // Küçük yardımcı metod

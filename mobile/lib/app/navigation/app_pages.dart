@@ -8,6 +8,8 @@ import 'package:mobile/app/modules/budgets/views/budget_add_edit_screen.dart';
 import 'package:mobile/app/modules/budgets/views/budgets_screen.dart';
 import 'package:mobile/app/modules/categories/bindings/categories_binding.dart';
 import 'package:mobile/app/modules/categories/views/categories_view.dart';
+import 'package:mobile/app/modules/debts/bindings/debt_binding.dart';
+import 'package:mobile/app/modules/debts/views/debt_view.dart';
 import 'package:mobile/app/modules/splash/splash_binding.dart';
 import 'package:mobile/app/modules/splash/splash_screen.dart';
 import 'package:mobile/app/modules/transactions/bindings/add_edit_transaction_binding.dart';
@@ -134,6 +136,11 @@ class AppPages {
       name: AppRoutes.CATEGORIES,
       page: () => const CategoriesView(),
       binding: CategoriesBinding(),
+    ),
+    GetPage(
+      name: AppRoutes.DEBTS,
+      page: () => const DebtView(),
+      binding: DebtBinding(),
     ),
   ];
 }

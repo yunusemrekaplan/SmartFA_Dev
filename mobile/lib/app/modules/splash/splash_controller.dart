@@ -1,10 +1,15 @@
 import 'package:get/get.dart';
 import 'package:mobile/app/data/datasources/local/auth_local_datasource.dart';
 import 'package:mobile/app/navigation/app_routes.dart';
+import 'dart:async';
 
 /// Splash ekranı ve oturum kontrolü için controller sınıfı
 class SplashController extends GetxController {
   final IAuthLocalDataSource _authLocalDataSource;
+
+  // Loading durumu
+  final RxBool isChecking = true.obs;
+  final RxString statusMessage = 'Başlatılıyor...'.obs;
 
   SplashController({required IAuthLocalDataSource authLocalDataSource})
       : _authLocalDataSource = authLocalDataSource {
@@ -17,8 +22,8 @@ class SplashController extends GetxController {
     print(
         '>>> SplashController: onInit çağrıldı, authentication kontrol ediliyor...');
 
-    // Gecikmeli olarak kontrol et, böylece ekran gösterilsin
-    Future.delayed(const Duration(milliseconds: 200), () {
+    // Hızlı kontrol için minimal gecikme
+    Future.delayed(const Duration(milliseconds: 100), () {
       _checkAuthentication();
     });
   }
@@ -28,51 +33,69 @@ class SplashController extends GetxController {
     print('>>> SplashController: _checkAuthentication başlatıldı');
 
     try {
-      // Splash ekranında göstermek için kısa bir bekleme
-      print('>>> SplashController: 2 saniye bekleniyor...');
-      await Future.delayed(const Duration(seconds: 1));
+      isChecking.value = true;
+      statusMessage.value = 'Oturum kontrol ediliyor...';
 
       // Token kontrolü
       String? accessToken;
+      String? refreshToken;
+
       try {
         print('>>> SplashController: Token kontrol ediliyor...');
-        accessToken = await _authLocalDataSource.getAccessToken();
+
+        // Parallel olarak her iki token'ı da oku
+        final tokenFutures = await Future.wait([
+          _authLocalDataSource.getAccessToken(),
+          _authLocalDataSource.getRefreshToken(),
+        ]);
+
+        accessToken = tokenFutures[0];
+        refreshToken = tokenFutures[1];
+
         print(
             '>>> SplashController: AccessToken: ${accessToken?.isEmpty == true ? "boş" : (accessToken == null ? "null" : "var")}');
+        print(
+            '>>> SplashController: RefreshToken: ${refreshToken?.isEmpty == true ? "boş" : (refreshToken == null ? "null" : "var")}');
       } catch (e) {
         print('>>> SplashController: Token okuma hatası: $e');
         accessToken = null;
+        refreshToken = null;
       }
 
-      final hasValidSession = accessToken != null && accessToken.isNotEmpty;
+      final hasValidSession = (accessToken != null && accessToken.isNotEmpty) ||
+          (refreshToken != null && refreshToken.isNotEmpty);
+
       print(
           '>>> SplashController: Oturum durumu: ${hasValidSession ? "Açık" : "Kapalı"}');
 
-      // Geçikmeyi azalt
+      // Minimum splash görünüm süresi (UX için)
+      statusMessage.value =
+          hasValidSession ? 'Hoş geldiniz...' : 'Yönlendiriliyor...';
       await Future.delayed(const Duration(milliseconds: 500));
 
+      // Uygun rotaya yönlendir
       if (hasValidSession) {
-        print('>>> SplashController: Ana sayfaya yönlendiriliyor...');
-        // Oturum açılmış, ana sayfaya yönlendir
+        print('>>> SplashController: Home ekranına yönlendiriliyor...');
         Get.offAllNamed(AppRoutes.HOME);
       } else {
-        print('>>> SplashController: Login sayfasına yönlendiriliyor...');
-        // Oturum açılmamış, giriş sayfasına yönlendir
+        print('>>> SplashController: Login ekranına yönlendiriliyor...');
         Get.offAllNamed(AppRoutes.LOGIN);
       }
     } catch (e) {
-      print('>>> SplashController: Beklenmeyen hata: $e');
-      // Herhangi bir hata durumunda login ekranına yönlendir
+      print('>>> SplashController: Beklenmedik hata: $e');
+      statusMessage.value = 'Hata oluştu...';
 
-      // Kısa bir gecikme ekleyelim
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      // Ek güvenlik için try-catch
-      try {
-        Get.offAllNamed(AppRoutes.LOGIN);
-      } catch (navigationError) {
-        print('>>> SplashController: Navigasyon hatası: $navigationError');
-      }
+      // Hata durumunda login'e yönlendir
+      await Future.delayed(const Duration(seconds: 1));
+      Get.offAllNamed(AppRoutes.LOGIN);
+    } finally {
+      isChecking.value = false;
     }
+  }
+
+  /// Manuel yeniden kontrol (hata durumunda kullanılabilir)
+  Future<void> retryAuthCheck() async {
+    print('>>> SplashController: Manuel yeniden kontrol başlatıldı');
+    await _checkAuthentication();
   }
 }

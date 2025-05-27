@@ -10,7 +10,7 @@ import 'package:mobile/app/modules/dashboard/services/budget_summary_service.dar
 import 'package:mobile/app/modules/dashboard/services/dashboard_state_manager.dart';
 import 'package:mobile/app/modules/dashboard/services/dashboard_summary_service.dart';
 import 'package:mobile/app/modules/dashboard/services/financial_overview_service.dart';
-import 'package:mobile/app/services/base_controller_mixin.dart';
+import 'package:mobile/app/core/services/base_controller_mixin.dart';
 import 'package:mobile/app/utils/result.dart';
 
 /// Dashboard ekranının koordinatörü.

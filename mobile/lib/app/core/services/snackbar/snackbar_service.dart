@@ -82,6 +82,14 @@ class SnackbarService extends GetxService implements ISnackbarService {
   }
 
   @override
+  void showNotImplemented() {
+    _navigationService.showSnackbar(
+      title: 'Hata',
+      message: 'Bu işlem henüz yapım aşamasındadır.',
+    );
+  }
+
+  @override
   void closeLastSnackbar() {
     _navigationService.closeLastSnackbar();
   }

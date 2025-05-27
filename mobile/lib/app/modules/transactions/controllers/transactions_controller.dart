@@ -9,7 +9,7 @@ import 'package:mobile/app/domain/models/response/transaction_response_model.dar
 import 'package:mobile/app/domain/repositories/account_repository.dart';
 import 'package:mobile/app/domain/repositories/category_repository.dart';
 import 'package:mobile/app/domain/repositories/transaction_repository.dart';
-import 'package:mobile/app/services/base_controller_mixin.dart';
+import 'package:mobile/app/core/services/base_controller_mixin.dart';
 import 'package:mobile/app/modules/transactions/services/transaction_data_service.dart';
 import 'package:mobile/app/modules/transactions/services/transaction_filter_service.dart';
 import 'package:mobile/app/modules/transactions/services/transaction_navigation_service.dart';

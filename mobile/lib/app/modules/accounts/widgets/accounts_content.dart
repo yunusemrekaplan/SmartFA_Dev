@@ -20,17 +20,6 @@ class AccountsContent extends StatelessWidget {
       child: SingleChildScrollView(
         child: Column(
           children: [
-            // Yükleniyor göstergesi (ilk yüklemeden sonra)
-            Obx(() => controller.isLoading.value
-                ? Container(
-                    margin: const EdgeInsets.only(bottom: 16.0, top: 8.0),
-                    child: const LinearProgressIndicator(
-                      backgroundColor: Colors.transparent,
-                      minHeight: 3,
-                    ),
-                  ).animate().fadeIn(duration: 200.ms)
-                : const SizedBox.shrink()),
-
             // Hesaplar başlığı
             Obx(() => AccountsHeader(
                       accountCount: controller.accountList.length,

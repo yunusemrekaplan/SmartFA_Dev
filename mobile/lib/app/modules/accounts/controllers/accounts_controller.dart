@@ -4,7 +4,7 @@ import 'package:mobile/app/domain/models/response/account_response_model.dart';
 import 'package:mobile/app/modules/accounts/services/account_data_service.dart';
 import 'package:mobile/app/modules/accounts/services/account_navigation_service.dart';
 import 'package:mobile/app/modules/accounts/services/account_ui_service.dart';
-import 'package:mobile/app/services/base_controller_mixin.dart';
+import 'package:mobile/app/core/services/base_controller_mixin.dart';
 
 /// Hesaplar ekranının controller'ı
 /// DIP (Dependency Inversion Principle) - Yüksek seviyeli modüller düşük seviyeli modüllere bağlı değil
@@ -49,11 +49,13 @@ class AccountsController extends GetxController with BaseControllerMixin {
   void _syncStates() {
     // Controller → DataService
     ever(super.isLoading, (value) => _dataService.isLoading.value = value);
-    ever(super.errorMessage, (value) => _dataService.errorMessage.value = value);
+    ever(
+        super.errorMessage, (value) => _dataService.errorMessage.value = value);
 
     // DataService → Controller
     ever(_dataService.isLoading, (value) => super.isLoading.value = value);
-    ever(_dataService.errorMessage, (value) => super.errorMessage.value = value);
+    ever(
+        _dataService.errorMessage, (value) => super.errorMessage.value = value);
   }
 
   // --- PUBLIC API ---
@@ -68,7 +70,8 @@ class AccountsController extends GetxController with BaseControllerMixin {
 
   /// Belirli bir hesabı siler
   Future<void> deleteAccount(int accountId) async {
-    final account = _dataService.accountList.firstWhere((account) => account.id == accountId);
+    final account = _dataService.accountList
+        .firstWhere((account) => account.id == accountId);
     final confirm = await _uiService.showDeleteConfirmation(account);
 
     if (confirm == true) {
@@ -78,7 +81,8 @@ class AccountsController extends GetxController with BaseControllerMixin {
         //_pageService.closeLastPage();
 
         // Hesap silindikten sonra hesaplar listesinden silinir
-        _dataService.accountList.removeWhere((account) => account.id == accountId);
+        _dataService.accountList
+            .removeWhere((account) => account.id == accountId);
       }
     }
   }

@@ -6,10 +6,11 @@ import 'error_interceptor.dart'; // ErrorInterceptor import
 // Backend API'nin geliştirme ortamı için temel URL'si
 // Bunu ortam değişkenleri veya config dosyası ile yönetmek daha iyidir.
 const String baseUrl =
-    'http://192.168.1.101:5104/api'; // Backend API adresinizi buraya girin (appsettings.Development.json'daki adres)
+    'http://192.168.1.189:5104/api'; // Backend API adresinizi buraya girin (appsettings.Development.json'daki adres)
 
 class DioClient {
-  late final Dio _dio; // Dio instance'ı
+  late final Dio _dio; // Ana Dio instance'ı
+  late final Dio _refreshDio; // Token yenileme için ayrı Dio instance'ı
 
   // Singleton pattern (isteğe bağlı, GetX ile de yönetilebilir)
   static final DioClient _instance = DioClient._internal();
@@ -17,42 +18,78 @@ class DioClient {
   factory DioClient() => _instance;
 
   DioClient._internal() {
+    // Ana Dio instance'ı (standart istekler için)
     _dio = Dio(
       BaseOptions(
         baseUrl: baseUrl,
-        connectTimeout: const Duration(milliseconds: 15000), // 15 saniye bağlantı timeout
-        receiveTimeout: const Duration(milliseconds: 15000), // 15 saniye yanıt alma timeout
+        connectTimeout:
+            const Duration(milliseconds: 10000), // 10 saniye bağlantı timeout
+        receiveTimeout:
+            const Duration(milliseconds: 15000), // 15 saniye yanıt alma timeout
+        sendTimeout:
+            const Duration(milliseconds: 10000), // 10 saniye gönderme timeout
         responseType: ResponseType.json, // Yanıtları JSON olarak bekle
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
       ),
     );
 
-    // Interceptor'ları ekle
+    // Token yenileme için özel Dio instance'ı (daha kısa timeout)
+    _refreshDio = Dio(
+      BaseOptions(
+        baseUrl: baseUrl,
+        connectTimeout:
+            const Duration(milliseconds: 5000), // 5 saniye bağlantı timeout
+        receiveTimeout:
+            const Duration(milliseconds: 8000), // 8 saniye yanıt alma timeout
+        sendTimeout:
+            const Duration(milliseconds: 5000), // 5 saniye gönderme timeout
+        responseType: ResponseType.json,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ),
+    );
+
+    // Ana Dio için interceptor'ları ekle
     // ÖNEMLİ SIRA: Auth -> Error -> Log (Log en sonda olmalı ki her şeyi yakalasın)
     _dio.interceptors.add(AuthInterceptor());
-    // ErrorInterceptor, token yenileme isteği için Dio instance'ını alır.
-    _dio.interceptors.add(ErrorInterceptor(_dio));
+    // ErrorInterceptor, token yenileme isteği için ayrı Dio instance'ını alır.
+    _dio.interceptors.add(ErrorInterceptor(_refreshDio));
 
     // Geliştirme ortamında istek/yanıt loglaması için interceptor ekle
     if (kDebugMode) {
-      // Sadece debug modunda çalışır
       _dio.interceptors.add(LogInterceptor(
+        requestBody: true, // İstek body'sini logla
+        responseBody: true, // Yanıt body'sini logla
+        requestHeader: true, // İstek header'larını logla
+        responseHeader:
+            false, // Yanıt header'larını loglama (çok yer kaplayabilir)
+        error: true, // Hataları logla
+        logPrint: (obj) =>
+            debugPrint('>>> DioClient: $obj'), // Logları debug console'a yazdır
+      ));
+
+      // Refresh Dio için de logging (daha basit)
+      _refreshDio.interceptors.add(LogInterceptor(
         requestBody: true,
-        // İstek body'sini logla
         responseBody: true,
-        // Yanıt body'sini logla
-        requestHeader: true,
-        // İstek header'larını logla
+        requestHeader: false,
         responseHeader: false,
-        // Yanıt header'larını loglama (çok yer kaplayabilir)
         error: true,
-        // Hataları logla
-        logPrint: (obj) => debugPrint(obj.toString()), // Logları debug console'a yazdır
+        logPrint: (obj) => debugPrint('>>> RefreshDio: $obj'),
       ));
     }
   }
 
-  // Dio instance'ına dışarıdan erişim için getter
+  // Ana Dio instance'ına dışarıdan erişim için getter
   Dio get dio => _dio;
+
+  // Refresh Dio instance'ına erişim için getter
+  Dio get refreshDio => _refreshDio;
 
   // --- Genel HTTP Metotları (Wrapper'lar) ---
   // Bu metotlar, interceptor'ların işini yapmasına izin verir ve
@@ -150,6 +187,30 @@ class DioClient {
   }) async {
     try {
       final Response response = await _dio.delete(
+        path,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken,
+      );
+      return response;
+    } on DioException {
+      rethrow;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Token yenileme işlemi için özel POST metodu (timeout optimizasyonu ile)
+  Future<Response> refreshPost(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+  }) async {
+    try {
+      final Response response = await _refreshDio.post(
         path,
         data: data,
         queryParameters: queryParameters,

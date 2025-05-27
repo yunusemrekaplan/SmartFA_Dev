@@ -6,7 +6,7 @@ import 'package:mobile/app/domain/models/enums/category_type.dart';
 import 'package:mobile/app/domain/models/request/category_request_models.dart';
 import 'package:mobile/app/domain/models/response/category_response_model.dart';
 import 'package:mobile/app/domain/repositories/category_repository.dart';
-import 'package:mobile/app/services/base_controller_mixin.dart';
+import 'package:mobile/app/core/services/base_controller_mixin.dart';
 
 /// Kategoriler ekranının state'ini ve iş mantığını yöneten GetX controller.
 class CategoriesController extends GetxController with BaseControllerMixin {
