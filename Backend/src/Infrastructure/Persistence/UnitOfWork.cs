@@ -22,6 +22,7 @@ public class UnitOfWork : IUnitOfWork
     private IBudgetRepository? _budgetRepository;
     private IDebtRepository? _debtRepository;
     private IDebtPaymentRepository? _debtPaymentRepository;
+    private IReportRepository? _reportRepository;
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -38,6 +39,7 @@ public class UnitOfWork : IUnitOfWork
     public IBudgetRepository Budgets => _budgetRepository ??= new BudgetRepository(_context);
     public IDebtRepository Debts => _debtRepository ??= new DebtRepository(_context);
     public IDebtPaymentRepository DebtPayments => _debtPaymentRepository ??= new DebtPaymentRepository(_context);
+    public IReportRepository Reports => _reportRepository ??= new ReportRepository(_context);
 
 
     /// <summary>

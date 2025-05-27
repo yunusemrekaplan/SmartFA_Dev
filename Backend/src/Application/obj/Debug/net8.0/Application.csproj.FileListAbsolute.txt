@@ -13,3 +13,4 @@ C:\repos\SmartFA\Backend\src\Application\obj\Debug\net8.0\Application.dll
 C:\repos\SmartFA\Backend\src\Application\obj\Debug\net8.0\refint\Application.dll
 C:\repos\SmartFA\Backend\src\Application\obj\Debug\net8.0\Application.pdb
 C:\repos\SmartFA\Backend\src\Application\obj\Debug\net8.0\ref\Application.dll
+C:\repos\SmartFA\Backend\src\Application\obj\Debug\net8.0\Application.sourcelink.json

@@ -15,3 +15,4 @@ C:\repos\SmartFA\Backend\src\Infrastructure\obj\Debug\net8.0\Infrastructure.dll
 C:\repos\SmartFA\Backend\src\Infrastructure\obj\Debug\net8.0\refint\Infrastructure.dll
 C:\repos\SmartFA\Backend\src\Infrastructure\obj\Debug\net8.0\Infrastructure.pdb
 C:\repos\SmartFA\Backend\src\Infrastructure\obj\Debug\net8.0\ref\Infrastructure.dll
+C:\repos\SmartFA\Backend\src\Infrastructure\obj\Debug\net8.0\Infrastructure.sourcelink.json

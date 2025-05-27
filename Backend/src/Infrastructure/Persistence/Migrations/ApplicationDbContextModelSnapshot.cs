@@ -151,7 +151,7 @@ namespace Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = -1,
-                            CreatedAt = new DateTime(2025, 4, 29, 23, 30, 15, 623, DateTimeKind.Utc).AddTicks(2010),
+                            CreatedAt = new DateTime(2025, 5, 27, 5, 57, 16, 609, DateTimeKind.Utc).AddTicks(1223),
                             IconName = "fas fa-shopping-cart",
                             IsDeleted = false,
                             IsPredefined = true,
@@ -161,7 +161,7 @@ namespace Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = -2,
-                            CreatedAt = new DateTime(2025, 4, 29, 23, 30, 15, 623, DateTimeKind.Utc).AddTicks(2096),
+                            CreatedAt = new DateTime(2025, 5, 27, 5, 57, 16, 609, DateTimeKind.Utc).AddTicks(1310),
                             IconName = "fas fa-file-invoice-dollar",
                             IsDeleted = false,
                             IsPredefined = true,
@@ -171,7 +171,7 @@ namespace Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = -3,
-                            CreatedAt = new DateTime(2025, 4, 29, 23, 30, 15, 623, DateTimeKind.Utc).AddTicks(2097),
+                            CreatedAt = new DateTime(2025, 5, 27, 5, 57, 16, 609, DateTimeKind.Utc).AddTicks(1311),
                             IconName = "fas fa-bus",
                             IsDeleted = false,
                             IsPredefined = true,
@@ -181,7 +181,7 @@ namespace Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = -4,
-                            CreatedAt = new DateTime(2025, 4, 29, 23, 30, 15, 623, DateTimeKind.Utc).AddTicks(2098),
+                            CreatedAt = new DateTime(2025, 5, 27, 5, 57, 16, 609, DateTimeKind.Utc).AddTicks(1312),
                             IconName = "fas fa-utensils",
                             IsDeleted = false,
                             IsPredefined = true,
@@ -191,7 +191,7 @@ namespace Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = -5,
-                            CreatedAt = new DateTime(2025, 4, 29, 23, 30, 15, 623, DateTimeKind.Utc).AddTicks(2099),
+                            CreatedAt = new DateTime(2025, 5, 27, 5, 57, 16, 609, DateTimeKind.Utc).AddTicks(1313),
                             IconName = "fas fa-home",
                             IsDeleted = false,
                             IsPredefined = true,
@@ -201,7 +201,7 @@ namespace Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = -6,
-                            CreatedAt = new DateTime(2025, 4, 29, 23, 30, 15, 623, DateTimeKind.Utc).AddTicks(2100),
+                            CreatedAt = new DateTime(2025, 5, 27, 5, 57, 16, 609, DateTimeKind.Utc).AddTicks(1314),
                             IconName = "fas fa-heartbeat",
                             IsDeleted = false,
                             IsPredefined = true,
@@ -211,7 +211,7 @@ namespace Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = -7,
-                            CreatedAt = new DateTime(2025, 4, 29, 23, 30, 15, 623, DateTimeKind.Utc).AddTicks(2156),
+                            CreatedAt = new DateTime(2025, 5, 27, 5, 57, 16, 609, DateTimeKind.Utc).AddTicks(1315),
                             IconName = "fas fa-graduation-cap",
                             IsDeleted = false,
                             IsPredefined = true,
@@ -221,7 +221,7 @@ namespace Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = -8,
-                            CreatedAt = new DateTime(2025, 4, 29, 23, 30, 15, 623, DateTimeKind.Utc).AddTicks(2157),
+                            CreatedAt = new DateTime(2025, 5, 27, 5, 57, 16, 609, DateTimeKind.Utc).AddTicks(1352),
                             IconName = "fas fa-tshirt",
                             IsDeleted = false,
                             IsPredefined = true,
@@ -231,7 +231,7 @@ namespace Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = -9,
-                            CreatedAt = new DateTime(2025, 4, 29, 23, 30, 15, 623, DateTimeKind.Utc).AddTicks(2158),
+                            CreatedAt = new DateTime(2025, 5, 27, 5, 57, 16, 609, DateTimeKind.Utc).AddTicks(1353),
                             IconName = "fas fa-film",
                             IsDeleted = false,
                             IsPredefined = true,
@@ -241,7 +241,7 @@ namespace Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = -10,
-                            CreatedAt = new DateTime(2025, 4, 29, 23, 30, 15, 623, DateTimeKind.Utc).AddTicks(2159),
+                            CreatedAt = new DateTime(2025, 5, 27, 5, 57, 16, 609, DateTimeKind.Utc).AddTicks(1355),
                             IconName = "fas fa-ellipsis-h",
                             IsDeleted = false,
                             IsPredefined = true,
@@ -251,7 +251,7 @@ namespace Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = -11,
-                            CreatedAt = new DateTime(2025, 4, 29, 23, 30, 15, 623, DateTimeKind.Utc).AddTicks(4831),
+                            CreatedAt = new DateTime(2025, 5, 27, 5, 57, 16, 609, DateTimeKind.Utc).AddTicks(4105),
                             IconName = "fas fa-briefcase",
                             IsDeleted = false,
                             IsPredefined = true,
@@ -261,7 +261,7 @@ namespace Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = -12,
-                            CreatedAt = new DateTime(2025, 4, 29, 23, 30, 15, 623, DateTimeKind.Utc).AddTicks(4833),
+                            CreatedAt = new DateTime(2025, 5, 27, 5, 57, 16, 609, DateTimeKind.Utc).AddTicks(4107),
                             IconName = "fas fa-hand-holding-usd",
                             IsDeleted = false,
                             IsPredefined = true,
@@ -271,7 +271,7 @@ namespace Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = -13,
-                            CreatedAt = new DateTime(2025, 4, 29, 23, 30, 15, 623, DateTimeKind.Utc).AddTicks(4834),
+                            CreatedAt = new DateTime(2025, 5, 27, 5, 57, 16, 609, DateTimeKind.Utc).AddTicks(4108),
                             IconName = "fas fa-ellipsis-h",
                             IsDeleted = false,
                             IsPredefined = true,
@@ -365,6 +365,69 @@ namespace Infrastructure.Persistence.Migrations
                     b.HasIndex("DebtId");
 
                     b.ToTable("DebtPayments");
+                });
+
+            modelBuilder.Entity("Core.Entities.Report", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FilePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FilterCriteria")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("GeneratedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsScheduled")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Period")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ScheduleCron")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Reports");
                 });
 
             modelBuilder.Entity("Core.Entities.Transaction", b =>
@@ -545,6 +608,17 @@ namespace Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Debt");
+                });
+
+            modelBuilder.Entity("Core.Entities.Report", b =>
+                {
+                    b.HasOne("Core.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Core.Entities.Transaction", b =>

@@ -24,7 +24,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Budget> Budgets { get; set; } = null!;
     public DbSet<Debt> Debts { get; set; } = null!;
     public DbSet<DebtPayment> DebtPayments { get; set; } = null!;
-
+    public DbSet<Report> Reports { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

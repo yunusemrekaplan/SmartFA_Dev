@@ -181,3 +181,4 @@ C:\repos\SmartFA\Backend\src\API\bin\Debug\net8.0\ru\Microsoft.CodeAnalysis.Work
 C:\repos\SmartFA\Backend\src\API\bin\Debug\net8.0\tr\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
 C:\repos\SmartFA\Backend\src\API\bin\Debug\net8.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
 C:\repos\SmartFA\Backend\src\API\bin\Debug\net8.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
+C:\repos\SmartFA\Backend\src\API\obj\Debug\net8.0\API.sourcelink.json

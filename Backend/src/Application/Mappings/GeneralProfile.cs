@@ -3,6 +3,7 @@ using Application.DTOs.Budget;
 using Application.DTOs.Category;
 using Application.DTOs.Debt;
 using Application.DTOs.DebtPayment;
+using Application.DTOs.Reports;
 using Application.DTOs.Transaction;
 using AutoMapper;
 using Core.Entities;
@@ -118,6 +119,11 @@ public class GeneralProfile : Profile
         CreateMap<CreateDebtPaymentDto, DebtPayment>();
         // DebtPayment için genellikle Update olmaz, silinip yeniden eklenebilir veya ayrı bir düzeltme mekanizması kurulur.
 
+
+        // --- Report Mappings ---
+        CreateMap<Report, ReportDto>()
+            .ForMember(dest => dest.TypeName, opt => opt.Ignore()) // Serviste doldurulacak
+            .ForMember(dest => dest.PeriodName, opt => opt.Ignore()); // Serviste doldurulacak
 
         // --- Auth/User Mappings (Gerekirse) ---
         // RegisterDto'dan User'a map etme (PasswordHash hariç)

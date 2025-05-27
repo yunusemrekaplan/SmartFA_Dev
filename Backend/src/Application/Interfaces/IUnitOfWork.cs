@@ -17,6 +17,7 @@ public interface IUnitOfWork : IDisposable
     IBudgetRepository Budgets { get; }
     IDebtRepository Debts { get; }
     IDebtPaymentRepository DebtPayments { get; }
+    IReportRepository Reports { get; }
 
     /// <summary>
     /// Bir iş akışı sırasında yapılan tüm değişiklikleri veritabanına kaydeder.

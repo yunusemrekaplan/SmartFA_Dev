@@ -36,6 +36,9 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IBudgetService, BudgetService>();
 builder.Services.AddScoped<IDebtService, DebtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<IPdfGeneratorService, Infrastructure.Services.PdfGeneratorService>();
+builder.Services.AddScoped<IExcelGeneratorService, Infrastructure.Services.ExcelGeneratorService>();
 
 // 4. AutoMapper'ı Kaydetme
 // Application katmanındaki Assembly'yi tarayarak Profilleri bulur.
